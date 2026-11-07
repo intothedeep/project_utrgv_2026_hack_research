@@ -1,3 +1,12 @@
+# UTRGV 2026 Hack Research Hackathon
+
+## Goal
+
+- pick a question
+- write 2 page paper by tmr
+
+## Summary
+
 This is the start information (no comments).
 
 GENERAL INFORMATION
