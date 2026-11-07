@@ -1,0 +1,14 @@
+This problem involves the "Abstract Tile Assembly Model (aTAM)".  Look up this model and what it means to self-assemble a shape to understand this problem.
+
+Minimum Tileset Problem:
+
+Input: A shape
+
+Output: The minimum number of tile types needed to uniquely self-assemble the given shape.
+
+
+This problem is known to be computationally hard in general.  But for some families of shapes, it might be fast to solve.
+
+Question:  What is the complexity of this problem when the input shape is a 2xn rectangle?
+
+If the seed tile must occur in the corner of the shape, there seems to be an equation (and therefore a polynomial-time algorithm) to compute this.  But without this assumption, the problem is open. 

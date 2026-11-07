@@ -1,0 +1,117 @@
+\documentclass[10pt]{hackr26}
+
+% for generating dummy text, can be removed
+\usepackage{lipsum}  
+% The packages caption, graphicx, amssymb, and amsmath are already loaded via
+% hackr26.cls
+
+%----------------------- Macros and Definitions --------------------------
+
+% The environments theorem (Theorem), invar (Invariant), lemma (Lemma),
+% cor (Corollary), obs (Observation), conj (Conjecture), prop
+% (Proposition), defini (Definition), and proof (Proof) are already defined
+% in the hackr26.cls file. 
+
+%----------------------- Title -------------------------------------------
+
+\title{This is the Template Title}
+
+\author{
+    firstname1 lastname1
+    \thanks{Department of Computer Science, University of Texas Rio Grande Valley, {\tt name1@utrgv.edu}}
+    \and
+    firstname2 lastname2
+    \thanks{Department of Computer Science, University of Texas Rio Grande Valley, {\tt name2@utrgv.edu}}
+}
+
+% Add the appropriate index information!
+
+\index{lastname1, firstname1}
+\index{lastname2, firstname2}
+
+%------------------------------ Text -------------------------------------
+
+\begin{document}
+\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+%remove lipsum text
+\lipsum[1-1]
+\end{abstract}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction} \label{sec:intro}
+
+
+
+\lipsum[2]
+
+We briefly highlight some related work in Section \ref{sec:rel}, and then provide the definitions and results of our work in Section \ref{sec:res}.  We then conclude in Section \ref{sec:conc} and point towards the general research goals for this work \cite{W19}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Related Work} \label{sec:rel}
+%remove lipsum text
+\lipsum[3-4]
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Our Results} \label{sec:res}
+%remove lipsum text
+\lipsum[4-4]
+
+\begin{theorem}
+    This is a theorem.
+\end{theorem}
+
+\begin{proof}
+    Note how it is labeled a theorem.
+\end{proof}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{More Things} \label{sec:c}
+\lipsum[2-4]
+\subsection{Subsections!}
+\lipsum[2]
+\paragraph{Paragraphs.}\lipsum[3]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion} \label{sec:conc}
+
+%remove lipsum text
+\lipsum[2-3]
+
+
+
+
+
+%---------------------------- AI Usage -------------------------------
+%If ANY AI was just during the project, do not remove this section
+\section*{AI Usage Statement}
+Specify how (and which) AI was used during the research process, such as finding sources, formalizing the work, generating images, verifying correctness, improving results, or actually finding solutions. If no AI was used, this section may be removed. Proofreading and grammar editing does not require disclosure.
+
+
+%---------------------------- Bibliography -------------------------------
+% You are encouraged to use BibTeX for handling your references. In this example, the .bbl
+% has only been pasted in to achieve self-containedness.
+
+\small
+\bibliographystyle{abbrv}
+\bibliography{hackrrefs}
+
+%includes all references in bib file whether directly cited or not
+%\cite*{}
+
+% \begin{thebibliography}{99}
+% %start insert .bbl file
+
+
+% %end insert .bbl file
+% \end{thebibliography}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
+
