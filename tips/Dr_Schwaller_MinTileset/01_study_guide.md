@@ -262,14 +262,15 @@ t < (n / (2·2!))^{1/2} 이면 2×n을 결정적 조립으로 못 만든다
 ## 5. 함정 (Pitfalls)
 
 1. **모델이 모호하다.** 온도 τ가 1인지 2인지, 풀이자가 고르는지 문제에 없다. 결과가 온도마다 다르다. [온도(temperature, τ)](#term-temperature)를 논문에 명시해줘.
-2. **결정적 조립인지 엄격 조립인지 모호하다.** Adleman 등 2002는 결정적 조립을 쓴다. Bryans 등은 엄격 조립을 쓰고, 그 문제는 [Σ2^P-완전(Σ2^P-complete)](#term-sigma2)이다. 판마다 다른 정리를 쓴다.
+2. **결정적 조립인지 엄격 조립인지 모호하다.** Adleman 등 2002는 결정적 조립을 쓴다. Bryans 등은 엄격 조립을 쓰고, 그 문제는 [다항 계층 2층 완전(second-level polynomial-hierarchy complete, Σ2^P-complete)](#term-sigma2)이다. 판마다 다른 정리를 쓴다.
 3. **입력 인코딩이 모호하다.** [단항(unary)](#term-unary) n은 입력 크기가 Θ(n)이다. 이진수 n은 크기가 log n이다.
-   - 희소성 논증(`02_possible_solutions.md`의 방향 1)은 단항 n이나 정렬된 칸 목록에서 성립한다.
+   - 희소성 논증(`02_possible_solutions.md`의 방향 1)은 단항 n 또는 정렬된 칸 목록에서 성립한다.
    - 정렬 안 된 칸 목록은 [정규화 환원(normalization reduction)](#term-normred)이 필요하다.
    - 정규형 ⟨1^n, s, k⟩에서 k와 s는 단항이나 고정 폭으로 쓴다.
    - k ≥ n + 1인 입력은 모두 고정된 예 입력(yes-instance)으로 보낸다. 빗 구성이 최적값(optimum, OPT) ≤ n + 1을 주기 때문이다.
-   - 이진수 k는 [희소 집합(sparse set)](#term-sparse)이 아니다.
-   - 이진수 n에서도 논증이 실패한다.
+   - 정규형에 이진수 k를 쓰면 [희소 집합(sparse set)](#term-sparse)이 아니다.
+   - 입력의 k는 이진수여도 된다. 환원이 k를 단항이나 고정 폭으로 다시 쓴다.
+   - 논증은 이진수 n에서만 실패한다.
 4. **"시드가 모서리"의 뜻이 모호하다.** 네 모서리 중 어느 것도 되는지 불분명하다. 이 점을 질문으로 넘긴다.
 5. **하한 √n / 2는 시드 위치와 무관하다.** 상한 4⌈√n⌉ + 2는 모서리 시드를 쓴다. 두 값을 섞어 "시드 위치에 따른 정확한 값"이라고 쓰지 마.
 6. **손으로 만든 카운터는 시뮬레이션 전이다.** 타일 종류가 m + 3D + 2개인 구성이다. (m, D) = (3, 2)와 (12, 4)에서 손으로 추적했다. 시뮬레이션은 하지 않았다. 증명된 것처럼 쓰지 마. 논문에는 "손 유도"로 쓴다. R2 시뮬레이션은 선택이다.
@@ -293,7 +294,7 @@ t < (n / (2·2!))^{1/2} 이면 2×n을 결정적 조립으로 못 만든다
 - [전수 탐색(brute-force search)](#term-brute-force)과 시뮬레이션은 로컬에서 바로 실행하지 않는다.
 - R1: 2×n, n = 2..8, 온도 1과 2, 시드 위치마다 최소 타일 종류 수를 찾는다.
 - R2 (선택): 손으로 추적한 카운터를 몇 개의 (m, D)로 시뮬레이션해 독립 확인한다.
-- 둘 다 클러스터에서 한다. 제출은 메인 세션만 한다.
+- 둘 다 클러스터에서 한다. 제출은 소유자 승인 뒤에 한다.
 - 프로젝트 루트 `CLAUDE.md`에 계산 환경이 아직 없으면, 먼저 어떤 클러스터나 Colab을 쓸지 정해줘.
 - 저장된 결과로 그림을 그리는 작업은 로컬에서 해도 된다.
 
@@ -356,7 +357,7 @@ t < (n / (2·2!))^{1/2} 이면 2×n을 결정적 조립으로 못 만든다
 - **맨해튼 지름(Manhattan diameter)**: 모양 안 두 칸 사이 격자 거리의 최댓값. 이 자료에서 정의는 전문 확인 전이다.
 
 <a id="term-sigma2"></a>
-- **Σ2^P-완전(Σ2^P-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP)보다 한 층 위 부류의 가장 어려운 문제군.
+- **다항 계층 2층 완전(second-level polynomial-hierarchy complete, Σ2^P-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP)보다 한 층 위 부류의 가장 어려운 문제군.
 
 <a id="term-poly"></a>
 - **다항 시간(polynomial time, P)**: 입력 크기의 다항식으로 늘어나는 계산 시간. 그 시간에 풀리는 문제의 부류도 가리킨다.
@@ -365,19 +366,19 @@ t < (n / (2·2!))^{1/2} 이면 2×n을 결정적 조립으로 못 만든다
 - **비결정 다항 시간(nondeterministic polynomial time, NP)**: 답을 다항 시간에 검증할 수 있는 결정 문제의 부류.
 
 <a id="term-np-complete"></a>
-- **비결정 다항 시간 완전(NP-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP) 부류에 속한다. 그 부류의 모든 문제를 이 문제로 바꿀 수 있다.
+- **비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP) 부류에 속한다. 그 부류의 모든 문제를 이 문제로 바꿀 수 있다.
 
 <a id="term-sparse"></a>
 - **희소 집합(sparse set)**: 길이 L인 원소의 수가 L의 다항식 이하인 집합.
 
 <a id="term-mahaney"></a>
-- **Mahaney 정리(Mahaney's theorem)**: 다음 정리다. 희소 집합이 비결정 다항 시간 완전(NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 같다.
+- **Mahaney 정리(Mahaney's theorem)**: 다음 정리다. 희소 집합이 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 같다.
 
 <a id="term-unary"></a>
 - **단항(unary) 인코딩**: 수 n을 1이 n개인 문자열로 쓰는 방식. 입력 길이가 n에 비례한다.
 
 <a id="term-normred"></a>
-- **정규화 환원(normalization reduction)**: 어떤 인코딩이든 표준형 ⟨1^n, s, k⟩로 바꾸는 다항 시간 변환.
+- **정규화 환원(normalization reduction)**: 어떤 인코딩이든 정규형 ⟨1^n, s, k⟩로 바꾸는 다항 시간 변환.
 
 <a id="term-mismatch"></a>
 - **결합 불일치(binding-domain mismatch)**: [S-MTS-6]의 조건 이름이다. 정의는 요약 조각만 읽었고 전문 확인 전이다.

@@ -259,7 +259,7 @@ td ul,td ol{padding-left:16px;gap:3px}
 .vz .hi{fill:var(--signal-flag-fill);stroke:var(--signal-flag-line);stroke-width:3;stroke-dasharray:6 4}
 .vz .ar{stroke:var(--muted-foreground);stroke-width:1.5;fill:none}
 .vz .opn{fill:var(--signal-open-fill);stroke:var(--signal-open-line);stroke-width:3;stroke-dasharray:6 4}
-.vz .hnew{fill:var(--signal-flag-fill);stroke:var(--signal-flag-line);stroke-width:2}
+.vz .hnew{fill:none;stroke:var(--signal-flag-line);stroke-width:2}
 .vz .tl{fill:var(--muted);stroke:var(--foreground);stroke-width:1.5}
 .vz .tn{fill:none;stroke:var(--foreground);stroke-width:1.2;stroke-dasharray:5 3}
 .vz .tnew{fill:var(--signal-flag-fill);stroke:var(--foreground);stroke-width:1.5}
@@ -608,12 +608,6 @@ td ul,td ol{padding-left:16px;gap:3px}
   <p class="note">결합 이름: P₂의 동쪽 결합이 p₁이고 P₃의 동쪽 결합이 p₂입니다. 둘 다 세기 2입니다. 자릿수마다 <a class="t" href="#term-digitglue">자릿수 결합(digit glue)</a> δ₁, δ₀를 따로 씁니다. 이름 하나를 같이 쓰면 X₁과 X₀가 같은 칸에 함께 맞아 조립이 결정적이지 않기 때문입니다.</p>
   <figure class="box fig vzstep" data-n="6">
     <svg class="vz" viewBox="0 0 960 290" role="img" aria-label="τ = 2 카운터의 블록 사이클 여섯 단계">
-<g data-only="0"><rect class="hnew" x="415" y="95" width="88" height="70"/></g>
-<g data-only="1"><rect class="hnew" x="415" y="155" width="88" height="70"/></g>
-<g data-only="2"><rect class="hnew" x="337" y="155" width="88" height="70"/><rect class="hnew" x="259" y="155" width="88" height="70"/></g>
-<g data-only="3"><rect class="hnew" x="337" y="95" width="88" height="70"/></g>
-<g data-only="4"><rect class="hnew" x="259" y="95" width="88" height="70"/></g>
-<g data-only="5"><rect class="hnew" x="181" y="95" width="88" height="70"/><rect class="hnew" x="181" y="155" width="88" height="70"/><rect class="hnew" x="103" y="95" width="88" height="70"/><rect class="hnew" x="103" y="155" width="88" height="70"/><rect class="hnew" x="25" y="95" width="88" height="70"/><rect class="hnew" x="25" y="155" width="88" height="70"/></g>
 <g data-from="0">
 <rect class="tl" x="498" y="160" width="78" height="60"/><text class="b" x="537" y="195" text-anchor="middle">Z</text>
 <rect class="tl" x="498" y="100" width="78" height="60"/><text class="b" x="537" y="135" text-anchor="middle">Y</text>
@@ -662,6 +656,12 @@ td ul,td ol{padding-left:16px;gap:3px}
 <rect class="g2" x="101" y="178" width="14" height="24"/><text class="s" x="96" y="194" text-anchor="end">p₂</text>
 <rect class="g1" x="57" y="155" width="24" height="10"/><text class="s" x="85" y="155">b</text>
 <text class="s" x="69" y="256" text-anchor="middle">X₀ 서쪽 = 널(null)</text></g>
+<g data-only="0"><rect class="hnew" x="415" y="95" width="88" height="70"/></g>
+<g data-only="1"><rect class="hnew" x="415" y="155" width="88" height="70"/></g>
+<g data-only="2"><rect class="hnew" x="337" y="155" width="88" height="70"/><rect class="hnew" x="259" y="155" width="88" height="70"/></g>
+<g data-only="3"><rect class="hnew" x="337" y="95" width="88" height="70"/></g>
+<g data-only="4"><rect class="hnew" x="259" y="95" width="88" height="70"/></g>
+<g data-only="5"><rect class="hnew" x="181" y="95" width="88" height="70"/><rect class="hnew" x="181" y="155" width="88" height="70"/><rect class="hnew" x="103" y="95" width="88" height="70"/><rect class="hnew" x="103" y="155" width="88" height="70"/><rect class="hnew" x="25" y="95" width="88" height="70"/><rect class="hnew" x="25" y="155" width="88" height="70"/></g>
 <text class="b" x="30" y="30">m = 3, D = 2, n = 7</text>
 <text class="s" x="30" y="50">위 행: 자릿수 d (1 → 0), 아래 행: 블록 안 위치 P₁ → P₃</text>
 <g data-only="0"><text class="b" x="612" y="110">S₁ 붙음 근거</text><text x="612" y="134">r₁ 세기 2 하나</text><text x="612" y="154">2 ≥ τ 2 ✓</text></g>
@@ -796,6 +796,7 @@ td ul,td ol{padding-left:16px;gap:3px}
   <div class="two">
     <div class="box col">
       <h3>추상 타일 조립 모델(abstract Tile Assembly Model, aTAM)을 한 장으로</h3>
+      <figure class="fig" style="margin:0">
       <div class="tablewrap">
       <table>
         <thead><tr><th>용어</th><th>뜻</th></tr></thead>
@@ -809,6 +810,8 @@ td ul,td ol{padding-left:16px;gap:3px}
         </tbody>
       </table>
       </div>
+      <figcaption><b class="n">표 1.</b> 추상 타일 조립 모델의 용어 6개와 뜻입니다. 왜: 이후 단계의 결합, 온도, 시드를 같은 뜻으로 읽게 하기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §1</figcaption>
+      </figure>
       <p class="note">타일은 회전하지 않고 이동만 합니다. 이 규칙은 정의에서 읽은 추론이며 부분 확인입니다. 출제문의 "uniquely self-assemble"은 표준 뜻으로 읽어 결정적 조립(directed self-assembly)으로 봅니다(추론). Step 6에서 출제자에게 확인합니다.</p>
     </div>
     <figure class="box fig">
@@ -846,7 +849,7 @@ td ul,td ol{padding-left:16px;gap:3px}
   <div class="box col">
     <h3>왜 2×n이 문제가 되나</h3>
     <ul>
-      <li>일반 모양의 <a class="t" href="#term-mts">최소 타일 집합 문제(Minimum Tileset Problem)</a>를 봅니다.</li><li>이 문제는 <a class="t" href="#term-npc">비결정적 다항 시간 완전(nondeterministic polynomial time complete, NP-complete)</a>입니다 (Adleman 외 2002).</li>
+      <li>일반 모양의 <a class="t" href="#term-mts">최소 타일 집합 문제(Minimum Tileset Problem)</a>를 봅니다.</li><li>이 문제는 <a class="t" href="#term-npc">비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)</a>입니다 (Adleman 외 2002).</li>
       <li>N×N 정사각형은 <a class="t" href="#term-polytime">다항 시간(polynomial time)</a>에 풀립니다.</li>
       <li>2×n 직사각형의 정확한 복잡도 결과는 찾지 못했습니다(open as far as found).</li>
       <li>출제문: 시드가 모서리에 있어야 한다면 식이 있어 보이고, 그 가정을 빼면 열려 있습니다.</li>
@@ -915,7 +918,7 @@ td ul,td ol{padding-left:16px;gap:3px}
       <tbody id="chTab"></tbody>
     </table>
   </div>
-  <figcaption><b class="n">표 1.</b> 네 개의 n에서 하한과 두 상한을 식으로 계산한 값입니다. 왜: 간격이 상수배(약 8, 추정)로 유지되어 τ = 2의 답이 Θ(√n)임을 숫자로 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3</figcaption>
+  <figcaption><b class="n">표 2.</b> 네 개의 n에서 하한과 두 상한을 식으로 계산한 값입니다. 왜: 간격이 상수배(약 8, 추정)로 유지되어 τ = 2의 답이 Θ(√n)임을 숫자로 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3</figcaption>
   </figure>
   <p class="note">노트의 예시는 n = 100과 n = 10,000입니다. 각각 5 ≤ t ≤ 42와 50 ≤ t ≤ 402입니다. 같은 식으로 다시 계산했습니다. 상수 간격 약 8은 추정입니다. 하한은 Aggarwal 외 정리(Theorem) 3.1의 증명에서 옵니다. 거기에 k = 2를 넣으면 t ≥ (n / 4)<sup>1/2</sup>입니다. 상한은 정리(Theorem) 3.2의 구성에서 m = ⌈√n⌉, 타일 종류 4m + 2입니다.</p>
 </section>
@@ -938,7 +941,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     </tbody>
   </table>
   </div>
-  <figcaption><b class="n">표 2.</b> τ와 시드 위치로 나눈 2×2 케이스 지도의 요약입니다. 왜: 어느 칸이 비었는지 먼저 보이고 표 3에서 칸마다 근거를 읽게 하기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4</figcaption>
+  <figcaption><b class="n">표 3.</b> τ와 시드 위치로 나눈 2×2 케이스 지도의 요약입니다. 왜: 어느 칸이 비었는지 먼저 보이고 표 4에서 칸마다 근거를 읽게 하기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4</figcaption>
   </figure>
 
   <figure class="fig" style="margin:0">
@@ -969,7 +972,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     </tbody>
   </table>
   </div>
-  <figcaption><b class="n">표 3.</b> 케이스 네 칸의 하한, 상한, 정확한 값, 상태입니다. 왜: 논문에서 "증명됨"과 "추측"을 섞어 쓰지 않도록 칸마다 근거를 나누기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3, §4</figcaption>
+  <figcaption><b class="n">표 4.</b> 케이스 네 칸의 하한, 상한, 정확한 값, 상태입니다. 왜: 논문에서 "증명됨"과 "추측"을 섞어 쓰지 않도록 칸마다 근거를 나누기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3, §4</figcaption>
   </figure>
 
   <div class="two">
@@ -989,12 +992,13 @@ td ul,td ol{padding-left:16px;gap:3px}
         </tbody>
       </table>
       </div>
-      <figcaption><b class="n">표 4.</b> n = 1 ... 6의 하한, 찾은 상한, 정확한 값입니다. 왜: 카운터는 n이 커야 이득이라 n ≤ 6에서는 빗 n + 1이 찾은 최선입니다(추론). 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.4</figcaption>
+      <figcaption><b class="n">표 5.</b> n = 1 ... 6의 하한, 찾은 상한, 정확한 값입니다. 왜: 카운터는 n이 커야 이득이라 n ≤ 6에서는 빗 n + 1이 찾은 최선입니다(추론). 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.4</figcaption>
       </figure>
     </div>
     <div class="box col">
       <h3>손으로 유도한 2행 카운터 <span class="st q">DERIVED-BY-HAND</span></h3>
       <p class="note">손으로 추적했고 시뮬레이션은 하지 않았습니다(R2는 선택). 시드는 오른쪽 아래 모서리이고 성장은 서쪽으로 갑니다. 길이는 n = 1 + m·D로 m ≥ 2에서만 맞습니다.</p>
+      <figure class="fig" style="margin:0">
       <div class="tablewrap">
       <table>
         <thead><tr><th>타일 묶음</th><th>종류 수</th><th>하는 일</th></tr></thead>
@@ -1008,6 +1012,8 @@ td ul,td ol{padding-left:16px;gap:3px}
         </tbody>
       </table>
       </div>
+      <figcaption><b class="n">표 6.</b> 손으로 유도한 카운터의 타일 묶음 5개와 종류 수입니다. 왜: 합계 m + 3D + 2가 어디서 오는지 묶음별로 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.3</figcaption>
+      </figure>
       <ul class="tdl">
         <li>m ≈ 3D로 고르면 약 2√(3n) ≈ 3.46√n종입니다. 출처 [S-MTS-2]는 4√n + 2입니다.</li>
         <li>D = 4, m = 12이면 n = 49에 26종입니다(빗은 50종).</li>
@@ -1038,17 +1044,17 @@ td ul,td ol{padding-left:16px;gap:3px}
   <table>
     <thead><tr><th>순위</th><th>방향</th><th>뒷받침할 수 있는 주장</th><th>위험</th></tr></thead>
     <tbody>
-      <tr><td>1</td><td><b>희소성에 의한 비-어려움.</b> 입력이 <a class="t" href="#term-unary">단항(unary) n</a> 또는 정렬된 칸 목록일 때 성립합니다. 길이 L의 입력은 L에 대해 다항식 개뿐이라 언어가 <a class="t" href="#term-sparse">희소 집합(sparse set)</a>입니다. <a class="t" href="#term-mahaney">Mahaney 정리(Mahaney's theorem)</a>가 이를 씁니다. 정렬 안 된 칸 목록은 한 모양에 인코딩이 (2n)!개라 그대로는 희소하지 않습니다. <a class="t" href="#term-normred">정규화 환원(normalization reduction)</a>이 필요합니다. 어떤 인코딩이든 표준형 ⟨1<sup>n</sup>, s, k⟩로 바꿉니다. s와 k는 단항이거나 고정 폭입니다. k ≥ n + 1인 입력은 고정된 예 입력으로 보냅니다(빗이 n + 1종을 주므로 답이 예). 직사각형이 아니면 고정된 아니오 입력으로 보냅니다. k를 이진수로 쓰면 희소하지 않습니다.</td><td>"다항 시간(polynomial time, P)과 <a class="t" href="#term-np">비결정적 다항 시간(nondeterministic polynomial time, NP)</a>이 다르다고 하자. 그러면 2×n의 최소 타일 집합은 비결정적 다항 시간 완전(nondeterministic polynomial time complete, NP-complete)이 아니다". 시드 규칙과 무관합니다. 짧고 엄밀한 정리입니다.</td><td>낮음. 인코딩을 명시해야 합니다. n이나 k를 이진수로 주면 희소하지 않아 논증이 깨집니다. 비결정적 다항 시간(nondeterministic polynomial time, NP) 소속도 불분명해집니다. 비결정적 다항 시간(nondeterministic polynomial time, NP) 소속에는 τ 고정이나 세기 상한이 필요합니다.</td></tr>
-      <tr><td>2</td><td><b><a class="t" href="#term-subexp">부분지수 시간(subexponential time)</a> 알고리즘.</b> τ = 2로 고정하고 타일 종류가 4⌈√n⌉ + 2 이하인 시스템을 모두 나열합니다. 후보는 2<sup>O(√n log n)</sup>개이고 각각 다항 시간에 검사합니다(S-MTS-1).</td><td>"2<sup>O(√n log n)</sup> 시간에 풀린다". τ = 2 고정이고 입력이 단항 n 또는 칸 목록일 때만입니다. 1순위와 짝이 좋습니다.</td><td>낮음. 이진수 n이면 입력 길이가 log n이라 부분지수가 아닙니다. τ = 1은 상한이 n + 1뿐이라 같은 나열이 2<sup>O(n log n)</sup>입니다. τ를 고정하거나 세기 상한을 S-MTS-4로 인용해야 합니다.</td></tr>
+      <tr><td>1</td><td><b>희소성에 의한 비-어려움.</b> 입력이 <a class="t" href="#term-unary">단항(unary) n</a> 또는 정렬된 칸 목록일 때 성립합니다. 길이 L의 입력은 L에 대해 다항식 개뿐이라 언어가 <a class="t" href="#term-sparse">희소 집합(sparse set)</a>입니다. <a class="t" href="#term-mahaney">Mahaney 정리(Mahaney's theorem)</a>가 이를 씁니다. 정렬 안 된 칸 목록은 한 모양에 인코딩이 (2n)!개라 그대로는 희소하지 않습니다. <a class="t" href="#term-normred">정규화 환원(normalization reduction)</a>이 필요합니다. 어떤 인코딩이든 정규형 ⟨1<sup>n</sup>, s, k⟩로 바꿉니다. s와 k는 단항이거나 고정 폭입니다. k ≥ n + 1인 입력은 고정된 예 입력으로 보냅니다(빗이 n + 1종을 주므로 답이 예). 직사각형이 아니면 고정된 아니오 입력으로 보냅니다. k를 이진수로 쓰면 희소하지 않습니다.</td><td>"다항 시간(polynomial time, P)과 <a class="t" href="#term-np">비결정 다항 시간(nondeterministic polynomial time, NP)</a>이 다르다고 하자. 그러면 2×n의 최소 타일 집합은 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)이 아니다". 시드 규칙과 무관합니다. 짧고 엄밀한 정리입니다.</td><td>낮음. 인코딩을 명시해야 합니다. n을 이진수로 주면 희소하지 않아 논증이 깨집니다. 비결정 다항 시간(nondeterministic polynomial time, NP) 소속도 불분명해집니다. 입력의 k는 이진수여도 됩니다. 환원이 k를 단항이나 고정 폭으로 다시 씁니다. 비결정 다항 시간(nondeterministic polynomial time, NP) 소속에는 τ 고정이나 세기 상한이 필요합니다.</td></tr>
+      <tr><td>2</td><td><b><a class="t" href="#term-subexp">부분지수 시간(subexponential time)</a> 알고리즘.</b> τ = 2로 고정하고 타일 종류가 4⌈√n⌉ + 2 이하인 시스템을 모두 나열합니다. 후보는 2<sup>O(√n log n)</sup>개이고 각각 다항 시간에 검사합니다(S-MTS-1). 시드 칸이 입력으로 고정되면 두 팔 상한 4⌈√a⌉ + 4⌈√b⌉ + O(1)까지 찾습니다(a = s − 1, b = n − s, 5순위). 4⌈√n⌉ + 2는 모서리 시드에서만 증명되었습니다.</td><td>"2<sup>O(√n log n)</sup> 시간에 풀린다". τ = 2 고정이고 입력이 단항 n 또는 칸 목록일 때만입니다. 1순위와 짝이 좋습니다.</td><td>낮음. 이진수 n이면 입력 길이가 log n이라 부분지수가 아닙니다. τ = 1은 상한이 n + 1뿐이라 같은 나열이 2<sup>O(n log n)</sup>입니다. τ를 고정하거나 세기 상한을 S-MTS-4로 인용해야 합니다.</td></tr>
       <tr><td>3</td><td><b>모서리로 옮기기 보조정리(without-loss-of-generality corner lemma).</b> 교환 논증을 씁니다. 안쪽 시드의 최적 시스템이 타일 종류를 더 쓰지 않고 모서리 시드 시스템으로 바뀜을 보입니다.</td><td>열린 경우를 풀고 일반 답이 모서리 식과 같아집니다.</td><td>높음. 두 팔이 타일을 공유하면 거짓일 수 있습니다.</td></tr>
       <tr><td>4</td><td><b>시드 위치 분해.</b> 최적값(optimum, OPT) = min<sub>s</sub> f(s − 1, n − s), f는 팔 두 개의 비용(공유 포함). f의 닫힌 식이 있으면 O(n) 시간 알고리즘입니다.</td><td>f에 조건을 단 다항 시간 알고리즘.</td><td>중간 이상.</td></tr>
-      <tr><td>5</td><td><b>상수 근사(constant-factor approximation).</b> 시드가 자유(해의 일부)이면 모서리 구성 4⌈√n⌉ + 2(증명됨)와 하한 √n / 2를 맞댑니다. 비율은 약 8배입니다(작은 n은 약 11배 이하). 시드 칸이 입력으로 고정이면 팔 둘을 씁니다. 카운터 하나는 서쪽으로 자랍니다. 좌우 뒤집은 카운터 하나는 동쪽으로 자랍니다. 둘은 시드 열을 나눠 쓰고 결합 이름은 서로 다릅니다. 비율은 약 8√2 ≈ 11.3배입니다.</td><td>"약 8-근사(시드 자유)": [S-MTS-2]만으로 정리입니다. "7-근사"는 §4.3 카운터를 쓰고 n = 1 + m·D일 때만 점근적으로 성립합니다. 고정 시드는 약 8√2배입니다.</td><td>낮음. 고정 시드는 [S-MTS-2]의 카운터가 팔 길이 1 ... m²를 다룬다는 논문 주장에 기댑니다(다시 확인하지 않음).</td></tr>
+      <tr><td>5</td><td><b>상수 근사(constant-factor approximation).</b> 시드가 자유(해의 일부)이면 모서리 구성 4⌈√n⌉ + 2(증명됨)와 하한 √n / 2를 맞댑니다. 비율은 약 8배입니다(작은 n은 약 11배 이하). 시드 칸이 입력으로 고정이면 팔 둘을 씁니다. 카운터 하나는 서쪽으로 자랍니다. 좌우 뒤집은 카운터 하나는 동쪽으로 자랍니다. 둘은 시드 열을 나눠 쓰고 결합 이름은 서로 다릅니다. 비율은 약 8√2 ≈ 11.3배입니다. 시드 칸이 위 행이면 위아래로도 뒤집습니다.</td><td>"약 8-근사(시드 자유)": [S-MTS-2]만으로 정리입니다. "7-근사"는 §4.3 카운터를 쓰고 n = 1 + m·D일 때만 점근적으로 성립합니다. 고정 시드는 약 8√2배입니다.</td><td>낮음. 고정 시드는 [S-MTS-2]의 카운터가 팔 길이 1 ... m²를 다룬다는 논문 주장에 기댑니다(다시 확인하지 않음).</td></tr>
       <tr><td>6</td><td><b>작은 n의 정확한 표.</b> 클러스터에서 n ≤ 8의 모서리 최적과 안쪽 최적을 비교합니다(R1).</td><td>3순위에 대한 증거.</td><td>클러스터 실행과 소유자 승인이 필요합니다.</td></tr>
-      <tr><td>7</td><td><b><a class="t" href="#term-nph">비결정적 다항 시간 어려움(nondeterministic polynomial time hard, NP-hard)</a> 증명.</b> 단항 인코딩에서는 1순위가 막습니다.</td><td>권하지 않음.</td><td>매우 높음.</td></tr>
+      <tr><td>7</td><td><b><a class="t" href="#term-nph">비결정 다항 시간 어려움(nondeterministic polynomial-time hard, NP-hard)</a> 증명.</b> 단항 n 인코딩과 정렬된 칸 목록 인코딩에서는 1순위가 막습니다.</td><td>권하지 않음.</td><td>매우 높음.</td></tr>
     </tbody>
   </table>
   </div>
-  <figcaption><b class="n">표 5.</b> 연구 방향 7개와 주장, 위험입니다(모두 추론이고 증명이 아님). 왜: 24시간 안에 어느 결과를 정리로 쓰고 어느 결과를 추측으로 남길지 고르기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §5</figcaption>
+  <figcaption><b class="n">표 7.</b> 연구 방향 7개와 주장, 위험입니다(모두 추론이고 증명이 아님). 왜: 24시간 안에 어느 결과를 정리로 쓰고 어느 결과를 추측으로 남길지 고르기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §5</figcaption>
   </figure>
   <div class="box col">
     <h3>현실적인 24시간 논문 (노트의 추론)</h3>
@@ -1110,13 +1116,13 @@ td ul,td ol{padding-left:16px;gap:3px}
     <thead><tr><th>실행</th><th>무엇을</th><th>얻는 것</th><th>어디서</th><th>상태</th></tr></thead>
     <tbody>
       <tr><td>R1</td><td>2×n, n = 2 ... 8, τ = 1과 τ = 2, 모든 시드 위치에서 최소 타일 집합 전수 탐색. 후보 검사는 S-MTS-1의 다항 시간 유일성 검사를 씁니다.</td><td>n, 시드 위치, 최소 타일 종류 수, 증거 타일 집합 하나의 표</td><td><b>클러스터에서 실행</b></td><td><span class="st open">미실행</span></td></tr>
-      <tr><td>R2</td><td>몇 개의 (m, D)에서 손 유도 카운터를 시뮬레이션합니다. 모델은 추상 타일 조립 모델(abstract Tile Assembly Model, aTAM)입니다.</td><td>결정적 조립인지와 끝 모양 확인</td><td><b>클러스터에서 실행</b></td><td><span class="st open">미실행</span></td></tr>
+      <tr><td>R2</td><td>몇 개의 (m, D)에서 손 유도 카운터를 시뮬레이션합니다. 모델은 추상 타일 조립 모델(abstract Tile Assembly Model, aTAM)입니다.</td><td>결정적 조립인지와 종단 모양 확인</td><td><b>클러스터에서 실행</b></td><td><span class="st open">미실행</span></td></tr>
     </tbody>
   </table>
   </div>
-  <figcaption><b class="n">표 6.</b> 검증 실행 두 개입니다. 왜: 이 페이지의 DERIVED-BY-HAND 항목을 CONJECTURE나 PROVEN으로 바꿀 수 있는 유일한 증거이기 때문입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §6</figcaption>
+  <figcaption><b class="n">표 8.</b> 검증 실행 두 개입니다. 왜: 이 페이지의 DERIVED-BY-HAND 항목을 CONJECTURE나 PROVEN으로 바꿀 수 있는 유일한 증거이기 때문입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §6</figcaption>
   </figure>
-  <p class="note">탐색은 이 컴퓨터에서 돌리지 않습니다. 클러스터 제출은 메인 세션이 소유자 승인 후에 합니다. 에이전트는 제출하지 않습니다.</p>
+  <p class="note">탐색은 이 컴퓨터에서 돌리지 않고 클러스터에서 돌립니다.</p>
 
   <div class="two">
     <div class="box col">
@@ -1126,7 +1132,7 @@ td ul,td ol{padding-left:16px;gap:3px}
         <li>최소 타일 수는 결정적 조립(directed self-assembly)인가요, 엄격 조립(strict self-assembly)인가요? 문제의 "uniquely self-assemble"은 결정적 조립이라고 읽었습니다.</li>
         <li>입력 모양은 <a class="t" href="#term-unary">단항(unary)</a> n이나 정렬된 칸 목록인가요, 아니면 n을 이진수로 주나요? 희소성 정리는 이진수 n에서 성립하지 않습니다.</li>
         <li>"시드(seed)가 모서리에 있다"는 네 모서리 중 어느 것이든 된다는 뜻인가요?</li>
-        <li>"Dr. Schwaller"는 Robert Schweller 교수님인가요? 그 교수님은 텍사스 대학교 리오그란데 밸리 캠퍼스(University of Texas Rio Grande Valley, UTRGV) 소속인가요? (확인하지 못한 질문입니다. 사실로 단정하지 않습니다.)</li>
+        <li>"Dr. Schwaller"는 Robert Schweller 교수님인가요? 그 교수님은 텍사스 대학교 리오그란데 밸리 캠퍼스(University of Texas Rio Grande Valley, UTRGV) 소속인가요?</li>
         <li>타일은 회전하지 않고 평행이동만 하나요? (정의에서 읽은 추정입니다.)</li>
         <li>모서리 시드의 "식"은 어떤 꼴인가요? (예: c·√n + O(1) 꼴인가요?)</li>
       </ol>
@@ -1136,7 +1142,7 @@ td ul,td ol{padding-left:16px;gap:3px}
       <ol>
         <li>모델 선택 명시: τ, 결정적 조립, 인코딩</li>
         <li>알려진 경계 표: √n / 2, 4⌈√n⌉ + 2, n + 1</li>
-        <li>정리: 희소성으로 비결정적 다항 시간 완전(nondeterministic polynomial time complete, NP-complete)이 아님 (1순위). 입력은 단항 또는 목록이고 정규화 환원을 포함합니다.</li>
+        <li>정리: 희소성으로 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)이 아님 (1순위). 입력은 단항 또는 목록이고 정규화 환원을 포함합니다.</li>
         <li>정리: 2<sup>O(√n log n)</sup> 알고리즘 (2순위, τ = 2 고정, 단항 또는 목록 입력)</li>
         <li>정리: 약 8배 근사 (5순위). 7배 형태는 카운터가 검증되면</li>
         <li>추측: 모서리로 옮기기 (3순위), 있으면 작은 n 자료 (6순위)</li>
@@ -1171,7 +1177,7 @@ td ul,td ol{padding-left:16px;gap:3px}
   <p>이 문제는 <a class="t" href="#term-mts">최소 타일 집합 문제(Minimum Tileset Problem)</a>의 2×n 직사각형 경우입니다. 2×n은 더 일반적인 <a class="t" href="#term-thin">얇은 직사각형(thin rectangle)</a> k×N에서 k = 2인 경우입니다.</p>
   <div class="three">
     <div class="box col"><h3>조립으로 보면</h3><p class="note">시드 하나에서 시작해 결합이 맞는 타일만 붙입니다. 종단 조립체가 하나뿐이고 그 모양이 2×n이면 성공입니다.</p></div>
-    <div class="box col"><h3>복잡도로 보면</h3><p class="note">일반 모양은 <a class="t" href="#term-npc">비결정적 다항 시간 완전(nondeterministic polynomial time complete, NP-complete)</a>입니다. 정사각형은 다항 시간입니다. 2×n의 정확한 복잡도는 찾지 못했습니다.</p></div>
+    <div class="box col"><h3>복잡도로 보면</h3><p class="note">일반 모양은 <a class="t" href="#term-npc">비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)</a>입니다. 정사각형은 다항 시간입니다. 2×n의 정확한 복잡도는 찾지 못했습니다.</p></div>
     <div class="box col"><h3>설계로 보면</h3><p class="note">길이 n을 세는 <a class="t" href="#term-counter">카운터(counter)</a>를 높이 2에 넣는 문제입니다. 높이가 2라서 이진 카운터는 안 들어가고 밑이 약 √n인 2자리 카운터가 들어갑니다.</p></div>
   </div>
   <figure class="fig" style="margin:0">
@@ -1185,7 +1191,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     </tbody>
   </table>
   </div>
-  <figcaption><b class="n">표 7.</b> 정사각형과 2×n의 비교입니다. 왜: 정사각형은 "후보가 다항식 개"라서 다항 시간인데 2×n에서는 이 이유가 깨지기 때문입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2</figcaption>
+  <figcaption><b class="n">표 9.</b> 정사각형과 2×n의 비교입니다. 왜: 정사각형은 "후보가 다항식 개"라서 다항 시간인데 2×n에서는 이 이유가 깨지기 때문입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2</figcaption>
   </figure>
   <p class="note">정사각형 알고리즘은 전수 탐색입니다. 타일 종류가 O(log n / log log n) 이하인 τ = 2 시스템을 모두 시험합니다. 입력은 칸 목록이라 크기가 약 n²입니다.</p>
 </section>
@@ -1199,7 +1205,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     <li><span class="yr">1982</span><div><b>Mahaney: 희소 집합 정리.</b><p class="note">희소 집합 논증의 원전입니다. 연구 방향 1순위의 근거입니다(<a class="t" href="#term-mahaney">Mahaney 정리</a>, 부분 확인).</p></div></li>
     <li><span class="yr">2000</span><div><b>Rothemund–Winfree: 정사각형의 하한.</b><p class="note">N×N 정사각형에 Ω(log N / log log N)종이 필요합니다. 제목은 기억에 의존해 미확인입니다.</p></div></li>
     <li><span class="yr">2001</span><div><b>Adleman 외: 정사각형의 상한.</b><p class="note">O(log N / log log N)로 맞춥니다. 제목은 미확인입니다.</p></div></li>
-    <li><span class="yr">2002</span><div><b>Adleman 외 (STOC 2002): 조합 최적화 문제.</b><p class="note">최소 타일 집합은 일반적으로 비결정적 다항 시간 완전(nondeterministic polynomial time complete, NP-complete)입니다. 트리와 정사각형에서는 다항 시간입니다. 주어진 시스템이 모양을 유일하게 만드는지의 확인도 다항 시간입니다. 초록만 읽었습니다.</p></div></li>
+    <li><span class="yr">2002</span><div><b>Adleman 외 (STOC 2002): 조합 최적화 문제.</b><p class="note">최소 타일 집합은 일반적으로 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)입니다. 트리와 정사각형에서는 다항 시간입니다. 주어진 시스템이 모양을 유일하게 만드는지의 확인도 다항 시간입니다. 초록만 읽었습니다.</p></div></li>
     <li><span class="yr">2004 / 2005</span><div><b>Aggarwal 외 (Schweller 공저): 일반화 모델의 복잡도.</b><p class="note">얇은 직사각형 k×N의 하한 Ω(N<sup>1/k</sup>/k)와 상한 O(N<sup>1/k</sup> + k)를 냈습니다. 이 문제의 가장 직접적인 선행 연구입니다. SODA 2004 예비판, SIAM J. Comput. 2005.</p></div></li>
     <li><span class="yr">2010</span><div><b>Maňuch–Stacho–Stoll: τ = 1의 두 하한.</b><p class="note">결합 불일치가 없다는 가정 아래 τ = 1 시스템은 (맨해튼 지름 + 1)종 이상이 필요합니다. 검색 요약만 읽었습니다.</p></div></li>
     <li><span class="yr">2010 / 2011</span><div><b>Bryans 외: 비결정성의 힘.</b><p class="note">엄격 모델의 최소 타일 집합은 <a class="t" href="#term-sigma2">Σ₂ᴾ-완전(Σ₂ᴾ-complete)</a>입니다. 결정적 조립(directed self-assembly)과 엄격 조립(strict self-assembly) 정의를 구분해 줍니다. SODA 2011, arXiv 1006.2897.</p></div></li>
@@ -1225,11 +1231,11 @@ td ul,td ol{padding-left:16px;gap:3px}
       <tr><td><a class="t" href="#term-dna">디옥시리보핵산(deoxyribonucleic acid, DNA) 타일 자기조립(DNA tile self-assembly)</a></td><td>실험에서는 타일 종류마다 DNA 가닥을 설계합니다. 그러므로 타일 종류 수는 설계해야 할 가닥 종류 수에 해당합니다.</td><td><span class="st dead">UNVERIFIED</span><br><span class="sm">일반 배경이며 노트에서 확인하지 못함</span></td></tr>
       <tr><td>정사각형의 최소 타일 수 연구</td><td>같은 모델에서 모양 하나를 가장 작은 설계로 만드는 연구의 선례입니다.</td><td><span class="st part">부분 확인</span><br><span class="sm">S-MTS-11, S-MTS-12를 S-MTS-2~4가 인용함</span></td></tr>
       <tr><td>카운터를 이용한 길이 제어</td><td>종류 수를 Θ(√n)으로 줄이는 설계 기법입니다. 길이 1 ... m<sup>k</sup>를 모두 만들 수 있습니다.</td><td><span class="st ok">확인</span><br><span class="sm">S-MTS-2 p.8</span></td></tr>
-      <tr><td>복잡도 이론의 희소 집합 논증</td><td><ul><li>입력 크기가 n에 비례하는 문제에 씁니다.</li><li>이 문제들이 비결정적 다항 시간 완전(nondeterministic polynomial time complete, NP-complete)이 될 수 없음을 보입니다.</li><li>전제: 다항 시간(polynomial time, P)과 비결정적 다항 시간(nondeterministic polynomial time, NP)이 다릅니다.</li></ul></td><td><span class="st part">부분 확인</span><br><span class="sm">S-MTS-7</span></td></tr>
+      <tr><td>복잡도 이론의 희소 집합 논증</td><td><ul><li>입력 크기가 n에 비례하는 문제에 씁니다.</li><li>이 문제들이 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)이 될 수 없음을 보입니다.</li><li>전제: 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 다릅니다.</li></ul></td><td><span class="st part">부분 확인</span><br><span class="sm">S-MTS-7</span></td></tr>
     </tbody>
   </table>
   </div>
-  <figcaption><b class="n">표 8.</b> 응용과 연결 방식의 4행입니다. 왜: 논문에 인용해도 되는 행과 일반 배경에 그치는 행을 가르기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2, §3, §7</figcaption>
+  <figcaption><b class="n">표 10.</b> 응용과 연결 방식의 4행입니다. 왜: 논문에 인용해도 되는 행과 일반 배경에 그치는 행을 가르기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2, §3, §7</figcaption>
   </figure>
   <p class="note">노트는 응용 분야를 따로 조사하지 않았습니다. 첫 행은 일반 배경이라 논문에 쓰기 전에 출처를 찾아야 합니다.</p>
 </section>
@@ -1260,7 +1266,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     <g class="nodes">
       <g><rect x="10" y="40" width="160" height="100"/><text x="20" y="60" class="y">2000</text><text x="20" y="78">Rothemund–Winfree</text><text x="20" y="93">정사각형 하한</text></g>
       <g><rect x="200" y="40" width="160" height="100"/><text x="210" y="60" class="y">2001</text><text x="210" y="78">Adleman 외</text><text x="210" y="93">정사각형 상한</text></g>
-      <g><rect x="390" y="40" width="160" height="100"/><text x="400" y="60" class="y">2002</text><text x="400" y="78">Adleman 외</text><text x="400" y="93">일반: 비결정적 다항</text><text x="400" y="108">시간 완전</text><text x="400" y="123">정사각형: 다항 시간</text></g>
+      <g><rect x="390" y="40" width="160" height="100"/><text x="400" y="60" class="y">2002</text><text x="400" y="78">Adleman 외</text><text x="400" y="93">일반: 비결정 다항</text><text x="400" y="108">시간 완전</text><text x="400" y="123">정사각형: 다항 시간</text></g>
       <g><rect x="580" y="40" width="160" height="100"/><text x="590" y="60" class="y">2011</text><text x="590" y="78">Chen–Doty–Seki</text><text x="590" y="93">정사각형, 모든 τ</text></g>
       <g><rect x="200" y="190" width="160" height="100"/><text x="210" y="210" class="y">2004 / 2005</text><text x="210" y="228">Aggarwal 외</text><text x="210" y="243">k×N 하한과 상한</text><text x="210" y="258">모서리 시드</text></g>
       <g><rect x="390" y="190" width="160" height="100"/><text x="400" y="210" class="y">2018 / 2019</text><text x="400" y="228">Furcy 외</text><text x="400" y="243">τ = 1 얇은 직사각형</text></g>
@@ -1288,7 +1294,7 @@ td ul,td ol{padding-left:16px;gap:3px}
       <tr><td class="num">1982</td><td>Mahaney, "Sparse complete sets for NP: solution of a conjecture of Berman and Hartmanis", JCSS (S-MTS-7)</td><td>희소 집합 정리를 증명(<a class="t" href="#term-mahaney">Mahaney 정리</a>)</td><td>연구 방향 1순위(희소성)의 근거</td><td><span class="st part">부분 확인</span></td></tr>
       <tr><td class="num">2000</td><td>Rothemund, Winfree, STOC 2000 (S-MTS-11)</td><td>N×N 정사각형 하한 Ω(log N / log log N)</td><td>정사각형과 2×n의 대비</td><td><span class="st part">부분 확인</span><br><span class="sm">제목은 기억에 의존해 미확인</span></td></tr>
       <tr><td class="num">2001</td><td>Adleman, Cheng, Goel, Huang, STOC 2001 (S-MTS-12)</td><td>맞는 상한 O(log N / log log N)</td><td>정사각형과 2×n의 대비</td><td><span class="st part">부분 확인</span><br><span class="sm">제목은 기억에 의존해 미확인</span></td></tr>
-      <tr><td class="num">2002</td><td>Adleman, Cheng, Goel, Huang, Kempe, Moisset de Espanés, Rothemund, "Combinatorial optimization problems in self-assembly", STOC 2002, pp. 23–32 (S-MTS-1)</td><td><ul><li>일반 모양은 비결정적 다항 시간 완전(nondeterministic polynomial time complete, NP-complete)입니다.</li><li>트리와 정사각형은 다항 시간입니다.</li><li>검증도 다항 시간입니다.</li></ul></td><td>이 문제의 정의가 나온 곳이고 R1의 후보 검사를 줍니다.</td><td><span class="st part">부분 확인</span><br><span class="sm">초록만 읽음</span></td></tr>
+      <tr><td class="num">2002</td><td>Adleman, Cheng, Goel, Huang, Kempe, Moisset de Espanés, Rothemund, "Combinatorial optimization problems in self-assembly", STOC 2002, pp. 23–32 (S-MTS-1)</td><td><ul><li>일반 모양은 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)입니다.</li><li>트리와 정사각형은 다항 시간입니다.</li><li>검증도 다항 시간입니다.</li></ul></td><td>이 문제의 정의가 나온 곳이고 R1의 후보 검사를 줍니다.</td><td><span class="st part">부분 확인</span><br><span class="sm">초록만 읽음</span></td></tr>
       <tr><td class="num">2004 / 2005</td><td>Aggarwal, Cheng, Goldwasser, Kao, Moisset de Espanés, Schweller, "Complexities for generalized models of self-assembly", SIAM J. Comput. 2005 (S-MTS-2)</td><td>정리(Theorem) 3.1 하한, 정리(Theorem) 3.2 카운터 구성, 모서리 시드</td><td><b>가장 직접적인 선행 연구</b>. 하한 √n / 2와 상한 4⌈√n⌉ + 2의 출처</td><td><span class="st ok">확인</span><br><span class="sm">전문 pp. 1–8</span></td></tr>
       <tr><td class="num">2010</td><td>Maňuch, Stacho, Stoll, "Two lower bounds for self-assemblies at temperature 1", J. Comput. Biol. 17(6) (S-MTS-6)</td><td>결합 불일치가 없다는 가정 아래 (맨해튼 지름 + 1)종 이상</td><td>τ = 1에서 n + 1이 정확하다는 조건부 결과</td><td><span class="st part">부분 확인</span><br><span class="sm">검색 요약만</span></td></tr>
       <tr><td class="num">2011</td><td>Bryans, Chiniforooshan, Doty, Kari, Seki, "The power of nondeterminism in self-assembly", SODA 2011 (S-MTS-3)</td><td>엄격 모델 Σ₂ᴾ-완전, 두 정의의 구분</td><td>출제문의 "uniquely self-assemble"이 어느 정의인지 판단하는 기준</td><td><span class="st ok">확인</span><br><span class="sm">pp. 1–5</span></td></tr>
@@ -1300,7 +1306,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     </tbody>
   </table>
   </div>
-  <figcaption><b class="n">표 9.</b> 논문 12편의 연도, 서지, 내용, 연결, 확인 상태입니다(확인 4편, 부분 확인 6편, 미확인 2편). 왜: 어떤 논문이 어느 부분의 근거인지 인용 전에 확인하기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §7</figcaption>
+  <figcaption><b class="n">표 11.</b> 논문 12편의 연도, 서지, 내용, 연결, 확인 상태입니다(확인 4편, 부분 확인 6편, 미확인 2편). 왜: 어떤 논문이 어느 부분의 근거인지 인용 전에 확인하기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §7</figcaption>
   </figure>
 </section>
 
@@ -1312,7 +1318,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     <div class="box col">
       <h3>이미 알려진 것</h3>
       <ul>
-        <li>일반 모양은 비결정적 다항 시간 완전(nondeterministic polynomial time complete, NP-complete)입니다.</li><li>트리와 정사각형은 다항 시간입니다.</li>
+        <li>일반 모양은 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)입니다.</li><li>트리와 정사각형은 다항 시간입니다.</li>
         <li>k×N 얇은 직사각형의 경계: 하한 Ω(N<sup>1/k</sup>/k)와 상한 O(N<sup>1/k</sup> + k) (τ = 2).</li>
         <li>하한은 시드가 어디에 있든 성립합니다.</li>
         <li>τ = 1에서는 Ω(N<sup>1/k</sup>) ≤ t ≤ N + k − 1입니다.</li>
@@ -1362,7 +1368,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     </tbody>
   </table>
   </div>
-  <figcaption><b class="n">표 10.</b> 출처 12건의 링크와 읽은 범위입니다. 왜: 어느 주장이 전문을 읽고 쓴 것이고 어느 주장이 요약만 본 것인지 가르기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §7</figcaption>
+  <figcaption><b class="n">표 12.</b> 출처 12건의 링크와 읽은 범위입니다. 왜: 어느 주장이 전문을 읽고 쓴 것이고 어느 주장이 요약만 본 것인지 가르기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §7</figcaption>
   </figure>
 </section>
 
@@ -1392,9 +1398,9 @@ td ul,td ol{padding-left:16px;gap:3px}
     <li id="term-strict"><b>엄격 조립(strictly self-assemble)</b>: 모든 종단 조립체의 모양이 목표인 경우. 실행마다 같은 자리에 다른 타일이 놓일 수 있음</li>
     <li id="term-tilecomplexity"><b>타일 복잡도(tile complexity)</b>: 모양을 유일하게 조립하는 데 필요한 최소 타일 종류 수</li>
     <li id="term-mts"><b>최소 타일 집합 문제(Minimum Tileset Problem)</b>: 모양을 입력받아 그것을 유일하게 조립하는 최소 타일 종류 수를 출력하는 문제</li>
-    <li id="term-npc"><b>비결정적 다항 시간 완전(nondeterministic polynomial time complete, NP-complete)</b>: 비결정적 다항 시간(nondeterministic polynomial time, NP) 부류에 속하고, 그 부류의 모든 문제만큼 어려운 문제</li>
-    <li id="term-np"><b>비결정적 다항 시간(nondeterministic polynomial time, NP)</b>: 답을 다항 시간에 확인할 수 있는 결정 문제의 부류</li>
-    <li id="term-nph"><b>비결정적 다항 시간 어려움(nondeterministic polynomial time hard, NP-hard)</b>: 비결정적 다항 시간 부류의 모든 문제만큼 어렵거나 더 어려운 문제</li>
+    <li id="term-npc"><b>비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)</b>: 비결정 다항 시간(nondeterministic polynomial time, NP) 부류에 속하고, 그 부류의 모든 문제만큼 어려운 문제</li>
+    <li id="term-np"><b>비결정 다항 시간(nondeterministic polynomial time, NP)</b>: 답을 다항 시간에 확인할 수 있는 결정 문제의 부류</li>
+    <li id="term-nph"><b>비결정 다항 시간 어려움(nondeterministic polynomial-time hard, NP-hard)</b>: 비결정 다항 시간 부류의 모든 문제만큼 어렵거나 더 어려운 문제</li>
     <li id="term-thin"><b>얇은 직사각형(thin rectangle)</b>: 높이 k가 작고 길이 N이 긴 k×N 직사각형. 2×n은 k = 2</li>
     <li id="term-counter"><b>카운터(counter)</b>: 열을 따라 자릿수 값을 올리거나 내려 길이를 센 뒤 멈추는 타일 설계. 높이 k면 k자리, 밑 m = ⌈N<sup>1/k</sup>⌉</li>
     <li id="term-pumping"><b>펌핑(pumping)</b>: 같은 상태가 두 번 나온 사이의 구간을 되풀이해 끝없이 긴 조립체를 만드는 논증</li>
@@ -1405,15 +1411,15 @@ td ul,td ol{padding-left:16px;gap:3px}
     <li id="term-digitglue"><b>자릿수 결합(digit glue)</b>: 카운터에서 자릿수 값 d마다 이름이 다른 결합 δ_d. 한 이름을 같이 쓰면 두 타일이 같은 칸에 맞아 결정적이지 않게 됨</li>
     <li id="term-cond"><b>조건부 증명(PROVEN-conditional)</b>: 가정 아래에서 증명된 결과. 여기서는 결합 불일치가 없다는 가정 아래 τ = 1의 정확히 n + 1</li>
     <li id="term-unary"><b>단항(unary) 인코딩</b>: 수 n을 1이 n개인 문자열로 쓰는 방식. 입력 길이가 n에 비례함</li>
-    <li id="term-normred"><b>정규화 환원(normalization reduction)</b>: 같은 모양의 여러 인코딩을 하나의 표준형으로 바꾸는 다항 시간 변환</li>
+    <li id="term-normred"><b>정규화 환원(normalization reduction)</b>: 같은 모양의 여러 인코딩을 하나의 정규형으로 바꾸는 다항 시간 변환</li>
     <li id="term-sparse"><b>희소 집합(sparse set)</b>: 길이 L인 원소의 수가 L의 다항식 이하인 집합</li>
-    <li id="term-mahaney"><b>Mahaney 정리(Mahaney's theorem)</b>: 희소 집합이 비결정적 다항 시간 완전(nondeterministic polynomial time complete, NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P) = 비결정적 다항 시간(nondeterministic polynomial time, NP). 정규화 환원 논증은 비결정적 다항 시간 어려움(nondeterministic polynomial time hard, NP-hard) 형태를 쓴다. 이 형태는 다대일 다항 시간 환원을 쓴다</li>
+    <li id="term-mahaney"><b>Mahaney 정리(Mahaney's theorem)</b>: 희소 집합이 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P) = 비결정 다항 시간(nondeterministic polynomial time, NP)</li>
     <li id="term-bigo"><b>O, Ω, Θ 표기(big-O, Omega, Theta notation)</b>: 위에서 막음(상한), 아래서 막음(하한), 양쪽에서 막는 증가율의 표기</li>
     <li id="term-polytime"><b>다항 시간(polynomial time, P)</b>: 입력 크기의 다항식으로 계산 시간이 묶이는 알고리즘. 그런 문제의 부류를 P라 부름</li>
     <li id="term-subexp"><b>부분지수 시간(subexponential time)</b>: 2<sup>n</sup>보다는 작고 다항식보다는 큰 계산 시간. 여기서는 2<sup>O(√n log n)</sup></li>
     <li id="term-manhattan"><b>맨해튼 지름(Manhattan diameter)</b>: 모양 안 두 칸 사이 가로와 세로 이동 거리의 최댓값. 정의가 같은지는 원문 확인 필요(S-MTS-6)</li>
     <li id="term-mismatch"><b>결합 불일치(glue mismatch)</b>: 맞닿은 두 변의 결합 라벨이 서로 다른 상태</li>
-    <li id="term-sigma2"><b>Σ₂ᴾ-완전(Σ₂ᴾ-complete)</b>: 비결정적 다항 시간(nondeterministic polynomial time, NP)보다 한 층 위인 다항 계층(polynomial hierarchy)의 완전 문제</li>
+    <li id="term-sigma2"><b>Σ₂ᴾ-완전(Σ₂ᴾ-complete)</b>: 비결정 다항 시간(nondeterministic polynomial time, NP)보다 한 층 위인 다항 계층(polynomial hierarchy)의 완전 문제</li>
     <li id="term-dna"><b>디옥시리보핵산(deoxyribonucleic acid, DNA) 타일 자기조립(DNA tile self-assembly)</b>: DNA 가닥으로 만든 타일이 스스로 붙어 구조를 이루는 실험 분야</li>
     <li id="term-state"><b>상태(state)</b>: 세로 열 하나의 위 타일, 아래 타일, 붙은 순서의 묶음. 상태가 같은 두 열 사이는 복사할 수 있음 (증명: [S-MTS-2] 정리 3.1)</li>
     <li id="term-block"><b>블록(block)</b>: 카운터에서 m개 열의 묶음. 위 행의 자릿수 d가 블록마다 하나씩 줄어듦</li>

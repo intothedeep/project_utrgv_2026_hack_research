@@ -62,9 +62,9 @@ m, D     카운터 구성의 한 블록 열 수와 블록 수
 
 | 결과 | 설정 | 상태 | 출처 |
 | --- | --- | --- | --- |
-| 일반 모양의 최소 타일 집합: [비결정 다항 시간 완전(NP-complete)](#term-np-complete) | [결정적 조립(directed self-assembly)](#term-directed), 유한 모양 | ✅ 증명됨 | [S-MTS-1] 초록 |
+| 일반 모양의 최소 타일 집합: [비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)](#term-np-complete) | [결정적 조립(directed self-assembly)](#term-directed), 유한 모양 | ✅ 증명됨 | [S-MTS-1] 초록 |
 | 정사각형 N×N: [다항 시간(polynomial time, P)](#term-poly) | 결정적 조립, τ = 2 | ✅ 증명됨 | [S-MTS-1], [S-MTS-4] 2쪽 |
-| [엄격 조립(strict self-assembly)](#term-strict)의 최소 타일 집합: [Σ2^P-완전(Σ2^P-complete)](#term-sigma2) | 단일 [시드(seed)](#term-seed) 타일, τ = 2 | ✅ 증명됨 | [S-MTS-3] |
+| [엄격 조립(strict self-assembly)](#term-strict)의 최소 타일 집합: [다항 계층 2층 완전(second-level polynomial-hierarchy complete, Σ2^P-complete)](#term-sigma2) | 단일 [시드(seed)](#term-seed) 타일, τ = 2 | ✅ 증명됨 | [S-MTS-3] |
 | 결정적 조립 검증: 다항 시간(polynomial time, P) | 표준 모델 | ✅ 증명됨 | [S-MTS-1], [S-MTS-2] |
 | k×N 직사각형, k ≥ 2, 정사각형 아님: 정확한 복잡도 | 모든 설정 | 🔴 찾은 결과 없음 | 검색 기록 |
 
@@ -175,13 +175,13 @@ c는 1/2과 2√3 ≈ 3.46 사이다.
 
 | 순위 | 방향 | 지원하는 주장 | 위험 | 상태 |
 | --- | --- | --- | --- | --- |
-| 1 | **희소성으로 비결정 다항 시간 완전(NP-complete) 배제.** n을 [단항(unary)](#term-unary)으로 주거나 정렬된 칸 목록(Θ(n log n) 비트)으로 준다. 그러면 입력 길이마다 k 값이 O(n)개, 시드 칸 s가 O(n)개다. 그래서 언어가 [희소 집합(sparse set)](#term-sparse)이다. [Mahaney 정리(Mahaney's theorem)](#term-mahaney)는 다음과 같다. 희소 집합이 비결정 다항 시간 완전(NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 같다 [S-MTS-7]. 정렬 안 된 칸 목록은 같은 모양의 인코딩이 (2n)!개라 그대로는 희소하지 않다. 이때 [정규화 환원(normalization reduction)](#term-normred)을 더한다. 이 환원은 아무 인코딩을 정규형 ⟨1^n, s, k⟩로 보낸다. 정규형의 k와 s는 단항이나 고정 폭으로 쓴다. k ≥ n + 1인 입력은 모두 고정된 예 입력(yes-instance)으로 보낸다. 빗이 [최적값(optimum, OPT)](#term-optimum) ≤ n + 1을 주기 때문이다. 이진수 k는 희소하지 않다. 직사각형이 아닌 입력은 고정된 아니오 입력(no-instance)으로 보낸다 | "2×n 최소 타일 집합은 비결정 다항 시간 완전(NP-complete)이 아니다." 어떤 시드 규칙에서도 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 다르면 그렇다 | 낮음. 인코딩을 명시해야 한다. n을 이진수로 주면 희소하지 않아 논증이 무너진다. 비결정 다항 시간(nondeterministic polynomial time, NP) 소속에는 τ를 고정하거나 세기를 제한해야 한다 | 🟡 짧고 엄밀한 정리 후보. 출처는 부분 확인 |
+| 1 | **희소성으로 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete) 배제.** n을 [단항(unary)](#term-unary)으로 주거나 정렬된 칸 목록(Θ(n log n) 비트)으로 준다. 그러면 입력 길이마다 k 값이 O(n)개, 시드 칸 s가 O(n)개다. 그래서 언어가 [희소 집합(sparse set)](#term-sparse)이다. [Mahaney 정리(Mahaney's theorem)](#term-mahaney)는 다음과 같다. 희소 집합이 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 같다 [S-MTS-7]. 정렬 안 된 칸 목록은 같은 모양의 인코딩이 (2n)!개라 그대로는 희소하지 않다. 이때 [정규화 환원(normalization reduction)](#term-normred)을 더한다. 이 환원은 아무 인코딩을 정규형 ⟨1^n, s, k⟩로 보낸다. 정규형의 k와 s는 단항이나 고정 폭으로 쓴다. k ≥ n + 1인 입력은 모두 고정된 예 입력(yes-instance)으로 보낸다. 빗이 [최적값(optimum, OPT)](#term-optimum) ≤ n + 1을 주기 때문이다. 정규형에 쓰는 이진수 k는 희소하지 않다. 입력의 k는 이진수여도 된다. 환원이 k를 단항이나 고정 폭으로 다시 쓴다. 직사각형이 아닌 입력은 고정된 아니오 입력(no-instance)으로 보낸다 | "2×n 최소 타일 집합은 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)이 아니다." 어떤 시드 규칙에서도 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 다르면 그렇다 | 낮음. 인코딩을 명시해야 한다. n을 이진수로 주면 희소하지 않아 논증이 무너진다. 비결정 다항 시간(nondeterministic polynomial time, NP) 소속에는 τ를 고정하거나 세기를 제한해야 한다 | 🟡 짧고 엄밀한 정리 후보. 출처는 부분 확인 |
 | 2 | **[부분지수 시간(subexponential time)](#term-subexp) 알고리즘.** 고정 τ = 2에서 타일 종류 4⌈√n⌉ + 2개 이하인 모든 시스템을 나열한다. 후보는 2^{O(√n log n)}개다. 각 후보를 [다항 시간(polynomial time, P)](#term-poly) 검증 [S-MTS-1]으로 확인한다. 시드 칸이 입력으로 고정되면 순위 5의 두 팔 상한까지 찾는다. 그 상한은 4⌈√a⌉ + 4⌈√b⌉ + O(1)이다. 4⌈√n⌉ + 2는 모서리 시드에서만 증명되었다 | "2^{O(√n log n)} 시간에 풀린다". 고정 τ = 2이고 입력이 단항 n 또는 칸 목록일 때만이다. 순위 1과 짝이 맞다 | 낮음. 이진수 입력에서는 입력 길이가 log n이라 부분지수가 아니다. τ = 1은 상한이 n + 1뿐이라 같은 나열이 2^{O(n log n)}이다 | 🟡 |
 | 3 | **모서리로 일반성을 잃지 않는다는 보조정리 ([교환 논증(exchange argument)](#term-exchange)).** 안쪽 시드의 최적 시스템이 타일 종류 수를 늘리지 않고 모서리 시드 시스템으로 바뀜을 보인다. 그러면 일반 경우가 모서리 공식과 같다. 그 경우는 다항 시간(polynomial time, P)에 풀린다 | 열린 경우를 닫는다 | 높음. 두 팔이 타일을 공유하면 거짓일 수 있다 | 🔴 |
 | 4 | **시드 위치 분해.** [최적값(optimum, OPT)](#term-optimum)을 모든 s에 대한 f(s − 1, n − s)의 최솟값으로 쓴다. f는 타일 공유를 허용한 두 팔의 비용이다. f의 닫힌 식이 있으면 O(n) 시간 알고리즘이 된다 | f를 조건으로 한 다항 시간(polynomial time, P) 알고리즘 | 중간에서 높음 | 🔴 |
 | 5 | **상수 배 근사.** 시드를 풀이의 일부로 고르는 경우를 본다. [S-MTS-2]의 모서리 구성(4⌈√n⌉ + 2, 증명됨)을 하한 √n / 2와 견준다. 비율은 약 8로 간다 (작은 n에서 약 11 이하). "7배"(3.46 / 0.5)는 손 카운터를 쓰는 점근 값이다. 이 값은 n = 1 + m·D에만 쓸 수 있다. 시드 칸이 입력으로 고정된 경우를 본다. 서쪽으로 자라는 카운터 하나와 동쪽으로 자라는 거울 카운터 하나를 시드 열에서 잇는다. 두 카운터는 라벨을 서로 다르게 쓴다. 타일 종류는 4√2·√n + O(1) 이하다. 비율은 약 8√2 ≈ 11.3이다. 시드 칸이 위 줄이면 위아래로도 뒤집는다 | "약 8-근사 (시드 자유, [S-MTS-2])". "7배 (n = 1 + m·D, 손 카운터)". "약 8√2배 (시드 칸 고정)" | 낮음. 고정 시드는 [S-MTS-2]의 카운터가 팔 길이 1..m²를 모두 다룬다는 논문 주장에 기댄다. 이 주장은 재확인하지 않았다 | 🟡 |
 | 6 | **작은 n의 정확한 표를 클러스터로 얻는다.** n ≤ 8에서 모서리 최적과 안쪽 최적을 비교한다 | 순위 3의 찬반 증거 | 클러스터 실행과 소유자 동의 필요 | 🟡 |
-| 7 | **어려움 증명.** 2×n이 비결정 다항 시간 완전(NP-complete)이라는 증명이다. 단항 인코딩과 칸 목록 인코딩에서 순위 1이 막는다 | 권장하지 않음 | 매우 높음 | 🔴 |
+| 7 | **어려움 증명.** 2×n이 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)이라는 증명이다. 단항 n 또는 정렬된 칸 목록 인코딩에서 순위 1이 막는다 | 권장하지 않음 | 매우 높음 | 🔴 |
 
 현실적인 24시간 논문 (추정): 순위 1과 2를 정리로 쓴다.
 순위 5의 8배 형태는 [S-MTS-2]만 있으면 정리로 쓴다.
@@ -217,8 +217,8 @@ R1의 방법은 다음과 같다.
 
 n ≤ 6에서는 빗 n + 1이 찾은 최선 구성이다. 카운터는 큰 n에서만 이득이다 (추정).
 
-이 계산은 전수 탐색이다. 이 머신 규칙상 로컬에서 돌리지 않는다.
-메인 세션만 제출한다. 에이전트는 작업 스크립트를 쓰고 넘긴다.
+이 계산은 전수 탐색이다. 로컬에서 돌리지 않는다.
+클러스터에 소유자 승인 뒤에 제출한다.
 
 ---
 
@@ -258,10 +258,10 @@ n ≤ 6에서는 빗 n + 1이 찾은 최선 구성이다. 카운터는 큰 n에�
 - **다항 시간(polynomial time, P)**: 입력 크기의 다항식으로 늘어나는 계산 시간. 그 시간에 풀리는 문제의 부류도 가리킨다.
 
 <a id="term-np-complete"></a>
-- **비결정 다항 시간 완전(NP-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP) 부류에 속한다. 그 부류의 모든 문제를 이 문제로 바꿀 수 있다.
+- **비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP) 부류에 속한다. 그 부류의 모든 문제를 이 문제로 바꿀 수 있다.
 
 <a id="term-sigma2"></a>
-- **Σ2^P-완전(Σ2^P-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP)보다 한 층 위 부류의 가장 어려운 문제군.
+- **다항 계층 2층 완전(second-level polynomial-hierarchy complete, Σ2^P-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP)보다 한 층 위 부류의 가장 어려운 문제군.
 
 <a id="term-subexp"></a>
 - **부분지수 시간(subexponential time)**: 2^n보다 작고 다항식보다 큰 계산 시간. 여기서는 2^{O(√n log n)}.
@@ -273,13 +273,13 @@ n ≤ 6에서는 빗 n + 1이 찾은 최선 구성이다. 카운터는 큰 n에�
 - **희소 집합(sparse set)**: 길이 L인 원소의 수가 L의 다항식 이하인 집합.
 
 <a id="term-mahaney"></a>
-- **Mahaney 정리(Mahaney's theorem)**: 다음 정리다. 희소 집합이 비결정 다항 시간 완전(NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 같다.
+- **Mahaney 정리(Mahaney's theorem)**: 다음 정리다. 희소 집합이 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 같다.
 
 <a id="term-unary"></a>
 - **단항(unary) 인코딩**: 수 n을 1이 n개인 문자열로 쓰는 방식. 입력 길이가 n에 비례한다.
 
 <a id="term-normred"></a>
-- **정규화 환원(normalization reduction)**: 어떤 인코딩이든 표준형 ⟨1^n, s, k⟩로 바꾸는 다항 시간 변환.
+- **정규화 환원(normalization reduction)**: 어떤 인코딩이든 정규형 ⟨1^n, s, k⟩로 바꾸는 다항 시간 변환.
 
 <a id="term-directed"></a>
 - **결정적 조립(directed self-assembly)**: 종단 조립체가 정확히 하나이고 그 모양이 목표 모양인 경우.

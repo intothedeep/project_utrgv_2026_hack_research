@@ -34,14 +34,14 @@
    - 안쪽 시드의 상한 O(√n)은 손 유도다.
    - 상한은 빗 n + 1과 두 팔 카운터 4√2·√n + O(1)이다.
    - 안쪽 시드의 정확한 값은 열려 있다.
-2. **희소성 정리.** 2×n 최소 타일 집합은 [비결정 다항 시간 완전(NP-complete)](#term-np-complete)이 아니다.
+2. **희소성 정리.** 2×n 최소 타일 집합은 [비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)](#term-np-complete)이 아니다.
    - 단, 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 다를 때다.
    - 쓰는 도구: [희소 집합(sparse set)](#term-sparse)과 [Mahaney 정리(Mahaney's theorem)](#term-mahaney).
    - 성립하는 인코딩: [단항(unary)](#term-unary) n 또는 정렬된 칸 목록.
    - 정렬 안 된 칸 목록은 [정규화 환원(normalization reduction)](#term-normred)이 필요하다.
    - 정규형 ⟨1^n, s, k⟩의 k와 s는 단항이나 고정 폭으로 쓴다.
    - k ≥ n + 1인 입력은 모두 고정된 예 입력(yes-instance)으로 보낸다.
-   - 이진수 n과 이진수 k에서는 실패한다.
+   - 이진수 n에서는 실패한다. 입력의 k는 이진수여도 된다. 환원이 k를 단항이나 고정 폭으로 다시 쓴다.
    - 인코딩을 논문에 명시한다. 상태는 스케치다.
 3. **[부분지수 시간(subexponential time)](#term-subexp) 알고리즘.** 고정 τ = 2에서 2^{O(√n log n)} 시간이다.
    - 입력은 단항 n 또는 칸 목록이다.
@@ -61,7 +61,7 @@
 | 18:30–19:00 | 출제자 질문 정리와 전송 (아래 목록). 모델 선택을 임시로 고정: τ = 2, [결정적 조립(directed self-assembly)](#term-directed), 칸 목록 입력 | 질문 전송, 임시 가정 메모 |
 | 19:00–21:00 | 희소성 정리(방향 1)의 증명을 손으로 쓴다. 인코딩 명시 | 손으로 쓴 증명 1쪽 |
 | 21:00–23:00 | 부분지수 알고리즘(방향 2)과 하한, 상한 표를 정리한다. 빗 구성(F3) 확인 | 정리 문장과 표 초안 |
-| 23:00–01:00 | R1의 작업 스크립트를 쓴다. R2(선택)도 쓴다. **실행은 클러스터에서**, 제출은 메인 세션 | 스크립트 한두 개 |
+| 23:00–01:00 | R1의 작업 스크립트를 쓴다. R2(선택)도 쓴다. **실행은 클러스터에서**, 제출은 소유자 승인 뒤 | 스크립트 한두 개 |
 | 01:00–03:00 | R1·R2 결과가 오면 표를 채우고 그림을 그린다. 결과가 없으면 "미확인"으로 둔다 | 작은 n 표, 그림 1–2개 |
 | 03:00–06:00 | 2쪽 논문 집필 | 컴파일되는 초안 |
 | 06:00–08:30 | 교정. 증명과 수치 재확인. Overleaf 링크 제출 | Discord #submissions 게시 |
@@ -101,7 +101,7 @@ min_tileset/
 ```
 
 - 로컬에서는 코드를 쓰기만 한다. 탐색과 시뮬레이션은 돌리지 않는다.
-- 클러스터 작업의 제출과 회수는 메인 세션만 한다.
+- 클러스터 작업의 제출과 회수는 소유자 승인 뒤에 한다.
 - 그림과 표는 저장된 결과에서만 만든다. 숫자를 손으로 옮기지 않는다.
 - R1의 출력은 n, 시드 위치, 최소 타일 종류 수, 증인 타일 집합 하나다.
 - R2의 출력은 결정적 조립 여부와 종단 모양이다.
@@ -112,7 +112,7 @@ min_tileset/
 2. 최소 타일 수는 [결정적 조립(directed self-assembly)](#term-directed)인가요, [엄격 조립(strict self-assembly)](#term-strict)인가요? 문제의 "uniquely self-assemble"은 결정적 조립이라고 읽었습니다.
 3. 입력 모양은 단항(unary) n이나 정렬된 칸 목록인가요, 아니면 n을 이진수로 주나요? 희소성 정리는 이진수 n에서 성립하지 않습니다.
 4. "[시드(seed)](#term-seed)가 모서리에 있다"는 네 모서리 중 어느 것이든 된다는 뜻인가요?
-5. "Dr. Schwaller"는 Robert Schweller 교수님인가요? 그 교수님은 텍사스 대학교 리오그란데 밸리 캠퍼스(University of Texas Rio Grande Valley, UTRGV) 소속인가요? (확인하지 못한 질문입니다. 사실로 단정하지 않습니다.)
+5. "Dr. Schwaller"는 Robert Schweller 교수님인가요? 그 교수님은 텍사스 대학교 리오그란데 밸리 캠퍼스(University of Texas Rio Grande Valley, UTRGV) 소속인가요?
 6. 타일은 회전하지 않고 평행이동만 하나요? (정의에서 읽은 추정입니다.)
 7. 모서리 시드의 "식"은 어떤 꼴인가요? (예: c·√n + O(1) 꼴인가요?)
 
@@ -127,19 +127,19 @@ min_tileset/
 - **다항 시간(polynomial time, P)**: 입력 크기의 다항식으로 늘어나는 계산 시간. 그 시간에 풀리는 문제의 부류도 가리킨다.
 
 <a id="term-np-complete"></a>
-- **비결정 다항 시간 완전(NP-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP) 부류에 속한다. 그 부류의 모든 문제를 이 문제로 바꿀 수 있다.
+- **비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP) 부류에 속한다. 그 부류의 모든 문제를 이 문제로 바꿀 수 있다.
 
 <a id="term-sparse"></a>
 - **희소 집합(sparse set)**: 길이 L인 원소의 수가 L의 다항식 이하인 집합.
 
 <a id="term-mahaney"></a>
-- **Mahaney 정리(Mahaney's theorem)**: 다음 정리다. 희소 집합이 비결정 다항 시간 완전(NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 같다.
+- **Mahaney 정리(Mahaney's theorem)**: 다음 정리다. 희소 집합이 비결정 다항 시간 완전(nondeterministic polynomial-time complete, NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 같다.
 
 <a id="term-unary"></a>
 - **단항(unary) 인코딩**: 수 n을 1이 n개인 문자열로 쓰는 방식. 입력 길이가 n에 비례한다.
 
 <a id="term-normred"></a>
-- **정규화 환원(normalization reduction)**: 어떤 인코딩이든 표준형 ⟨1^n, s, k⟩로 바꾸는 다항 시간 변환.
+- **정규화 환원(normalization reduction)**: 어떤 인코딩이든 정규형 ⟨1^n, s, k⟩로 바꾸는 다항 시간 변환.
 
 <a id="term-subexp"></a>
 - **부분지수 시간(subexponential time)**: 2^n보다 작고 다항식보다 큰 계산 시간. 여기서는 2^{O(√n log n)}.
