@@ -4,119 +4,211 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>세 직선 최소 원 학습 팁</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500&display=swap">
 <style>
-/* 레이아웃: 학습 노트. 넓은 단일 열, 가운데에 3D 탐색기, 아래에 참고 표. */
-:root{
-  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#18202C; --muted:#5A6577; --rule:#D6DCE5;
-  --accent:#2C55B8; --accent-soft:#E3EAF8;
-  --l1:#C73E52; --l2:#1F8A7E; --l3:#C98515; --circle:#6A45B3; --sphere:#8C97A8;
-  --ok:#1E7F4F; --ok-soft:#E1F2E8; --warn:#9A6700; --warn-soft:#FBF0D5; --bad:#A8323E; --bad-soft:#F8E2E4;
-  --canvas:#FBFCFD;
-  --f-display:"Noto Serif KR", "Apple SD Gothic Neo", Georgia, serif;
-  --f-body:"Noto Sans KR", "Apple SD Gothic Neo", -apple-system, "Segoe UI", system-ui, sans-serif;
-  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+/* html-theme: the one theme for HTML output (rules/answering.md §3).
+   Light tokens: ported from the owner's earlier web project's globals.css
+   (shadcn neutral, achromatic, radius 0, whole-UI IBM Plex Mono).
+   Dark tokens: added 2026-10-02 in the same achromatic family; the source had no dark theme. */
+
+:root {
+    --radius: 0;
+
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.55 0 0);
+    --rule: oklch(0.9 0 0);          /* hairlines and chart grid; the source --border is too strong for grids */
+    --ring: oklch(0.45 0 0);
+
+    /* signal colours carry meaning, not decoration */
+    --signal-instruction: #d40000;   /* an instruction / something the reader must act on */
+    --signal-plan: #0432ff;          /* a plan / a pre-registered line */
+    --signal-flag-fill: #fff3a0;     /* a highlighted cell or row */
+    --signal-flag-line: #e6d24a;
+    --signal-dead-fill: #e4e4e2;     /* retired, skipped, out of scope */
+    --signal-dead-ink: oklch(0.53 0.01 260);
+
+    /* Plex Mono has no Hangul; Korean falls through to Plex Sans KR */
+    --font: "IBM Plex Mono", "IBM Plex Sans KR", ui-monospace, "SF Mono", Menlo, monospace;
 }
-@media (prefers-color-scheme: dark){ :root{
-  --bg:#11151C; --surface:#181E27; --ink:#E4E9F0; --muted:#97A2B3; --rule:#2B3442;
-  --accent:#86A6F2; --accent-soft:#1F2B44;
-  --l1:#F07A8B; --l2:#4CC7B7; --l3:#F0B54F; --circle:#B99BF2; --sphere:#7D889A;
-  --ok:#5CC98E; --ok-soft:#173326; --warn:#E8B64C; --warn-soft:#3A2F14; --bad:#F08591; --bad-soft:#3A1C21;
-  --canvas:#141922; color-scheme:dark;
-}}
-*{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65;margin:0;word-break:keep-all}
-.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 64px;display:flex;flex-direction:column;gap:44px}
-h1,h2,h3{font-family:var(--f-display);font-weight:700;text-wrap:balance;margin:0;line-height:1.3}
-h1{font-size:clamp(26px,4vw,38px)}
-h2{font-size:23px}
-h3{font-size:17px}
-p{margin:0;max-width:70ch}
-.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-code,.mono{font-family:var(--f-mono);font-size:.92em}
-section{display:flex;flex-direction:column;gap:16px}
+
+* { box-sizing: border-box; border-radius: var(--radius); }
+body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font);
+    font-feature-settings: "cv11", "ss01";
+    font-size: 14px;
+    line-height: 1.6;
+    padding-inline: 16px;
+    padding-block: 32px 64px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1 { font-size: 24px; line-height: 1.3; font-weight: 700; margin: 0; text-wrap: balance; }
+h2 { font-size: 17px; font-weight: 500; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.muted { color: var(--muted-foreground); }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+.panel { background: var(--card); color: var(--card-foreground); border: 1px solid var(--border); padding: 16px; }
+.scroll-x { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
+th { font-weight: 500; color: var(--muted-foreground); }
+th:first-child, td:first-child { text-align: left; }
+.flag { background: var(--signal-flag-fill); box-shadow: inset 2px 0 0 var(--signal-flag-line); }
+.instruction { color: var(--signal-instruction); }
+.plan { color: var(--signal-plan); }
+.dead { background: var(--signal-dead-fill); color: var(--signal-dead-ink); }
+button { font: inherit; padding: 4px 12px; border: 1px solid var(--border); background: var(--card); color: var(--foreground); cursor: pointer; }
+button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+svg text { fill: var(--muted-foreground); font-family: var(--font); font-size: 11px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+/* 차트 계열색: 페이지가 정한다. 신호색(빨강, 파랑, 노랑, 회색 채움)과 겹치지 않는다. */
+:root{
+  --series-l1:#0e7490; --series-l2:#b45309; --series-l3:#4d7c0f;
+  --series-circle:#a21caf; --series-sphere:#6b7280;
+}
+/* 페이지 레이아웃 */
+body{word-break:keep-all}
+section,.stepbox{display:flex;flex-direction:column;gap:16px}
+.stepbox{border-top:6px solid var(--foreground);padding-top:12px;scroll-margin-top:60px}
+.stepno{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+[hidden]{display:none!important}
+.subtabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border)}
+.subtabs button{font-size:13px;font-weight:500;background:none;color:var(--muted-foreground);border:none;border-bottom:3px solid transparent;padding:8px 12px;margin-bottom:-1px;text-align:left}
+.subtabs button:hover{color:var(--foreground)}
+.subtabs button[aria-selected="true"]{color:var(--primary-foreground);background:var(--primary);font-weight:700}
+.termlist li.hl{outline:2px solid var(--ring);outline-offset:2px}
+.back{align-self:flex-start}
+a{color:var(--foreground);text-decoration:underline}
+a.t{text-decoration:underline dotted}
 .lede{display:flex;flex-direction:column;gap:12px}
-.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-size:13px}
-.meta b{color:var(--ink);font-weight:700}
+.lede p{max-width:80ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted-foreground);font-size:13px}
+.meta b{color:var(--foreground);font-weight:700}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+code,.mono{font-size:.95em}
+h3{font-size:14px;font-weight:700;margin:0}
+p{max-width:80ch}
+.box{background:var(--card);border:1px solid var(--border);padding:16px}
+.note{font-size:13px;color:var(--muted-foreground)}
+.why{border-left:3px solid var(--foreground);padding:2px 0 2px 12px}
 .thm{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
 .thm .stmt{display:flex;flex-direction:column;gap:10px}
-.box{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px}
-.thm figure{margin:0;display:flex;flex-direction:column;gap:8px}
-.thm svg{width:100%;height:auto;display:block}
-figcaption{font-size:13px;color:var(--muted)}
-.formula{font-family:var(--f-mono);background:var(--accent-soft);color:var(--ink);padding:10px 12px;border-radius:8px;font-size:14px;overflow-x:auto}
+.thm figure,figure.fig{margin:0;display:flex;flex-direction:column;gap:8px}
+figcaption{font-size:12.5px;color:var(--muted-foreground)}
+figcaption b.n{color:var(--foreground)}
+.formula{background:var(--muted);padding:8px 12px;font-size:13px;overflow-x:auto;white-space:nowrap}
 .explorer{display:grid;grid-template-columns:230px minmax(0,1fr) 300px;gap:16px;align-items:start}
 .presets{display:flex;flex-direction:column;gap:14px;max-height:640px;overflow-y:auto;padding-right:4px}
 .pgroup{display:flex;flex-direction:column;gap:5px}
-.presets button,.ctrl button{font:inherit;font-size:13px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--rule);border-radius:7px;padding:6px 9px;cursor:pointer;line-height:1.35}
-.presets button:hover,.ctrl button:hover{border-color:var(--accent)}
-.presets button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.presets button,.ctrl button{font-size:13px;text-align:left;line-height:1.35;padding:6px 9px}
 .stage{display:flex;flex-direction:column;gap:8px;min-width:0}
-.canvasbox{position:relative;background:var(--canvas);border:1px solid var(--rule);border-radius:10px;aspect-ratio:4/3;max-width:100%;overflow:hidden;touch-action:none;cursor:grab}
+.canvasbox{position:relative;background:var(--card);border:1px solid var(--border);aspect-ratio:4/3;max-width:100%;overflow:hidden;touch-action:none;cursor:grab}
 .canvasbox:active{cursor:grabbing}
+.figbox{aspect-ratio:1/1}
 canvas{display:block;width:100%;height:100%}
-.ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted-foreground)}
 .ctrl label{display:flex;gap:5px;align-items:center;cursor:pointer}
-.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted)}
-.sw{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted-foreground)}
+.sw{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
 .readout{display:flex;flex-direction:column;gap:12px;min-width:0}
-.case{font-family:var(--f-display);font-size:17px;line-height:1.4}
-.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:999px;width:fit-content}
-.chip.a2{background:var(--ok-soft);color:var(--ok)}
-.chip.a3{background:var(--warn-soft);color:var(--warn)}
-.chip.a0{background:var(--accent-soft);color:var(--accent)}
-.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;font-size:13px}
-.kv dt{color:var(--muted)}
-.kv dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-table{border-collapse:collapse;width:100%;font-size:13.5px}
-th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
-th{font-weight:700;color:var(--muted);font-size:12px}
-td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
-.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:10px}
-.st{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
-.st.ok{background:var(--ok-soft);color:var(--ok)}
-.st.q{background:var(--warn-soft);color:var(--warn)}
-.st.open{background:var(--bad-soft);color:var(--bad)}
-.note{font-size:13px;color:var(--muted)}
+.case{font-size:15px;line-height:1.4;font-weight:500}
+.chip{display:inline-flex;font-size:12px;font-weight:700;padding:2px 9px;width:fit-content;border:1px solid var(--border)}
+.chip.a2{background:var(--muted)}
+.chip.a3{background:var(--primary);color:var(--primary-foreground)}
+.chip.a0{background:var(--card)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;font-size:13px;margin:0}
+.kv dt{color:var(--muted-foreground)}
+.kv dd{margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+th,td{text-align:left;white-space:normal;vertical-align:top;font-size:13px}
+td.num{font-variant-numeric:tabular-nums}
+.readout th,.readout td{white-space:nowrap}
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--border)}
+.st{font-size:12px;font-weight:700;padding:2px 8px;white-space:nowrap;border:1px solid var(--border);display:inline-block}
+.st.ok{background:var(--primary);color:var(--primary-foreground)}
+.st.q{background:var(--signal-flag-fill);border-color:var(--signal-flag-line);color:var(--foreground)}
+.st.open{background:var(--card);color:var(--foreground);border-style:dashed}
 .flow{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center}
-.node{background:var(--surface);border:1px solid var(--rule);border-radius:9px;padding:10px 14px;max-width:580px;width:100%;text-align:center;font-size:14px}
-.node.q{border-color:var(--accent);background:var(--accent-soft)}
-.arrow{height:26px;width:2px;background:var(--rule);position:relative}
-.arrow::after{content:"";position:absolute;bottom:-1px;left:-5px;border:6px solid transparent;border-top-color:var(--muted)}
+.node{background:var(--card);border:1px solid var(--border);padding:10px 14px;max-width:580px;width:100%;text-align:center;font-size:13px}
+.node.q{border-width:2px;background:var(--muted)}
+.arrow{height:26px;width:2px;background:var(--border);position:relative}
+.arrow::after{content:"";position:absolute;bottom:-1px;left:-5px;border:6px solid transparent;border-top-color:var(--border)}
 .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;width:100%;max-width:980px}
 .branch{display:flex;flex-direction:column;align-items:center}
-.branch .tag{font-family:var(--f-mono);font-size:12px;color:var(--muted);padding:6px 0}
+.branch .tag{font-size:12px;color:var(--muted-foreground);padding:6px 0}
 .leafs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;width:100%}
-.leaf{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:8px 10px;font-size:13px}
-.leaf b{display:block;font-size:13px}
-.node.yes{border-color:var(--ok)}
-.node.no{border-color:var(--warn)}
-.tl{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px}
-.tlrow{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;align-items:center;font-size:13px}
-.tltrack{position:relative;height:20px;background:var(--bg);border-radius:4px}
-.tlbar{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--accent)}
-.tlbar.bonus{background:var(--l3)}
-.tlbar.write{background:var(--circle)}
-.tlaxis{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.leaf{background:var(--card);border:1px solid var(--border);padding:8px 10px;font-size:12.5px}
+.leaf b{display:block}
+.node.yes{border-width:2px}
+.node.no{border-style:dashed}
+.tl{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--border);padding:16px}
+.tlrow{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;align-items:center;font-size:12.5px}
+.tltrack{position:relative;height:20px;background:var(--muted)}
+.tlbar{position:absolute;top:0;bottom:0;background:var(--series-l1)}
+.tlbar.bonus{background:var(--series-l2)}
+.tlbar.write{background:var(--series-circle)}
+.tlaxis{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;font-size:11px;color:var(--muted-foreground)}
 .ticks{position:relative;height:16px}
 .ticks span{position:absolute;transform:translateX(-50%)}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.col{display:flex;flex-direction:column;gap:10px}
 ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
-.files li{font-family:var(--f-mono);font-size:13px}
+.files li{font-size:13px}
 .steps{counter-reset:s;list-style:none;padding:0}
 .steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px}
-.steps li::before{content:counter(s);font-family:var(--f-mono);font-weight:500;color:var(--accent)}
-.figbox{aspect-ratio:1/1}
+.steps li::before{content:counter(s);font-weight:700}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--background);z-index:5;padding-top:8px}
+.tabs button{font-size:13px;font-weight:500;background:none;color:var(--muted-foreground);border:none;border-bottom:3px solid transparent;padding:10px 14px;margin-bottom:-1px}
+.tabs button:hover{color:var(--foreground)}
+.tabs button[aria-selected="true"]{color:var(--foreground);border-bottom-color:var(--foreground);font-weight:700;background:none}
+.tabpanel{display:flex;flex-direction:column;gap:40px}
+.timeline{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0;border-left:2px solid var(--border);margin-left:8px}
+.timeline li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;padding:0 0 18px 18px;position:relative}
+.timeline li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--card);border:2px solid var(--foreground)}
+.timeline li.now::before{background:var(--series-circle);border-color:var(--series-circle)}
+.timeline .yr{font-size:12.5px;padding-top:2px}
+.timeline li.now .yr{font-weight:700}
+.timeline b{display:block}
+.lineage{width:100%;min-width:2540px;height:auto;display:block}
+.lineage.flow2{min-width:780px}
+.lineage.flow2 .edges path{marker-end:url(#ah2)}
+.lineage .lane{font-size:12px;font-weight:700;fill:var(--muted-foreground)}
+.lineage rect{fill:var(--card);stroke:var(--border);stroke-width:1.2}
+.lineage text{font-size:12px;fill:var(--foreground)}
+.lineage text.y{font-size:11px;fill:var(--muted-foreground)}
+.lineage .target polygon{fill:var(--muted);stroke:var(--series-circle);stroke-width:2.5}
+.lineage .plan rect{stroke-dasharray:5 3}
+.lineage [data-box]{cursor:pointer}
+.lineage [data-box]:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.lineage [data-box][aria-pressed="true"] rect,.lineage [data-box][aria-pressed="true"] polygon{stroke:var(--primary);stroke-width:4}
+.nodeinfo h3{margin:0 0 8px}
+.nodeinfo th{text-align:left;white-space:nowrap;vertical-align:top;width:1%}
+.nodeinfo ul{margin:0;padding-left:18px}
+.lineage text.al{font-size:11px;fill:var(--foreground)}
+.lineage .edges path{fill:none;stroke:var(--muted-foreground);stroke-width:1.4;marker-end:url(#ah)}
+.lineage .edges path.hot{stroke:var(--series-circle);stroke-width:2}
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
-.gcard{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.gtitle{display:flex;flex-direction:column;gap:2px;font-size:14px}
+.gcard{background:var(--card);border:1px solid var(--border);padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.gtitle{display:flex;flex-direction:column;gap:2px;font-size:13px}
 .gbox{aspect-ratio:1/1}
-.ginfo{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12.5px}
-.ginfo button{font:inherit;font-size:12px;margin-left:auto;background:var(--surface);color:var(--ink);border:1px solid var(--rule);border-radius:6px;padding:4px 8px;cursor:pointer}
-.ginfo button:hover{border-color:var(--accent)}
-$1
+.ginfo{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12px}
+.ginfo button{font-size:12px;margin-left:auto;padding:4px 8px}
+.ginfo .ill{flex-basis:100%;font-size:11px;color:var(--muted-foreground)}
+.termlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px 24px;margin:0;padding:0;list-style:none}
+.termlist li{font-size:13px;scroll-margin-top:60px}
+.termlist li:target{background:var(--signal-flag-fill)}
+@media (max-width:900px){
   .explorer{grid-template-columns:minmax(0,1fr)}
   .presets{max-height:none;flex-direction:row;flex-wrap:wrap}
   .pgroup{flex:1 1 200px}
@@ -125,6 +217,7 @@ $1
 @media (max-width:640px){
   .split,.two{grid-template-columns:minmax(0,1fr)}
   .tlrow,.tlaxis{grid-template-columns:120px minmax(0,1fr)}
+  .timeline li{grid-template-columns:minmax(0,1fr);gap:2px}
 }
 </style>
 </head>
@@ -134,39 +227,64 @@ $1
 <header class="lede">
   <span class="eyebrow">UTRGV Research Hackathon 2026 · 출제: Tim Wylie</span>
   <h1>3차원 세 직선과 만나는 가장 작은 원: 학습 팁</h1>
-  <p>공간의 무한 직선 세 개가 주어질 때, 세 직선 모두와 만나는 가장 작은 원(중심, 반지름, 평면)을 구하는 문제입니다. 이 페이지는 학습 지도입니다. 모든 케이스를 묶는 핵심 아이디어, Figure 1의 모든 구성을 돌려 볼 수 있는 3D 탐색기, 결정 흐름도, 케이스별 해 표, 공부 순서와 함정, 마감까지의 계획을 담았습니다.</p>
+  <p>초보자를 위한 학습 지도입니다. 무엇을 알아야 하고 왜 그런지 단계별로 배웁니다. 각 탭은 번호 붙은 단계 상자로 이어집니다.</p>
+  <p>문제는 이렇습니다. 공간의 무한 직선 세 개가 주어집니다. 세 직선 모두와 만나는 가장 작은 원(중심, 반지름, 평면)을 구합니다.</p>
   <div class="meta"><span>마감 <b>11/8(일) 09:00</b></span><span>제출물 <b>2쪽 논문</b> (Overleaf, 이것만 심사)</span><span>상태 <b>계획 단계, 논문 본문 미작성</b></span></div>
 </header>
 
-<section>
-  <span class="eyebrow">핵심 아이디어</span>
-  <h2>원을 구로 바꿔 생각하기</h2>
+<nav class="tabs" role="tablist" aria-label="페이지 구역">
+  <button type="button" role="tab" id="tb-now" aria-controls="tab-now" data-tab="now">1. 현재 버전 · 학습 지도</button>
+  <button type="button" role="tab" id="tb-background" aria-controls="tab-background" data-tab="background">2. 배경과 역사</button>
+  <button type="button" role="tab" id="tb-papers" aria-controls="tab-papers" data-tab="papers">3. 핵심 논문 계보</button>
+  <button type="button" role="tab" id="tb-terms" aria-controls="tab-terms" data-tab="terms">4. 용어 부록</button>
+</nav>
+
+<div class="tabpanel" id="tab-now" role="tabpanel" aria-labelledby="tb-now">
+
+<div class="subtabs" role="tablist" aria-label="탭 1 단계">
+  <button type="button" role="tab" id="st-s1-1" aria-controls="s1-1">Step 1 문제와 핵심 아이디어</button>
+  <button type="button" role="tab" id="st-s1-2" aria-controls="s1-2">Step 2 3D 케이스 탐색기</button>
+  <button type="button" role="tab" id="st-s1-3" aria-controls="s1-3">Step 3 케이스 갤러리</button>
+  <button type="button" role="tab" id="st-s1-4" aria-controls="s1-4">Step 4 결정 흐름도</button>
+  <button type="button" role="tab" id="st-s1-5" aria-controls="s1-5">Step 5 케이스별 해 표</button>
+  <button type="button" role="tab" id="st-s1-6" aria-controls="s1-6">Step 6 공부 팁과 계획</button>
+</div>
+
+<section class="stepbox" id="s1-1" role="tabpanel" aria-labelledby="st-s1-1">
+  <span class="stepno">Step 1 of 6</span>
+  <h2>문제와 핵심 아이디어: 원을 구로 바꿔 생각하기</h2>
+  <p class="why"><b>풀려던 문제.</b> 직선 세 개의 배치는 케이스가 많습니다. 케이스마다 따로 풀면 끝이 없습니다. 모든 케이스를 묶는 질문 하나가 필요합니다.</p>
   <div class="thm">
     <div class="stmt box">
-      <p><b>하한.</b> 중심 c, 반지름 r인 원이 직선 L과 점 p에서 만나면 dist(c, L) ≤ |c − p| = r 입니다. 따라서 조건을 만족하는 모든 원은 다음을 만족합니다.</p>
+      <p><b>하한.</b> 중심 c, 반지름 r인 원이 직선 L과 점 p에서 만난다고 합시다. 그러면 아래 부등식이 성립합니다.</p>
+      <div class="formula">dist(c, L) ≤ |c − p| = r</div>
+      <p>따라서 조건을 만족하는 모든 원은 아래를 만족합니다.</p>
       <div class="formula">r ≥ r* = min<sub>c</sub> max<sub>i</sub> dist(c, L<sub>i</sub>)</div>
-      <p>r*는 세 직선 모두와 만나는 가장 작은 구의 반지름입니다. 점과 직선 사이 거리는 볼록함수이므로 이것은 변수 3개짜리 볼록 최적화(SOCP)입니다.</p>
-      <p><b>하한은 항상 달성됩니다.</b> 최적점에서 KKT 조건은 접점에서 c로 향하는 단위벡터 u<sub>i</sub>들의 양의 결합이 0이라는 뜻입니다. 이런 벡터 세 개는 한 평면 위에 있어야 하므로 접점들과 c가 같은 평면에 놓이고, 그 평면이 세 직선을 모두 지나는 대원을 만듭니다. 활성 직선이 두 개면 두 접점이 구의 대척점이 되고, 평면을 돌려서 세 번째 직선을 잡을 수 있습니다.</p>
-      <p class="note">결론: 케이스 분석 전체가 "활성 직선이 2개인가 3개인가"라는 질문 하나로 줄어듭니다. (활성 직선 = 최적 중심에서 거리가 정확히 r인 직선)</p>
+      <p>r*는 세 직선 모두와 만나는 가장 작은 구의 반지름입니다. 점과 직선 사이 거리는 <a class="t" href="#term-convex">볼록 함수(convex function)</a>입니다. 그래서 이것은 변수 3개짜리 볼록 최적화, 곧 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>입니다.</p>
+      <p><b>하한은 항상 달성됩니다.</b> 최적점에서 <a class="t" href="#term-kkt">카루시-쿤-터커 조건(Karush-Kuhn-Tucker conditions, KKT)</a>이 성립합니다. 이는 접점에서 c로 향하는 단위벡터 u<sub>i</sub>들의 양의 결합이 0이라는 뜻입니다.</p>
+      <p>이런 벡터 세 개는 한 평면 위에 있어야 합니다. 그래서 접점들과 c가 같은 평면에 놓입니다. 그 평면이 세 직선을 모두 지나는 <a class="t" href="#term-greatcircle">대원(great circle)</a>을 만듭니다.</p>
+      <p><a class="t" href="#term-active">활성 제약(active constraint)</a>이 두 개면 두 접점이 구의 <a class="t" href="#term-antipodal">대척점(antipodal points)</a>이 됩니다. 이때는 평면을 돌려서 세 번째 직선을 잡을 수 있습니다.</p>
+      <p class="note">결론: 케이스 분석 전체가 "활성 직선이 2개인가 3개인가"라는 질문 하나로 줄어듭니다. 활성 직선은 최적 중심에서 거리가 정확히 r인 직선입니다.</p>
     </div>
-    <figure class="box">
+    <figure class="box fig">
       <div class="canvasbox figbox"><canvas id="fig1" aria-label="3중 대칭 꼬인 세 직선과 최소 구, 대원"></canvas></div>
-      <figcaption><b>활성 3개</b> 예: 3중 대칭으로 꼬인 세 직선. 최소 구(점선, 와이어)의 대원(보라)이 답이고, 세 반지름 화살표가 한 평면에 놓입니다. r* = 1.5. 드래그로 회전.</figcaption>
+      <figcaption><b class="n">그림 1.</b> 활성 직선 3개 예. 3중 대칭 <a class="t" href="#term-skew">꼬인 위치(skew lines)</a>의 세 직선과, 최소 구의 <a class="t" href="#term-greatcircle">대원(great circle)</a>(자홍색)이고 r* = 1.5입니다. 왜: 세 반지름 화살표가 한 평면에 놓여 대원이 답임을 보입니다. 이 r*는 설명용 값(Illustrative values)입니다. 드래그로 회전합니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
     </figure>
-    <figure class="box">
+    <figure class="box fig">
       <div class="canvasbox figbox"><canvas id="fig2" aria-label="둔각 프리즘의 기울어진 최소 원"></canvas></div>
-      <figcaption><b>활성 2개</b> 예: 둔각 단면의 세 평행선. 두 반지름이 정반대(대척점)이고, 원의 평면이 직선 방향에 대해 기울어집니다.</figcaption>
+      <figcaption><b class="n">그림 2.</b> 활성 직선 2개 예. 둔각 단면의 세 평행선에서 두 반지름이 정반대(<a class="t" href="#term-antipodal">대척점(antipodal points)</a>)입니다. 왜: 원의 평면이 직선 방향에 대해 기울어지는 것을 보입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
     </figure>
   </div>
 </section>
 
-<section id="explorer-sec">
-  <span class="eyebrow">인터랙티브</span>
-  <h2>케이스 탐색기</h2>
-  <p class="note">Figure 1의 구성을 고르면 min-max 거리를 풀어 활성 직선을 알려주고, 원을 만든 뒤 그 원이 각 직선에 실제로 닿는지 확인합니다. 드래그로 회전, 스크롤이나 핀치로 확대합니다.</p>
+<section class="stepbox" id="s1-2" role="tabpanel" aria-labelledby="st-s1-2" hidden>
+  <span class="stepno">Step 2 of 6</span>
+  <h2>3D 케이스 탐색기</h2>
+  <p class="why"><b>풀려던 문제.</b> 식만 보면 케이스의 모양이 떠오르지 않습니다. 구성을 직접 돌려 보면 활성 직선 수가 왜 달라지는지 보입니다.</p>
+  <p class="note">PDF Figure 1의 구성을 고르면 <a class="t" href="#term-minimax">미니맥스(minimax)</a> 거리를 풀어 활성 직선을 알려줍니다. 그다음 원을 만들고, 그 원이 각 직선에 실제로 닿는지 확인합니다. 드래그로 회전하고 스크롤이나 핀치로 확대합니다.</p>
   <div class="explorer">
     <div class="presets" id="presets"></div>
-    <div class="stage">
+    <figure class="stage fig" style="margin:0">
       <div class="canvasbox" id="cbox"><canvas id="cv" aria-label="세 직선과 최소 원의 3D 보기"></canvas></div>
       <div class="ctrl">
         <button id="spin" type="button">회전</button>
@@ -174,76 +292,88 @@ $1
         <button id="rnd" type="button">무작위 직선</button>
         <button id="rndp" type="button">무작위 (평행 쌍 1개)</button>
         <label><input type="checkbox" id="showSphere" checked> 구</label>
-        <label><input type="checkbox" id="showFeet" checked> 수선의 발</label>
+        <label><input type="checkbox" id="showFeet" checked> <a class="t" href="#term-foot">수선의 발(foot of perpendicular)</a></label>
       </div>
       <div class="legend">
-        <span><i class="sw" style="background:var(--l1)"></i>L1</span>
-        <span><i class="sw" style="background:var(--l2)"></i>L2</span>
-        <span><i class="sw" style="background:var(--l3)"></i>L3</span>
-        <span><i class="sw" style="background:var(--circle)"></i>최소 원 (뒤쪽 절반은 점선)</span>
-        <span><i class="sw" style="background:var(--sphere)"></i>최소 구 윤곽</span>
+        <span><i class="sw" style="background:var(--series-l1)"></i>L1</span>
+        <span><i class="sw" style="background:var(--series-l2)"></i>L2</span>
+        <span><i class="sw" style="background:var(--series-l3)"></i>L3</span>
+        <span><i class="sw" style="background:var(--series-circle)"></i>최소 원 (뒤쪽 절반은 점선)</span>
+        <span><i class="sw" style="background:var(--series-sphere)"></i>최소 구 윤곽</span>
       </div>
-    </div>
+      <figcaption><b class="n">그림 3.</b> 프리셋 선택에 따른 세 직선, 최소 원, 최소 구의 3D 보기이고 오른쪽 읽기 값은 설명용 값(Illustrative values)입니다. 왜: 활성 직선 수가 배치마다 달라지는 것을 직접 돌려 확인하기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+    </figure>
     <div class="readout box" id="readout" aria-live="polite"></div>
   </div>
 </section>
 
-<section>
-  <span class="eyebrow">3D 축 그림</span>
-  <h2>Figure 1 케이스 갤러리</h2>
-  <p class="note">문제 PDF Figure 1의 모든 구성을 3D 좌표축 위에 그렸습니다. 각 그림은 드래그로 회전하고, 버튼을 누르면 위 탐색기에 불러옵니다. 보라색 원이 최소 원, 점선 원이 최소 구의 윤곽입니다.</p>
-  <div class="gallery" id="gallery"></div>
+<section class="stepbox" id="s1-3" role="tabpanel" aria-labelledby="st-s1-3" hidden>
+  <span class="stepno">Step 3 of 6</span>
+  <h2>PDF Figure 1 케이스 갤러리</h2>
+  <p class="why"><b>풀려던 문제.</b> 20개 케이스를 한눈에 비교할 방법이 필요했습니다. 같은 축과 같은 방식으로 그리면 차이가 보입니다.</p>
+  <p class="note">문제 PDF의 모든 구성을 3D 좌표축 위에 그렸습니다. 각 그림은 드래그로 회전하고, 버튼을 누르면 위 탐색기에 불러옵니다. 자홍색 원이 최소 원, 점선 원이 최소 구의 윤곽입니다.</p>
+  <figure class="fig" style="margin:0">
+    <div class="gallery" id="gallery"></div>
+    <figcaption><b class="n">그림 4.</b> 카드 20장의 구성별 최소 원과 활성 직선 수이고, 카드의 r 값은 설명용 값(Illustrative values)입니다. 왜: 케이스마다 답의 모양이 어떻게 달라지는지 나란히 보이기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
 </section>
 
-$1
+<section class="stepbox" id="s1-4" role="tabpanel" aria-labelledby="st-s1-4" hidden>
+  <span class="stepno">Step 4 of 6</span>
   <h2>결정 흐름도</h2>
+  <p class="why"><b>풀려던 문제.</b> 입력이 어떤 케이스인지 모르면 공식을 고를 수 없습니다. 흐름도는 입력에서 답까지의 판정 순서를 정합니다.</p>
+  <figure class="fig" style="margin:0;gap:12px">
   <div class="flow">
     <div class="node">세 직선 L<sub>i</sub> = a<sub>i</sub> + t·d<sub>i</sub></div>
     <div class="arrow"></div>
-    <div class="node">각 쌍이 평행 / 교차 / 꼬인 중 무엇인지 판정합니다. ρ<sub>ij</sub> = dist(L<sub>i</sub>, L<sub>j</sub>)/2와 최적 중심 집합 C<sub>ij</sub>(교점, 공통수선의 중점, 또는 중앙선)를 구합니다</div>
+    <div class="node">각 쌍이 평행, 교차, 꼬인 중 무엇인지 판정합니다. 쌍마다 ρ<sub>ij</sub> = dist(L<sub>i</sub>, L<sub>j</sub>)/2를 구합니다. 최적 중심 집합 C<sub>ij</sub>도 구합니다. C<sub>ij</sub>는 교점, <a class="t" href="#term-commonperp">공통 수선(common perpendicular)</a>의 중점, 또는 중앙선입니다.</div>
     <div class="arrow"></div>
     <div class="node q">ρ가 가장 큰 쌍 (i, j)를 고릅니다. 세 번째 직선 L<sub>k</sub>가 C<sub>ij</sub>에서 ρ<sub>ij</sub> 이내를 지나가나요?</div>
     <div class="arrow"></div>
     <div class="split">
       <div class="branch">
         <span class="tag">예</span>
-        <div class="node yes"><b>활성 2개.</b> r = ρ<sub>ij</sub>. 평면은 대척점인 두 접점과, 구면 위에 있는 L<sub>k</sub>의 한 점을 지납니다. 닫힌 해, O(1).</div>
+        <div class="node yes"><b>활성 2개.</b> r = ρ<sub>ij</sub>입니다. 평면은 두 <a class="t" href="#term-antipodal">대척점(antipodal points)</a> 접점과, 구면 위에 있는 L<sub>k</sub>의 한 점을 지납니다. <a class="t" href="#term-closedform">닫힌 형태(closed form)</a>이고 O(1)입니다.</div>
       </div>
       <div class="branch">
         <span class="tag">아니오</span>
-        <div class="node no"><b>활성 3개.</b> c는 세 직선에서 같은 거리에 있고, 세 접점과 c가 한 평면 위에 있습니다.</div>
+        <div class="node no"><b>활성 3개.</b> c는 세 직선에서 같은 거리에 있습니다. 세 접점과 c가 한 평면 위에 있습니다.</div>
         <div class="arrow"></div>
         <div class="leafs">
-          <div class="leaf"><b>공면 삼각형</b>내접원</div>
-          <div class="leaf"><b>3 평행, 예각</b>단면 삼각형의 외접원</div>
+          <div class="leaf"><b>공면 삼각형</b><a class="t" href="#term-incircle">내접원(incircle)</a></div>
+          <div class="leaf"><b>3 평행, 예각</b>단면 삼각형의 <a class="t" href="#term-circumcircle">외접원(circumcircle)</a></div>
           <div class="leaf"><b>2 평행</b>높이 z에 대한 2차방정식 하나</div>
-          <div class="leaf"><b>수직선 특수 케이스</b>평면 위 아폴로니우스 PLL</div>
-          <div class="leaf"><b>일반 꼬인 직선</b>다항식 연립, 차수 미해결</div>
+          <div class="leaf"><b>수직선 특수 케이스</b>평면 위 <a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a></div>
+          <div class="leaf"><b>일반 꼬인 직선</b>다항식 연립이고 차수는 미해결</div>
         </div>
       </div>
     </div>
   </div>
+  <figcaption><b class="n">그림 5.</b> 입력 직선 세 개에서 활성 직선 수와 공식까지의 판정 흐름입니다. 왜: 케이스 분석 전체가 "세 번째 직선이 안에 드는가"라는 질문 하나로 갈라지기 때문입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
 </section>
 
-<section>
-  <span class="eyebrow">참고</span>
+<section class="stepbox" id="s1-5" role="tabpanel" aria-labelledby="st-s1-5" hidden>
+  <span class="stepno">Step 5 of 6</span>
   <h2>케이스별 해 표</h2>
-  <p class="note">행은 문제 PDF의 Figure 1 순서이고, 그림에 없는 케이스 두 개를 추가했습니다. "상태"는 유도의 진행 상황입니다. 논문에 넣기 전에 모든 행을 손으로 다시 확인해야 합니다.</p>
+  <p class="why"><b>풀려던 문제.</b> 케이스마다 답과 진행 상태가 다릅니다. 표 하나로 모아야 어디가 비었는지 보입니다.</p>
+  <p class="note">행은 문제 PDF의 Figure 1 순서입니다. 그림에 없는 케이스 두 개를 추가했습니다. "상태"는 유도의 진행 상황입니다. 논문에 넣기 전에 모든 행을 손으로 다시 확인해야 합니다.</p>
+  <figure class="fig" style="margin:0">
   <div class="tablewrap">
   <table>
-    <thead><tr><th>Figure 1 케이스</th><th>활성 수</th><th>답</th><th>상태</th></tr></thead>
+    <thead><tr><th>PDF Figure 1 케이스</th><th>활성 수</th><th>답</th><th>상태</th></tr></thead>
     <tbody>
-      <tr><td>3 meet (삼각형)</td><td>3</td><td>내접원: c = (aA+bB+cC)/(a+b+c), r = 2·넓이/둘레</td><td><span class="st ok">닫힌 해</span></td></tr>
-      <tr><td>세 직선이 한 점에서 만남 (그림에 없음)</td><td>—</td><td>r = 0, 퇴화된 점 원</td><td><span class="st ok">닫힌 해</span></td></tr>
-      <tr><td>2 meet, 1 cross</td><td>2 또는 3</td><td>횡단선이 꼬인 쌍의 공통수선 중점에서 δ/2 이내를 지나면 활성 2개, r = δ/2</td><td><span class="st q">2개는 완료, 3개는 미해결</span></td></tr>
+      <tr><td>3 meet (삼각형)</td><td>3</td><td><a class="t" href="#term-incircle">내접원(incircle)</a>: c = (aA+bB+cC)/(a+b+c), r = 2·넓이/둘레</td><td><span class="st ok">닫힌 해</span></td></tr>
+      <tr><td>세 직선이 한 점에서 만남 (그림에 없음)</td><td>없음</td><td>r = 0이고 <a class="t" href="#term-degenerate">퇴화(degenerate)</a>된 점 원</td><td><span class="st ok">닫힌 해</span></td></tr>
+      <tr><td>2 meet, 1 cross</td><td>2 또는 3</td><td><a class="t" href="#term-transversal">횡단선(transversal)</a>이 꼬인 쌍의 <a class="t" href="#term-commonperp">공통 수선(common perpendicular)</a> 중점에서 δ/2 이내를 지나면 활성 2개이고 r = δ/2</td><td><span class="st q">2개는 완료, 3개는 미해결</span></td></tr>
       <tr><td>1 meet, 2 cross (over / over-under)</td><td>2 또는 3</td><td>결정 흐름도로 판정. 라벨은 L3가 두 교차 지점에서 평면의 같은 쪽을 지나는지 여부</td><td><span class="st q">스케치</span></td></tr>
-      <tr><td>0 meet (모두 꼬인)</td><td>2 또는 3</td><td>활성 2개는 닫힌 해. 활성 3개는 (c, r)에 대한 2차식 3개 + 3차식 1개, Bézout 상한 24</td><td><span class="st open">연구 질문</span></td></tr>
+      <tr><td>0 meet (모두 꼬인)</td><td>2 또는 3</td><td>활성 2개는 닫힌 해. 활성 3개는 (c, r)에 대한 2차식 3개와 3차식 1개이고, <a class="t" href="#term-bezout">베주 상한(Bézout bound)</a>은 24</td><td><span class="st open">연구 질문</span></td></tr>
       <tr><td>2 parallel, 1 meets both</td><td>2</td><td>r = w/2. 중심은 중앙선 위의 선분 전체</td><td><span class="st ok">닫힌 해</span></td></tr>
       <tr><td>2 parallel, 1 meet 1 cross</td><td>2</td><td>항상 r = w/2</td><td><span class="st ok">닫힌 해</span></td></tr>
       <tr><td>2 parallel, 0 meet (over, over/under)</td><td>2 또는 3</td><td>dist(중앙선, L3) ≤ w/2이면 활성 2개. 아니면 2차방정식의 가장 작은 근</td><td><span class="st q">2차식, 전개 필요</span></td></tr>
       <tr><td>3 parallel, 공면</td><td>2</td><td>r = 바깥 두 직선 간격의 절반. 중심은 중앙선 위 어디든 가능</td><td><span class="st ok">닫힌 해</span></td></tr>
-      <tr><td>3 parallel, 프리즘</td><td>예각이면 3, 둔각이면 2</td><td>단면 삼각형의 최소 포함원. 둔각이면 원의 평면이 기울어짐</td><td><span class="st ok">닫힌 해</span></td></tr>
-      <tr><td>1 meet + 수직선</td><td>2 또는 3</td><td>대칭으로 c가 평면 위. 활성 3개는 아폴로니우스 PLL: t²cos²(θ/2) − 2t(b·w) + |w|² = 0</td><td><span class="st q">2차식, 확인 필요</span></td></tr>
+      <tr><td>3 parallel, 프리즘</td><td>예각이면 3, 둔각이면 2</td><td>단면 삼각형의 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>. 둔각이면 원의 평면이 기울어짐</td><td><span class="st ok">닫힌 해</span></td></tr>
+      <tr><td>1 meet + 수직선</td><td>2 또는 3</td><td>대칭으로 c가 평면 위. 활성 3개는 <a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a>: t²cos²(θ/2) − 2t(b·w) + |w|² = 0</td><td><span class="st q">2차식, 확인 필요</span></td></tr>
       <tr><td>1 cross + 수직선</td><td>2 또는 3</td><td>대칭이 깨짐. 일반 결정 흐름도로 처리</td><td><span class="st open">미해결</span></td></tr>
       <tr><td>2 parallel + 수직선 (사이)</td><td>2</td><td>r = w/2. 원은 L3를 포함하는 평면 위</td><td><span class="st ok">닫힌 해</span></td></tr>
       <tr><td>2 parallel + 수직선 (바깥)</td><td>2</td><td>먼 평행선과 L3가 활성: r = (a + h)/2</td><td><span class="st ok">닫힌 해</span></td></tr>
@@ -251,91 +381,403 @@ $1
     </tbody>
   </table>
   </div>
+  <figcaption><b class="n">표 1.</b> PDF Figure 1의 케이스 14개와 활성 직선 수, 답, 유도 상태입니다. 왜: 어느 케이스가 닫힌 해이고 어느 케이스가 비었는지 한눈에 보이기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
 </section>
 
-<section>
-  <span class="eyebrow">공부 팁</span>
-  <h2>무엇을, 어떤 순서로</h2>
+<section class="stepbox" id="s1-6" role="tabpanel" aria-labelledby="st-s1-6" hidden>
+  <span class="stepno">Step 6 of 6</span>
+  <h2>공부 팁과 계획</h2>
+  <p class="why"><b>풀려던 문제.</b> 마감까지 시간이 짧습니다. 무엇을 먼저 익히고 어디서 틀리기 쉬운지 알아야 시간을 아낍니다.</p>
   <div class="three">
-    <div class="box" style="display:flex;flex-direction:column;gap:10px">
+    <div class="box col">
       <h3>먼저 익힐 기초</h3>
       <ol class="steps">
-        <li>직선 표현: 벡터형 a + t·d, 두 점형, Plücker 좌표</li>
-        <li>점–직선 거리와 수선의 발을 외우지 않고 유도하기</li>
+        <li>직선 표현: 벡터형 a + t·d, 두 점형, <a class="t" href="#term-plucker">플뤼커 좌표(Plücker coordinates)</a></li>
+        <li>점-직선 거리와 <a class="t" href="#term-foot">수선의 발(foot of perpendicular)</a>을 외우지 않고 유도하기</li>
         <li>두 직선의 관계 판정: d₁×d₂, (a₂−a₁)·(d₁×d₂)</li>
-        <li>꼬인 두 직선의 공통수선과 최근접점 공식</li>
-        <li>내접원·외접원, 예각/둔각과 최소 포함원</li>
-        <li>볼록함수, minimax, KKT (max의 subgradient)</li>
-        <li>아폴로니우스 PLL (점 1 + 직선 2에 접하는 원)</li>
-        <li>SOCP: min r s.t. ‖P<sub>i</sub>(c − a<sub>i</sub>)‖ ≤ r</li>
+        <li>꼬인 두 직선의 <a class="t" href="#term-commonperp">공통 수선(common perpendicular)</a>과 최근접점 공식</li>
+        <li><a class="t" href="#term-incircle">내접원(incircle)</a>, <a class="t" href="#term-circumcircle">외접원(circumcircle)</a>, 예각과 둔각의 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a></li>
+        <li><a class="t" href="#term-convex">볼록 함수(convex function)</a>, <a class="t" href="#term-minimax">미니맥스(minimax)</a>, <a class="t" href="#term-kkt">카루시-쿤-터커 조건(Karush-Kuhn-Tucker conditions, KKT)</a>, max의 <a class="t" href="#term-subgradient">서브그래디언트(subgradient)</a></li>
+        <li><a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a>: 점 1개와 직선 2개에 접하는 원</li>
+        <li><a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>: min r s.t. ‖P<sub>i</sub>(c − a<sub>i</sub>)‖ ≤ r</li>
       </ol>
     </div>
-    <div class="box" style="display:flex;flex-direction:column;gap:10px">
+    <div class="box col">
       <h3>학습 순서</h3>
       <ol class="steps">
-        <li>Figure 1의 그림을 손으로 다시 그리고 평행·교차·꼬인 쌍 수를 적기</li>
+        <li>PDF Figure 1의 그림을 손으로 다시 그리고 평행, 교차, 꼬인 쌍 수를 적기</li>
         <li>하한 증명을 5줄로 직접 쓰기</li>
-        <li>KKT 논증 쓰기: 양의 결합이 0이면 왜 동일평면인가</li>
+        <li><a class="t" href="#term-kkt">카루시-쿤-터커 조건(Karush-Kuhn-Tucker conditions, KKT)</a> 논증 쓰기: 양의 결합이 0이면 왜 동일평면인가</li>
         <li>위 탐색기의 모든 프리셋을 눌러 활성 수를 표로 정리</li>
-        <li>쉬운 것부터 유도: 삼각형 → 3 평행 → 2 평행 → 수직선 → 1 교차 → 모두 꼬인</li>
-        <li>닫힌 해를 SOCP 수치해와 비교할 검증 계획 세우기</li>
+        <li>쉬운 것부터 유도: 삼각형, 3 평행, 2 평행, 수직선, 1 교차, 모두 꼬인 순서</li>
+        <li>닫힌 해를 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a> 수치해와 비교할 검증 계획 세우기</li>
       </ol>
     </div>
-    <div class="box" style="display:flex;flex-direction:column;gap:10px">
+    <div class="box col">
       <h3>함정</h3>
       <ul>
-        <li><b>"touch"의 해석.</b> 만남(intersect)과 접함(tangent)은 활성 2개 케이스에서 답이 다릅니다. 출제자에게 확인하고 논문에 명시하세요.</li>
-        <li><b>빠진 퇴화 케이스.</b> 공점(r = 0), 두 직선 일치.</li>
+        <li><b>"touch"의 해석.</b> 만남(intersect)과 <a class="t" href="#term-tangent">접함(tangent)</a>은 활성 2개 케이스에서 답이 다릅니다. 출제자에게 확인하고 논문에 명시하세요.</li>
+        <li><b>빠진 <a class="t" href="#term-degenerate">퇴화(degenerate)</a> 케이스.</b> <a class="t" href="#term-concurrent">공점(concurrent lines)</a>(r = 0)과 두 직선 일치입니다.</li>
         <li><b>해가 유일하지 않음.</b> 평행 케이스는 해의 족을 서술하세요.</li>
         <li><b>둔각 프리즘.</b> 원의 평면이 직선에 수직이 아닙니다.</li>
-        <li><b>허용오차.</b> 평행·교차 판정에는 ε가 필요합니다. 논문에서는 정확 산술을 가정하세요.</li>
+        <li><b>허용오차.</b> 평행과 교차 판정에는 ε가 필요합니다. 논문에서는 <a class="t" href="#term-exact">정확 산술(exact arithmetic)</a>을 가정하세요.</li>
         <li><b>일반 꼬인 케이스.</b> 근호로 된 닫힌 해가 없을 수 있습니다. 무리하게 주장하지 마세요.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="fig" style="margin:0">
+    <span class="eyebrow">계획 · 토 16:30 → 일 09:00</span>
+    <div class="tl" id="tl"></div>
+    <figcaption><b class="n">그림 6.</b> 마감까지의 작업 구간 계획입니다(청록은 수학과 코드, 갈색은 보너스, 자홍은 논문 작성). 왜: 보너스를 먼저 버릴 수 있도록 시간 비중을 보이기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+
+  <div class="two">
+    <div class="box col">
+      <h3>Tim Wylie에게 먼저 물어볼 것</h3>
+      <ol>
+        <li>"touches"는 원이 직선과 만난다는 뜻인가요, <a class="t" href="#term-tangent">접함(tangent)</a>이라는 뜻인가요?</li>
+        <li>세 직선이 한 점을 지날 때 r = 0을 답으로 인정하나요?</li>
+        <li>해가 유일하지 않을 때(평행 케이스) 원 하나만 내면 되나요? 해의 족 전체를 서술해야 하나요?</li>
+        <li>닫힌 해의 입력 형식은 벡터형, 두 점형, <a class="t" href="#term-plucker">플뤼커 좌표(Plücker coordinates)</a> 중 무엇이 좋나요?</li>
+      </ol>
+    </div>
+    <div class="box col">
+      <h3>2쪽 논문 구성 계획</h3>
+      <ol>
+        <li>서론과 해석 명시 (¼쪽)</li>
+        <li>주정리: 최소 원은 최소 구의 <a class="t" href="#term-greatcircle">대원(great circle)</a> (½쪽)</li>
+        <li>케이스 표: 행마다 (c, r, n) (⅗쪽)</li>
+        <li>그림 2개: 구와 <a class="t" href="#term-greatcircle">대원(great circle)</a>, 둔각 프리즘의 기울어진 원</li>
+        <li><a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a> 대조 검증과 미해결 꼬인 케이스</li>
+        <li>향후 연구(future work): 직선 4개 기저, 선분 버전, 3차원 정확 알고리즘 (몇 줄)</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="col">
+    <span class="eyebrow">tips/Wylie_SmallestCircle 의 파일</span>
+    <ul class="files">
+      <li>01_study_guide.md: 기초, 자가 점검, 함정</li>
+      <li>02_possible_solutions.md: 케이스별 유도와 상태</li>
+      <li>03_plan_and_design.md: 타임라인, 논문 구성, 코드 구조</li>
+      <li>study_tips.html: 이 페이지</li>
+    </ul>
+    <p class="note">탐색기와 갤러리의 숫자는 이 페이지 안의 간이 수치 풀이 결과인 설명용 값(Illustrative values)입니다. 유도를 점검하는 데만 쓰고 논문 결과로 인용하지 마세요.</p>
+  </div>
+</section>
+
+</div><!-- /tab-now -->
+
+<div class="tabpanel" id="tab-background" role="tabpanel" aria-labelledby="tb-background" hidden>
+
+<div class="subtabs" role="tablist" aria-label="탭 2 단계">
+  <button type="button" role="tab" id="st-s2-1" aria-controls="s2-1">Step 1 이 문제의 정체</button>
+  <button type="button" role="tab" id="st-s2-2" aria-controls="s2-2">Step 2 역사 타임라인</button>
+  <button type="button" role="tab" id="st-s2-3" aria-controls="s2-3">Step 3 왜 이 문제가 나왔나</button>
+  <button type="button" role="tab" id="st-s2-4" aria-controls="s2-4">Step 4 이 맥락에서의 의미</button>
+  <button type="button" role="tab" id="st-s2-5" aria-controls="s2-5">Step 5 응용 분야</button>
+</div>
+
+<section class="stepbox" id="s2-1" role="tabpanel" aria-labelledby="st-s2-1">
+  <span class="stepno">Step 1 of 5</span>
+  <h2>이 문제의 정체</h2>
+  <p class="why"><b>풀려던 문제.</b> 처음 보는 문제는 이름이 없으면 문헌을 찾을 수 없습니다. 이름을 붙이면 선행 연구와 이어집니다.</p>
+  <p>"세 직선과 만나는 가장 작은 원"은 계산기하의 <a class="t" href="#term-intradius">교차 반지름(intersection radius)</a> 문제입니다. 최근 용어로는 <a class="t" href="#term-mtb">최소 접촉 구(minimum touching ball)</a> 문제의 원(circle) 버전입니다.</p>
+  <p>출발점은 점 집합을 감싸는 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>입니다. 대상을 점에서 직선으로 바꾸고, 원판을 곡선으로 바꾼 문제라고 보면 됩니다.</p>
+  <div class="three">
+    <div class="box col"><h3>기하로 보면</h3><p class="note">세 직선 모두와 공유점을 갖는 원 중 반지름이 가장 작은 것입니다. 중심, 반지름, 평면을 구합니다.</p></div>
+    <div class="box col"><h3>최적화로 보면</h3><p class="note">min<sub>c</sub> max<sub>i</sub> dist(c, L<sub>i</sub>)입니다. 직선까지의 최대 거리를 최소화하는 1-center 문제입니다. <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 풀립니다.</p></div>
+    <div class="box col"><h3>대수로 보면</h3><p class="note">활성 3개인 경우 2차식 3개와 3차식 1개의 연립방정식입니다. 해의 개수(차수)가 <a class="t" href="#term-closedform">닫힌 형태(closed form)</a>의 존재 여부를 정합니다.</p></div>
+  </div>
+</section>
+
+<section class="stepbox" id="s2-2" role="tabpanel" aria-labelledby="st-s2-2" hidden>
+  <span class="stepno">Step 2 of 5</span>
+  <h2>역사 타임라인</h2>
+  <p class="why"><b>풀려던 문제.</b> 이 문제가 갑자기 생긴 것은 아닙니다. 어떤 문제들이 쌓여 여기에 왔는지 알면 어디를 읽어야 하는지 보입니다.</p>
+  <figure class="fig" style="margin:0;gap:12px">
+  <ol class="timeline">
+    <li><span class="yr">BC 200년경</span><div><b>아폴로니우스, 『접촉(Tangencies)』</b><p class="note">점, 직선, 원 세 개에 접하는 원을 작도하는 문제입니다. 원전은 소실되었고 1600년 비에트(Viète)가 재구성했습니다. "세 대상에 닿는 원"이라는 문제 유형의 원조입니다. 우리 문제의 수직선 특수 케이스가 이것(<a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a>)으로 환원됩니다.</p></div></li>
+    <li><span class="yr">1857</span><div><b>실베스터(Sylvester), <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a> 문제 제기</b><p class="note">평면의 점들을 모두 감싸는 가장 작은 원입니다. "최소 반지름" 계열 문제의 출발점입니다. 1885년 크리스털(Chrystal)이 알고리즘을 냈습니다.</p></div></li>
+    <li><span class="yr">1868–1879</span><div><b><a class="t" href="#term-plucker">플뤼커 좌표(Plücker coordinates)</a>와 슈베르트(Schubert)의 계수 기하</b><p class="note">플뤼커의 직선 기하는 3차원 직선을 좌표로 다루는 방법입니다. 슈베르트는 "일반 위치의 네 직선과 만나는 직선은 2개" 같은 계수 결과를 냈습니다. 3D 직선 문제의 대수적 언어가 여기서 나왔습니다.</p></div></li>
+    <li><span class="yr">1983–1992</span><div><b>계산기하의 시대: 선형 시간 알고리즘과 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a></b><p class="note">메기도(Megiddo)가 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>을 O(n)에 풀었습니다. 뒤이어 <a class="t" href="#term-welzl">Welzl식 랜덤 알고리즘(Welzl's randomized algorithm)</a>과 샤리르-웰즐(Sharir-Welzl)의 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a> 틀이 나왔습니다. 이 틀은 작은 부분집합(기저)의 해를 닫힌 형태로 구하는 <a class="t" href="#term-basis">기저 연산(basis computation)</a>을 요구합니다.</p></div></li>
+    <li><span class="yr">1991–1994</span><div><b>점에서 직선으로: <a class="t" href="#term-intradius">교차 반지름(intersection radius)</a> 문제</b><p class="note">바타차리야(Bhattacharya) 등이 초평면과 선분 모두와 만나는 최소 구와 원을 최적 시간에 풀었습니다. 대상이 점이 아닌 도형으로 바뀐 첫 체계적 연구입니다.</p></div></li>
+    <li><span class="yr">2001–2002</span><div><b>직선과 구의 접촉을 세는 문제</b><p class="note">맥도널드-파흐-테오발트는 단위 구 네 개에 공통으로 접하는 직선이 최대 12개임을 보였습니다. 직선-구 접촉 문제의 대수적 복잡도를 보여준 결과입니다.</p></div></li>
+    <li><span class="yr">2004–2008</span><div><b>컴퓨터 비전의 <a class="t" href="#term-linf">L∞ 노름(L-infinity norm)</a> 기하</b><p class="note">하틀리-샤팔리츠키와 칼(Kahl)은 여러 카메라 광선에 대한 최대 오차를 최소화하는 삼각측량을 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 전역 최적으로 풀었습니다. "직선들까지의 최대 거리 최소화"가 실제 응용에서 쓰인 대표 사례입니다.</p></div></li>
+    <li><span class="yr">2006–2008</span><div><b>결측 데이터는 직선</b><p class="note">가오-랭버그-슐만은 좌표 일부가 빠진 데이터 점이 직선이나 평면(flat)이 된다고 보았습니다. 이런 flat 전체와 만나는 최소 구를 근사하는 Helly형 정리와 <a class="t" href="#term-coreset">코어셋(core-set)</a>을 제시했습니다.</p></div></li>
+    <li><span class="yr">2025</span><div><b>궤적 <a class="t" href="#term-mtb">최소 접촉 구(minimum touching ball)</a></b><p class="note">필립스-슈는 선분으로 된 이동 궤적 모두와 만나는 최소 구를 다뤘습니다. 선분 하나짜리 궤적이면 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>이고 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>이 d+1이라 선형 시간입니다. 지금도 진행 중인 연구 주제라는 증거입니다.</p></div></li>
+    <li class="now"><span class="yr">2026</span><div><b>이 해커톤 문제</b><p class="note">구가 아닌 <i>원</i>을 요구합니다. 수치 알고리즘이 아닌 <i>케이스별 닫힌 해</i>를 요구합니다. 위 계보에서 비어 있는 칸입니다.</p></div></li>
+  </ol>
+  <figcaption><b class="n">그림 7.</b> 기원전 200년경부터 2026년까지 이 문제로 이어진 사건의 시간순 목록입니다. 왜: 현재 문제가 어떤 선행 연구의 빈칸인지 위치를 보이기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s2-3" role="tabpanel" aria-labelledby="st-s2-3" hidden>
+  <span class="stepno">Step 3 of 5</span>
+  <h2>왜 이 문제가 나왔나: 출제 맥락</h2>
+  <p class="why"><b>풀려던 문제.</b> 출제 의도를 모르면 무엇을 강조할지 정할 수 없습니다. 확인된 사실과 추정을 나눠서 봅니다.</p>
+  <div class="two">
+    <div class="box col">
+      <h3>확인된 사실</h3>
+      <ul>
+        <li>출제자는 Tim Wylie입니다. 2013년 Montana State University 박사입니다. 논문은 이산 Fréchet 거리와 응용이고 지도교수는 Binhai Zhu입니다.</li>
+        <li>출판 목록은 타일 자기조립, 로봇 재배치, 계산기하 쪽입니다.</li>
+        <li>문제 PDF는 출제 동기를 밝히지 않습니다. "단순하지만 지루한 대수적 케이스 분석"이라고만 설명합니다.</li>
+      </ul>
+    </div>
+    <div class="box col">
+      <h3>추정 (출제자에게 확인 권장)</h3>
+      <ul>
+        <li>계산기하에서는 일반 알고리즘보다 <b><a class="t" href="#term-degenerate">퇴화(degenerate)</a> 케이스 처리</b>가 더 어렵습니다. PDF Figure 1이 바로 퇴화 케이스 목록입니다.</li>
+        <li><a class="t" href="#term-welzl">Welzl식 랜덤 알고리즘(Welzl's randomized algorithm)</a>은 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>용입니다. 상수 크기 부분집합의 해를 구하는 <a class="t" href="#term-basis">기저 연산(basis computation)</a>이 필요합니다. 세 직선의 닫힌 해는 n개 직선 문제의 그 기저 연산입니다.</li>
+        <li>해커톤 형식상 하루 안에 "부분 결과"를 많이 낼 수 있게 설계된 문제로 보입니다 ("Try to find as many solutions as you can").</li>
       </ul>
     </div>
   </div>
 </section>
 
-<section>
-  <span class="eyebrow">계획 · 토 16:30 → 일 09:00</span>
-  <h2>타임라인</h2>
-  <div class="tl" id="tl"></div>
-  <p class="note">파랑은 수학과 코드, 주황은 잘라내도 되는 보너스, 보라는 논문 작성입니다. 실험은 이 노트북이 아니라 계산 환경에서 돌립니다.</p>
+<section class="stepbox" id="s2-4" role="tabpanel" aria-labelledby="st-s2-4" hidden>
+  <span class="stepno">Step 4 of 5</span>
+  <h2>이 맥락에서의 의미: 왜 중요한가</h2>
+  <p class="why"><b>풀려던 문제.</b> 세 직선만의 닫힌 해가 왜 가치 있는지 설명해야 합니다. 그 답은 더 큰 알고리즘의 부품이라는 점에 있습니다.</p>
+  <div class="three">
+    <div class="box col"><h3>1. 알고리즘의 부품</h3><p class="note">n개 직선의 최소 교차 구를 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>로 풉니다. 이때 매 단계에서 3~4개 직선의 최소 구를 정확히 구해야 합니다. 닫힌 해는 이 내부 루프를 빠르고 정확하게 만듭니다.</p></div>
+    <div class="box col"><h3>2. 견고성(robustness)</h3><p class="note">평행, 교차, <a class="t" href="#term-concurrent">공점(concurrent lines)</a> 같은 <a class="t" href="#term-degenerate">퇴화(degenerate)</a> 입력에서 수치 해법은 쉽게 불안정해집니다. 케이스 분류와 케이스별 공식이 있으면 <a class="t" href="#term-exact">정확 산술(exact arithmetic)</a>로 처리할 수 있습니다.</p></div>
+    <div class="box col"><h3>3. 원 대 구</h3><p class="note">문헌은 대부분 "구"를 다룹니다. 세 직선이면 최소 원이 최소 구의 <a class="t" href="#term-greatcircle">대원(great circle)</a>입니다. 이 페이지의 핵심 정리이고, 두 문제를 잇는 다리입니다. 직선이 4개 이상이면 깨집니다.</p></div>
+  </div>
 </section>
 
-<section>
+<section class="stepbox" id="s2-5" role="tabpanel" aria-labelledby="st-s2-5" hidden>
+  <span class="stepno">Step 5 of 5</span>
+  <h2>응용 분야</h2>
+  <p class="why"><b>풀려던 문제.</b> 이 문제를 풀면 어디에 쓰이는지 알아야 논문의 동기를 쓸 수 있습니다. 문헌에 있는 응용과 설명용 예시를 구분합니다.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>분야</th><th>무엇이 직선인가</th><th>연결 방식</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td>다중 시점 삼각측량 (컴퓨터 비전)</td><td>각 카메라에서 나온 광선</td><td>광선들까지의 최대 거리를 최소화하는 점이 우리 문제의 중심 c (<a class="t" href="#term-linf">L∞ 노름(L-infinity norm)</a> 삼각측량, <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>)</td><td><span class="st ok">문헌</span></td></tr>
+      <tr><td>결측 데이터 분석과 클러스터링</td><td>좌표 일부가 빠진 데이터 점</td><td>모든 flat과 만나는 최소 구는 결측 데이터의 1-center</td><td><span class="st ok">문헌</span></td></tr>
+      <tr><td>궤적 분석</td><td>이동 경로(선분)</td><td>모든 궤적이 지나가는 최소 영역 (만남 지점, 센서 위치)</td><td><span class="st ok">문헌</span></td></tr>
+      <tr><td>직선-구 접촉 계산 (그래픽스, 기하 모델링)</td><td>시선, 접선</td><td>구에 접하는 직선의 개수와 위치</td><td><span class="st ok">문헌</span></td></tr>
+      <tr><td>로봇과 CAD 기하 제약 해결</td><td>관절 축, 모서리</td><td>"원(회전 경로)이 세 축과 만나야 한다" 같은 제약</td><td><span class="st q">예시</span></td></tr>
+      <tr><td>통신과 감시 범위 설계</td><td>도로, 항로</td><td>세 경로를 모두 덮는 최소 반경 링 또는 구</td><td><span class="st q">예시</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">표 2.</b> 응용 분야 6개와 직선에 해당하는 대상, 근거 종류입니다. 왜: 논문에 인용해도 되는 행과 설명용 가상 예시를 구분하기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+  <p class="note">"문헌"은 다음 탭의 논문에 직접 나오는 응용입니다. "예시"는 설명을 위한 가상의 사용처입니다. 논문에는 "문헌" 행만 인용하세요.</p>
+</section>
+
+</div><!-- /tab-background -->
+
+<div class="tabpanel" id="tab-papers" role="tabpanel" aria-labelledby="tb-papers" hidden>
+
+<div class="subtabs" role="tablist" aria-label="탭 3 단계">
+  <button type="button" role="tab" id="st-s3-1" aria-controls="s3-1">Step 1 계보도</button>
+  <button type="button" role="tab" id="st-s3-2" aria-controls="s3-2">Step 2 마일스톤 논문 목록</button>
+  <button type="button" role="tab" id="st-s3-3" aria-controls="s3-3">Step 3 이 문제의 자리</button>
+  <button type="button" role="tab" id="st-s3-4" aria-controls="s3-4">Step 4 향후 연구</button>
+  <button type="button" role="tab" id="st-s3-5" aria-controls="s3-5">Step 5 출처</button>
+</div>
+
+<section class="stepbox" id="s3-1" role="tabpanel" aria-labelledby="st-s3-1">
+  <span class="stepno">Step 1 of 5</span>
+  <h2>계보: 어디서 와서 어디로 가나</h2>
+  <p class="why"><b>풀려던 문제.</b> 논문이 많으면 무엇부터 읽을지 모릅니다. 계보도는 읽는 순서와 이 문제의 위치를 보입니다.</p>
+  <p class="note">세 갈래의 연구 흐름이 이 문제에서 만납니다. 위쪽은 최소 반지름 문제(점에서 직선으로), 가운데는 3D 직선의 대수 기하, 아래쪽은 최적화와 응용입니다. 각 갈래 안에서는 왼쪽에서 오른쪽으로 시간 순서입니다.</p>
+  <figure class="fig" style="margin:0">
+  <p class="legend">사각형은 논문, 모서리를 깎은 상자는 이 문제, 점선 상자는 계획한 산출물입니다. 화살표 옆 글자는 그 단계가 다음 논문에 넘긴 것입니다.</p>
+  <p class="legend">상자를 누르면 그림 아래에 요약이 나옵니다.</p>
+  <div class="tablewrap" style="padding:12px">
+  <svg class="lineage" viewBox="0 0 2540 470" role="img" aria-label="관련 논문 흐름도">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted-foreground)"/></marker></defs>
+    <text x="8" y="18" class="lane">최소 반지름 문제: 점 → 직선</text><text x="8" y="176" class="lane">3D 직선의 대수 기하</text><text x="8" y="332" class="lane">최적화와 응용</text>
+    <g class="edges"><path d="M160,88 H256"/><path d="M396,88 H492"/><path d="M632,88 H728"/><path d="M868,88 H964"/><path d="M1104,88 H1200"/><path d="M1340,88 H1436"/><path d="M1576,88 H1672" class="hot"/><path d="M868,244 H964"/><path d="M1104,244 H1200"/><path d="M1340,244 H1436"/><path class="hot" d="M1576,244 H1712 V142"/><path d="M1104,400 H1200"/><path d="M1340,400 H1436"/><path class="hot" d="M1576,400 H1772 V142"/><path d="M1812,88 L1908,62"/><path d="M1812,88 L1908,192"/><path d="M1812,88 L1908,322"/><path d="M2048,62 L2144,192"/><path d="M2048,192 L2144,192"/><path d="M2048,322 L2144,192"/><path d="M2284,192 H2380"/></g>
+    <g class="nodes"><g id="b1" data-box="b1" role="button" tabindex="0" aria-pressed="false"><rect x="20" y="34" width="140" height="108"/><text x="30" y="54" class="y">BC 200</text><text x="30" y="72">아폴로니우스 접원</text></g><g id="b2" data-box="b2" role="button" tabindex="0" aria-pressed="false"><rect x="256" y="34" width="140" height="108"/><text x="266" y="54" class="y">1857</text><text x="266" y="72">Sylvester</text><text x="266" y="87">최소 포함원</text><text x="266" y="102">(minimum</text><text x="266" y="117">enclosing circle)</text></g><g id="b3" data-box="b3" role="button" tabindex="0" aria-pressed="false"><rect x="492" y="34" width="140" height="108"/><text x="502" y="54" class="y">1983</text><text x="502" y="72">Megiddo</text></g><g id="b4" data-box="b4" role="button" tabindex="0" aria-pressed="false"><rect x="728" y="34" width="140" height="108"/><text x="738" y="54" class="y">1991 · 1992</text><text x="738" y="72">Welzl,</text><text x="738" y="87">Sharir-Welzl</text><text x="738" y="102">LP형 문제</text><text x="738" y="117">(LP-type problem)</text></g><g id="b5" data-box="b5" role="button" tabindex="0" aria-pressed="false"><rect x="964" y="34" width="140" height="108"/><text x="974" y="54" class="y">1994</text><text x="974" y="72">Bhattacharya 외</text><text x="974" y="87">교차 반지름</text><text x="974" y="102">(intersection</text><text x="974" y="117">radius)</text></g><g id="b6" data-box="b6" role="button" tabindex="0" aria-pressed="false"><rect x="1200" y="34" width="140" height="108"/><text x="1210" y="54" class="y">2008</text><text x="1210" y="72">Gao 외</text></g><g id="b7" data-box="b7" role="button" tabindex="0" aria-pressed="false"><rect x="1436" y="34" width="140" height="108"/><text x="1446" y="54" class="y">2025</text><text x="1446" y="72">Phillips-Schou</text></g><g id="b15" data-box="b15" role="button" tabindex="0" aria-pressed="false" class="target"><polygon points="1686,34 1798,34 1812,48 1812,128 1798,142 1686,142 1672,128 1672,48"/><text x="1682" y="72">이 문제:</text><text x="1682" y="89">3직선 최소 원</text><text x="1682" y="106">(2026 해커톤)</text></g><g id="b8" data-box="b8" role="button" tabindex="0" aria-pressed="false"><rect x="728" y="190" width="140" height="108"/><text x="738" y="210" class="y">1868</text><text x="738" y="228">Plücker</text></g><g id="b9" data-box="b9" role="button" tabindex="0" aria-pressed="false"><rect x="964" y="190" width="140" height="108"/><text x="974" y="210" class="y">1879</text><text x="974" y="228">Schubert</text></g><g id="b10" data-box="b10" role="button" tabindex="0" aria-pressed="false"><rect x="1200" y="190" width="140" height="108"/><text x="1210" y="210" class="y">2001</text><text x="1210" y="228">Macdonald-</text><text x="1210" y="243">Pach-Theobald</text></g><g id="b11" data-box="b11" role="button" tabindex="0" aria-pressed="false"><rect x="1436" y="190" width="140" height="108"/><text x="1446" y="210" class="y">2002</text><text x="1446" y="228">Sottile-</text><text x="1446" y="243">Theobald</text></g><g id="b12" data-box="b12" role="button" tabindex="0" aria-pressed="false"><rect x="964" y="346" width="140" height="108"/><text x="974" y="366" class="y">1998</text><text x="974" y="384">Lobo 외</text><text x="974" y="399">이차 원뿔 계획법</text><text x="974" y="414">(second-order</text><text x="974" y="429">cone programming,</text><text x="974" y="444">SOCP)</text></g><g id="b13" data-box="b13" role="button" tabindex="0" aria-pressed="false"><rect x="1200" y="346" width="140" height="108"/><text x="1210" y="366" class="y">2004</text><text x="1210" y="384">Hartley-</text><text x="1210" y="399">Schaffalitzky</text></g><g id="b14" data-box="b14" role="button" tabindex="0" aria-pressed="false"><rect x="1436" y="346" width="140" height="108"/><text x="1446" y="366" class="y">2005 · 2008</text><text x="1446" y="384">Kahl,</text><text x="1446" y="399">Kahl-Hartley</text></g><g id="b16" data-box="b16" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="1908" y="20" width="140" height="84"/><text x="1918" y="40" class="y">(계획)</text><text x="1918" y="58">대원 정리</text><text x="1918" y="73">(great circle)</text></g><g id="b17" data-box="b17" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="1908" y="150" width="140" height="84"/><text x="1918" y="170" class="y">(계획)</text><text x="1918" y="188">케이스별</text><text x="1918" y="203">닫힌 형태</text><text x="1918" y="218">(closed form) 표</text></g><g id="b18" data-box="b18" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="1908" y="280" width="140" height="84"/><text x="1918" y="300" class="y">(계획)</text><text x="1918" y="318">일반 꼬인 위치</text><text x="1918" y="333">(skew lines)</text><text x="1918" y="348">케이스의 차수</text></g><g id="b19" data-box="b19" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="2144" y="150" width="140" height="84"/><text x="2154" y="170" class="y">(계획)</text><text x="2154" y="188">2쪽 논문</text></g><g id="b20" data-box="b20" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="2380" y="150" width="140" height="84"/><text x="2390" y="170" class="y">(계획)</text><text x="2390" y="188">향후 연구</text></g></g>
+    <g class="labels"><text class="al" text-anchor="middle" x="208" y="67">세 대상에</text><text class="al" text-anchor="middle" x="208" y="80">닿는 원</text><text class="al" text-anchor="middle" x="444" y="67">최소</text><text class="al" text-anchor="middle" x="444" y="80">반지름 문제</text><text class="al" text-anchor="middle" x="680" y="80">선형 시간</text><text class="al" text-anchor="middle" x="916" y="80">일반 틀</text><text class="al" text-anchor="middle" x="1152" y="67">대상: 점에서</text><text class="al" text-anchor="middle" x="1152" y="80">직선으로</text><text class="al" text-anchor="middle" x="1388" y="54">고차원 flat,</text><text class="al" text-anchor="middle" x="1388" y="67">코어셋</text><text class="al" text-anchor="middle" x="1388" y="80">(core-set)</text><text class="al" text-anchor="middle" x="1624" y="41">선분 궤적,</text><text class="al" text-anchor="middle" x="1624" y="54">조합 차원</text><text class="al" text-anchor="middle" x="1624" y="67">(combinatorial</text><text class="al" text-anchor="middle" x="1624" y="80">dimension) d+1</text><text class="al" text-anchor="middle" x="1644" y="236">대수적 차수</text><text class="al" text-anchor="middle" x="1674" y="379">SOCP 검증</text><text class="al" text-anchor="middle" x="1674" y="392">관점</text></g>
+  </svg>
+
+
+
+  </div>
+  <figcaption><b class="n">그림 8.</b> 주 흐름과 두 갈래(대수 기하, 최적화)가 이 문제로 모이고 계획한 산출물로 이어지는 흐름도입니다. 왜: 어떤 논문이 무엇을 다음 논문에 넘겼는지 보여 주어, 어느 논문을 읽어야 이 문제의 어느 부분이 풀리는지 알게 하기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+  <div class="panel nodeinfo" id="nodeinfo" aria-live="polite"></div>
+</section>
+
+<section class="stepbox" id="s3-2" role="tabpanel" aria-labelledby="st-s3-2" hidden>
+  <span class="stepno">Step 2 of 5</span>
+  <h2>마일스톤 논문 목록</h2>
+  <p class="why"><b>풀려던 문제.</b> 논문에 인용할 문헌을 골라야 합니다. 각 논문이 무엇을 했고 우리 문제와 어떻게 이어지는지 한 표에 모읍니다.</p>
+  <p class="note">서지 정보는 웹 검색으로 대부분 확인했습니다. 논문에 인용하기 전에 원문 PDF로 한 번 더 확인하세요. "현황"은 그 결과가 지금 어떻게 쓰이는지입니다.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table class="papers">
+    <thead><tr><th>연도</th><th>논문</th><th>무엇을 했나</th><th>우리 문제와의 연결</th><th>현황</th></tr></thead>
+    <tbody>
+      <tr><td class="num">BC 200<br>/1600</td><td>Apollonius, <i>Tangencies</i> (소실) · Viète, <i>Apollonius Gallus</i></td><td>세 대상(점, 직선, 원)에 접하는 원의 작도</td><td>수직선 특수 케이스는 평면 <a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a></td><td><span class="st ok">고전, 교재</span></td></tr>
+      <tr><td class="num">1857</td><td>J. J. Sylvester, "A question in the geometry of situation", <i>Quart. J. Pure Appl. Math.</i></td><td><a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a> 문제 제기</td><td>3 평행선 케이스는 단면 삼각형의 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a></td><td><span class="st ok">고전</span></td></tr>
+      <tr><td class="num">1868</td><td>J. Plücker, <i>Neue Geometrie des Raumes</i></td><td>직선을 6개 동차좌표로 표현</td><td>입력 형식 후보. <a class="t" href="#term-plucker">플뤼커 좌표(Plücker coordinates)</a>는 직선 관계 판정의 언어</td><td><span class="st ok">그래픽스와 로봇에서 사용 중</span></td></tr>
+      <tr><td class="num">1983</td><td>N. Megiddo, "Linear-time algorithms for linear programming in R³ and related problems", <i>SIAM J. Comput.</i> 12(4)</td><td><a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>을 결정적 O(n)에 prune-and-search로 풀기</td><td>최소 반지름 문제의 알고리즘적 출발점</td><td><span class="st ok">교과서 표준</span></td></tr>
+      <tr><td class="num">1991</td><td>E. Welzl, "Smallest enclosing disks (balls and ellipsoids)", LNCS 555</td><td>기대 O(n) 랜덤 증분 알고리즘 (<a class="t" href="#term-welzl">Welzl식 랜덤 알고리즘(Welzl's randomized algorithm)</a>)</td><td>n개 직선으로 확장할 때의 알고리즘 틀</td><td><span class="st ok">CGAL 등 라이브러리에 구현</span></td></tr>
+      <tr><td class="num">1992</td><td>M. Sharir, E. Welzl, "A combinatorial bound for linear programming and related problems", STACS</td><td><a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a> 정의와 일반 알고리즘</td><td>최소 교차 구가 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>이면 <a class="t" href="#term-basis">기저 연산(basis computation)</a>이 우리 닫힌 해</td><td><span class="st ok">이론 표준</span></td></tr>
+      <tr><td class="num">1994</td><td>N. Amenta, "Helly-type theorems and generalized linear programming", <i>DCG</i> 12</td><td>Helly형 정리와 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>의 연결</td><td><a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>(필요한 활성 대상 수)의 근거</td><td><span class="st ok">이론 표준</span></td></tr>
+      <tr><td class="num">1994</td><td>B. K. Bhattacharya, S. Jadhav, A. Mukhopadhyay, J.-M. Robert, "Optimal algorithms for some intersection radius problems", <i>Computing</i> 52(3) (SoCG 1991 초판)</td><td>초평면과 선분에 만나는 최소 구와 원을 최적 시간에 구하기</td><td><b>가장 직접적인 선행 연구</b>. 점 대신 직선형 대상을 다룸</td><td><span class="st ok">기초 결과</span></td></tr>
+      <tr><td class="num">1998</td><td>M. S. Lobo, L. Vandenberghe, S. Boyd, H. Lebret, "Applications of second-order cone programming", <i>Linear Algebra Appl.</i> 284</td><td><a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a> 응용 정리 (최소 포함 구 등)</td><td>우리 r*를 수치로 검증하는 방법</td><td><span class="st ok">솔버로 일상 사용</span></td></tr>
+      <tr><td class="num">2001</td><td>I. G. Macdonald, J. Pach, T. Theobald, "Common tangents to four unit balls in R³", <i>DCG</i> 26(1)</td><td>공통 접선은 최대 12개 (Larman의 질문)</td><td>직선-구 접촉의 대수적 차수. 일반 꼬인 케이스 분석의 모델</td><td><span class="st q">후속 연구 활발</span></td></tr>
+      <tr><td class="num">2002</td><td>F. Sottile, T. Theobald, "Lines tangent to 2n−2 spheres in Rⁿ", <i>Trans. AMS</i> 354</td><td>위 결과의 n차원 일반화</td><td>차수 계산 방법론 (실대수기하)</td><td><span class="st q">연구 중</span></td></tr>
+      <tr><td class="num">2002</td><td>M. Bădoiu, S. Har-Peled, P. Indyk, "Approximate clustering via core-sets", STOC</td><td>최소 포함 구의 <a class="t" href="#term-coreset">코어셋(core-set)</a> 근사</td><td>고차원과 대규모 확장 방향</td><td><span class="st ok">머신러닝에서 사용</span></td></tr>
+      <tr><td class="num">2004</td><td>R. Hartley, F. Schaffalitzky, "L∞ minimization in geometric reconstruction problems", CVPR</td><td><a class="t" href="#term-linf">L∞ 노름(L-infinity norm)</a> 오차의 전역 최적 재구성</td><td>광선까지의 최대 거리 최소화는 r*와 같은 구조</td><td><span class="st ok">비전에서 사용</span></td></tr>
+      <tr><td class="num">2005<br>/2008</td><td>F. Kahl, "Multiple view geometry and the L∞-norm", ICCV 2005 · F. Kahl, R. Hartley, <i>IEEE TPAMI</i> 30(9) 2008</td><td>삼각측량 등을 <a class="t" href="#term-quasiconvex">준볼록(quasi-convex)</a> 문제로 바꿔 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 풀기</td><td>우리 문제를 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 보는 관점의 직접 선례</td><td><span class="st ok">공개 툴박스</span></td></tr>
+      <tr><td class="num">2008</td><td>J. Gao, M. Langberg, L. J. Schulman, "Analysis of incomplete data and an intrinsic-dimension Helly theorem", <i>DCG</i> 40(4) (SODA 2006 초판)</td><td>직선과 flat 집합의 최소 <a class="t" href="#term-intradius">교차 반지름(intersection radius)</a>, Helly형 정리, <a class="t" href="#term-coreset">코어셋(core-set)</a></td><td>직선들과 만나는 최소 구의 근사 알고리즘</td><td><span class="st q">데이터 분석 응용</span></td></tr>
+      <tr><td class="num">2025</td><td>J. M. Phillips, J. K. R. Schou, "Trajectory minimum touching ball", arXiv:2505.02472</td><td>궤적과 만나는 <a class="t" href="#term-mtb">최소 접촉 구(minimum touching ball)</a>. 선분이면 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>이고 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>은 d+1</td><td>R³에서 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a> 4이므로 직선 3~4개 기저의 닫힌 해가 필요</td><td><span class="st open">최신 연구</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">표 3.</b> 마일스톤 논문 16편의 연도, 서지, 내용, 우리 문제와의 연결, 현황입니다. 왜: 어떤 논문이 어느 부분의 근거인지 인용 전에 확인하기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s3-3" role="tabpanel" aria-labelledby="st-s3-3" hidden>
+  <span class="stepno">Step 3 of 5</span>
+  <h2>이 문제의 자리</h2>
+  <p class="why"><b>풀려던 문제.</b> 해커톤에서 무엇을 새로 낼 수 있는지 알아야 합니다. 이미 알려진 것과 빈칸을 나누면 기여가 보입니다.</p>
   <div class="two">
-    <div class="box" style="display:flex;flex-direction:column;gap:10px">
-      <h3>Tim Wylie에게 먼저 물어볼 것</h3>
-      <ol>
-        <li>"touches"는 원이 직선과 만난다는 뜻인가요, 접한다는 뜻인가요?</li>
-        <li>세 직선이 한 점을 지날 때 r = 0을 답으로 인정하나요?</li>
-        <li>해가 유일하지 않을 때(평행 케이스) 원 하나만 내면 되나요, 해의 족 전체를 서술해야 하나요?</li>
-        <li>닫힌 해의 입력 형식: 벡터형, 두 점형, Plücker 중 무엇이 좋나요?</li>
-      </ol>
+    <div class="box col">
+      <h3>이미 알려진 것</h3>
+      <ul>
+        <li>직선, 선분, flat과 만나는 최소 <b>구</b>: 알고리즘과 근사 기법이 있음</li>
+        <li>최소 반지름은 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 전역 최적을 수치로 구할 수 있음</li>
+        <li>직선-구 접촉 문제는 대수적으로 복잡함 (예: 12개 공통 접선)</li>
+      </ul>
     </div>
-    <div class="box" style="display:flex;flex-direction:column;gap:10px">
-      <h3>2쪽 논문 구성 계획</h3>
-      <ol>
-        <li>서론과 해석 명시 (¼쪽)</li>
-        <li>주정리: 최소 원 = 최소 구의 대원 (½쪽)</li>
-        <li>케이스 표: 행마다 (c, r, n) (⅗쪽)</li>
-        <li>그림 2개: 구와 대원, 둔각 프리즘의 기울어진 원</li>
-        <li>SOCP 대조 검증과 미해결 꼬인 케이스</li>
-      </ol>
+    <div class="box col">
+      <h3>이 해커톤에서 채울 수 있는 빈칸</h3>
+      <ul>
+        <li>최소 <b>원</b>과 최소 구의 관계 (세 직선이면 <a class="t" href="#term-greatcircle">대원(great circle)</a> 정리)</li>
+        <li>PDF Figure 1의 모든 케이스에 대한 <b>닫힌 해</b> 표</li>
+        <li>일반 꼬인 케이스의 대수적 차수 (닫힌 해의 한계)</li>
+      </ul>
     </div>
   </div>
 </section>
 
-<section>
-  <span class="eyebrow">tips/Wylie_SmallestCircle 의 파일</span>
-  <ul class="files">
-    <li>01_study_guide.md: 기초, 자가 점검, 함정</li>
-    <li>02_possible_solutions.md: 케이스별 유도와 상태</li>
-    <li>03_plan_and_design.md: 타임라인, 논문 구성, 코드 구조</li>
-    <li>study_tips.html: 이 페이지</li>
-  </ul>
-  <p class="note">탐색기의 숫자는 이 페이지 안의 간이 수치 풀이 결과입니다. 유도를 점검하는 데만 쓰고 논문 결과로 인용하지 마세요.</p>
+<section class="stepbox" id="s3-4" role="tabpanel" aria-labelledby="st-s3-4" hidden>
+  <span class="stepno">Step 4 of 5</span>
+  <h2>향후 연구(future work)</h2>
+  <p class="why"><b>풀려던 문제.</b> 2025년 Phillips-Schou 논문이 남긴 빈칸을 찾는다. 그 빈칸에서 이어지는 연구를 고른다.</p>
+  <p class="note">빈칸은 원문에서 확인한 사실이다. 제안 연구는 우리의 제안이고 원문의 주장이 아니다.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table class="papers">
+    <thead><tr><th>빈칸 (원문 확인)</th><th>근거</th><th>제안 연구</th><th>시기</th></tr></thead>
+    <tbody>
+      <tr><td>작은 <a class="t" href="#term-basisset">기저(basis)</a>의 <a class="t" href="#term-closedform">닫힌 형태(closed form)</a> 해가 없다</td><td><a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a> 부분을 일반 솔버(Clarkson, Seidel, Matoušek-Sharir-Welzl)에 맡긴다</td><td>3차원 직선 3개, 4개의 <a class="t" href="#term-closedform">닫힌 형태(closed form)</a> <a class="t" href="#term-basis">기저 연산(basis computation)</a></td><td><ul><li>해커톤: 직선 3개</li><li>이후: 직선 4개</li></ul></td></tr>
+      <tr><td>선분 2개, 3개짜리 궤적이 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>인지 열려 있다</td><td>선분 1개(예)와 4개 이상(아니오)만 다룬다</td><td>선분 2개, 3개 궤적의 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>을 정한다</td><td>이후</td></tr>
+      <tr><td>정확 알고리즘이 평면(2차원)뿐이다</td><td>정확 알고리즘 정리(Theorem 4.1)가 ℝ²만 다룬다</td><td><ul><li>3차원 정확 알고리즘</li><li><a class="t" href="#term-closedform">닫힌 형태(closed form)</a> 기저를 부품으로 쓴다</li></ul></td><td>이후</td></tr>
+      <tr><td>계산 <a class="t" href="#term-lowerbound">하한(lower bound)</a>이 없다</td><td>하한이나 <a class="t" href="#term-hardness">어려움(hardness)</a> 결과가 없다</td><td>약 O((nk)² log n) 알고리즘의 하한을 증명하거나 알고리즘을 개선한다</td><td>이후</td></tr>
+      <tr><td>구현과 실험이 없다</td><td><ul><li>구현, 실험, 수치 <a class="t" href="#term-robustness">견고성(robustness)</a> 논의가 없다</li><li>일반 위치를 가정한다</li></ul></td><td><ul><li><a class="t" href="#term-exact">정확 산술(exact arithmetic)</a> 구현</li><li>실제 궤적 데이터로 실험한다</li></ul></td><td>이후 (계산 환경 필요)</td></tr>
+      <tr><td>무한 직선, 원, <a class="t" href="#term-tangent">접함(tangent)</a>, <a class="t" href="#term-outlier">이상치(outlier)</a> 변형이 없다</td><td>원문은 유한 선분과 구만 다룬다</td><td><ul><li>직선 버전(이 문제)</li><li>원 버전(<a class="t" href="#term-greatcircle">대원(great circle)</a> 정리)</li><li>이상치 m개를 버리는 버전</li></ul></td><td><ul><li>해커톤: 직선, 원</li><li>이후: 이상치</li></ul></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">표 4.</b> 2025년 논문의 빈칸 6개와 근거, 제안 연구, 시기입니다. 왜: 어느 빈칸을 해커톤에서 채우고 어느 빈칸을 이후로 미루는지 보이기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+  <figure class="fig" style="margin:0">
+  <p class="legend">실선 상자는 원문에서 확인한 사실이고, 점선 상자는 계획입니다.</p>
+  <div class="tablewrap" style="padding:12px">
+  <svg class="lineage flow2" viewBox="0 0 780 180" role="img" aria-label="향후 연구 흐름도">
+    <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted-foreground)"/></marker></defs>
+    <g class="edges"><path d="M220,95 H290"/><path d="M490,95 H560"/></g>
+    <g class="nodes"><g><rect x="20" y="40" width="200" height="110"/><text x="30" y="60" class="y">2025 논문의</text><text x="30" y="78">빈칸 6개</text></g><g class="plan"><rect x="290" y="40" width="200" height="110"/><text x="300" y="60" class="y">해커톤 (계획)</text><text x="300" y="78">직선 3개 닫힌 형태 해,</text><text x="300" y="93">대원 정리</text></g><g class="plan"><rect x="560" y="20" width="200" height="150"/><text x="570" y="40" class="y">이후 (계획)</text><text x="570" y="58">직선 4개 기저</text><text x="570" y="73">선분 끝점 경우</text><text x="570" y="88">3차원 정확 알고리즘</text><text x="570" y="103">선분 2~3개 조합 차원</text><text x="570" y="118">하한</text><text x="570" y="133">구현과 실험</text><text x="570" y="148">이상치</text></g></g>
+  </svg>
+  </div>
+  <figcaption><b class="n">그림 9.</b> 2025년 논문의 빈칸 6개에서 해커톤 계획과 이후 계획으로 이어지는 흐름도입니다. 왜: 해커톤에서 할 일과 미룰 일을 한눈에 가르기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+  <div class="box col">
+    <h3>이 문제에서 바로 이어지는 질문 (가설)</h3>
+    <ul>
+      <li>직선이 4개 이상이면 <a class="t" href="#term-greatcircle">대원(great circle)</a> 정리가 깨질 수 있다(may). <a class="t" href="#term-active">활성 제약(active constraint)</a> 4개는 한 평면에 놓이지 않을 수 있기 때문이다.</li>
+      <li>그때 최소 원 문제가 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>인지는 열려 있다.</li>
+      <li><a class="t" href="#term-tangent">접함(tangent)</a> 해석의 최소 원은 활성 2개 케이스의 답이 달라진다.</li>
+      <li>선분 버전은 끝점에서 닿는 경우를 더 다뤄야 한다.</li>
+      <li>일반 <a class="t" href="#term-skew">꼬인 위치(skew lines)</a> 케이스의 다항식 차수는 아직 모른다.</li>
+    </ul>
+  </div>
 </section>
+
+
+<section class="stepbox" id="s3-5" role="tabpanel" aria-labelledby="st-s3-5" hidden>
+  <span class="stepno">Step 5 of 5</span>
+  <h2>출처</h2>
+  <p class="why"><b>목적.</b> 이 탭의 주장을 직접 확인할 수 있게 원문 링크를 모았습니다.</p>
+  <ul class="files">
+    <li><a href="https://link.springer.com/doi/10.1007/BF02246508">Bhattacharya et al., Computing 1994</a></li>
+    <li><a href="https://arxiv.org/abs/2505.02472">Phillips &amp; Schou, arXiv:2505.02472</a></li>
+    <li><a href="https://link.springer.com/content/pdf/10.1007/s00454-008-9107-5.pdf">Gao, Langberg, Schulman, DCG 2008</a></li>
+    <li><a href="https://vision.ucsd.edu/sites/default/files/publications/pdfs/Multiple%20View%20Geometry%20and%20the%20L-infinity%20Norm.pdf">Kahl, ICCV 2005</a> · <a href="https://lup.lub.lu.se/search/publication/788368">Kahl &amp; Hartley, TPAMI 2008</a></li>
+    <li><a href="https://www.math.uni-frankfurt.de/~theobald/publications/tangents2.pdf">Macdonald, Pach, Theobald, DCG 2001</a></li>
+    <li><a href="https://mathgenealogy.org/id.php?id=175317">Timothy Wylie, Mathematics Genealogy</a> · <a href="https://portal.mardi4nfdi.de/wiki/Person:300221">출판 목록 (MaRDI)</a></li>
+  </ul>
+  <p class="note">나머지 고전 문헌(Sylvester, Plücker, Megiddo, Welzl, Sharir-Welzl, Amenta, Lobo 외, Sottile-Theobald, Bădoiu 외, Hartley-Schaffalitzky)은 널리 알려진 서지 정보로 적었습니다. 이번에 따로 검색해 확인하지는 않았습니다.</p>
+</section>
+
+</div><!-- /tab-papers -->
+
+<div class="tabpanel" id="tab-terms" role="tabpanel" aria-labelledby="tb-terms" hidden>
+
+<button type="button" class="back" id="termsBack" hidden>← 돌아가기</button>
+
+<section class="stepbox" id="terms">
+  <span class="stepno">용어 부록 (terms appendix)</span>
+  <h2>용어 부록 (terms appendix)</h2>
+  <p class="why"><b>목적.</b> 본문의 용어는 한영 병기만 둡니다. 전체 이름과 한 줄 뜻은 여기서 찾습니다. 어느 탭에서든 링크가 작동합니다.</p>
+  <ul class="termlist">
+    <li id="term-socp"><b>이차 원뿔 계획법(second-order cone programming, SOCP)</b>: 거리 한계 ‖Ax+b‖ ≤ cᵀx+d를 제약으로 쓰는 볼록 최적화</li>
+    <li id="term-kkt"><b>카루시-쿤-터커 조건(Karush-Kuhn-Tucker conditions, KKT)</b>: 제약 있는 최적점이 만족해야 하는 필요 조건</li>
+    <li id="term-mec"><b>최소 포함원(minimum enclosing circle, MEC)</b>: 주어진 점들을 모두 안에 담는 가장 작은 원</li>
+    <li id="term-pll"><b>아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</b>: 점 하나와 직선 둘에 동시에 접하는 원을 구하는 문제</li>
+    <li id="term-lptype"><b>LP형 문제(LP-type problem)</b>: 선형 계획법의 구조를 일반화한 문제 틀. 작은 기저로 전체 해가 정해짐</li>
+    <li id="term-intradius"><b>교차 반지름(intersection radius)</b>: 주어진 도형들과 모두 만나는 가장 작은 구나 원의 반지름</li>
+    <li id="term-mtb"><b>최소 접촉 구(minimum touching ball)</b>: 주어진 도형들과 모두 만나는 가장 작은 구</li>
+    <li id="term-greatcircle"><b>대원(great circle)</b>: 구의 중심을 지나는 평면이 구와 만나는 원</li>
+    <li id="term-skew"><b>꼬인 위치(skew lines)</b>: 평행하지도 만나지도 않는 두 직선의 관계</li>
+    <li id="term-commonperp"><b>공통 수선(common perpendicular)</b>: 꼬인 두 직선에 모두 수직인 선분</li>
+    <li id="term-foot"><b>수선의 발(foot of perpendicular)</b>: 점에서 직선에 내린 수선이 직선과 만나는 점</li>
+    <li id="term-active"><b>활성 제약(active constraint)</b>: 최적점에서 등호로 성립해 해를 정하는 제약. 여기서는 거리가 정확히 r인 직선</li>
+    <li id="term-convex"><b>볼록 함수(convex function)</b>: 그래프 위 두 점을 이은 선분이 그래프 위쪽에 있는 함수</li>
+    <li id="term-minimax"><b>미니맥스(minimax)</b>: 여러 값 중 최댓값을 가장 작게 만드는 최적화</li>
+    <li id="term-subgradient"><b>서브그래디언트(subgradient)</b>: 미분이 안 되는 볼록 함수에 쓰는 기울기의 일반화</li>
+    <li id="term-incircle"><b>내접원(incircle)</b>: 삼각형 안에서 세 변에 모두 접하는 원</li>
+    <li id="term-circumcircle"><b>외접원(circumcircle)</b>: 삼각형의 세 꼭짓점을 모두 지나는 원</li>
+    <li id="term-concurrent"><b>공점(concurrent lines)</b>: 여러 직선이 한 점에서 만나는 상태</li>
+    <li id="term-degenerate"><b>퇴화(degenerate)</b>: 일반 공식이 깨지는 특수한 배치. 예: 반지름 0</li>
+    <li id="term-plucker"><b>플뤼커 좌표(Plücker coordinates)</b>: 3차원 직선을 6개 숫자로 나타내는 좌표</li>
+    <li id="term-bezout"><b>베주 상한(Bézout bound)</b>: 연립 다항식의 해 개수에 대한 차수 기반 상한</li>
+    <li id="term-basis"><b>기저 연산(basis computation)</b>: 상수 개 제약만으로 부분 문제의 해를 구하는 단계</li>
+    <li id="term-combdim"><b>조합 차원(combinatorial dimension)</b>: 해를 정하는 데 필요한 제약의 최대 개수</li>
+    <li id="term-coreset"><b>코어셋(core-set)</b>: 전체를 근사하는 작은 부분 집합</li>
+    <li id="term-quasiconvex"><b>준볼록(quasi-convex)</b>: 모든 아래 집합이 볼록한 함수</li>
+    <li id="term-linf"><b>L∞ 노름(L-infinity norm)</b>: 벡터 성분 절댓값 중 최댓값. 최대 오차 척도</li>
+    <li id="term-closedform"><b>닫힌 형태(closed form)</b>: 유한 개 연산으로 쓴 해의 식</li>
+    <li id="term-antipodal"><b>대척점(antipodal points)</b>: 구의 중심을 사이에 두고 정반대에 있는 두 점</li>
+    <li id="term-tangent"><b>접함(tangent)</b>: 한 점에서 스치듯 닿는 관계. 만남(intersect)보다 강한 조건</li>
+    <li id="term-exact"><b>정확 산술(exact arithmetic)</b>: 반올림 없이 계산하는 방식</li>
+    <li id="term-transversal"><b>횡단선(transversal)</b>: 다른 직선들을 가로지르는 직선</li>
+    <li id="term-welzl"><b>Welzl식 랜덤 알고리즘(Welzl's randomized algorithm)</b>: 점을 무작위 순서로 넣어 기대 선형 시간에 최소 포함 도형을 구하는 방법</li>
+    <li id="term-outlier"><b>이상치(outlier)</b>: 나머지 데이터와 크게 어긋나 있는 점</li>
+    <li id="term-lowerbound"><b>하한(lower bound)</b>: 어떤 알고리즘도 이보다 적은 계산으로는 풀 수 없다는 계산량의 바닥</li>
+    <li id="term-robustness"><b>견고성(robustness)</b>: 반올림 오차나 퇴화 입력에서도 결과가 크게 틀어지지 않는 성질</li>
+    <li id="term-hardness"><b>어려움(hardness)</b>: 문제를 푸는 데 계산이 많이 든다는 것을 보이는 결과</li>
+    <li id="term-basisset"><b>기저(basis)</b>: 해를 정하는 최소한의 제약 부분집합</li>
+  </ul>
+</section>
+
+</div><!-- /tab-terms -->
 
 </div>
 <script>
@@ -573,7 +1015,7 @@ function render(){
   const errs=current.map(Ln=>touchError(Ln,circ));
   const pairs=sol.pairs.map(p=>`<tr><td>L${p.i+1}·L${p.j+1}</td><td>${({meet:'교차',skew:'꼬인',parallel:'평행',coincident:'일치'})[p.ll.rel]}</td><td class="num">${fmt(p.rho)}</td></tr>`).join('');
   readout.innerHTML=`
-    <span class="eyebrow">분류 결과</span>
+    <span class="eyebrow">분류 결과 · 설명용 값(Illustrative values)</span>
     <div class="case">${cls}</div>
     ${chip}
     <dl class="kv">
@@ -583,7 +1025,7 @@ function render(){
     </dl>
     <table><thead><tr><th>쌍</th><th>관계</th><th>ρ = dist/2</th></tr></thead><tbody>${pairs}</tbody></table>
     <table><thead><tr><th>직선</th><th>dist(c, L)</th><th>원과의 간격</th></tr></thead><tbody>
-      ${current.map((Ln,i)=>`<tr><td style="color:var(--l${i+1});font-weight:600">L${i+1}</td><td class="num">${fmt(dist(Ln,circ.c))}</td><td class="num">${errs[i]<1e-6?'✓ ':'✗ '}${errs[i].toExponential(1)}</td></tr>`).join('')}
+      ${current.map((Ln,i)=>`<tr><td style="color:var(--series-l${i+1});font-weight:600">L${i+1}</td><td class="num">${fmt(dist(Ln,circ.c))}</td><td class="num">${errs[i]<1e-6?'✓ ':'✗ '}${errs[i].toExponential(1)}</td></tr>`).join('')}
     </tbody></table>
     <p class="note">하한 확인: r ≥ max ρ = ${fmt(Math.max(...sol.pairs.map(p=>p.rho)))}. 페이지 안 간이 수치 풀이 결과이므로 유도 점검용으로만 쓰세요.</p>`;
 }
@@ -630,7 +1072,7 @@ function drawView(v){
   const {ctx,cv,Ls,circ,o}=v; if(!Ls)return;
   const d=DPR(),W=cv.width,H=cv.height,P=v.proj;
   ctx.clearRect(0,0,W,H);
-  const rule=css('--rule'),muted=css('--muted'),ink=css('--ink'),cols=[css('--l1'),css('--l2'),css('--l3')],cc=css('--circle'),sph=css('--sphere');
+  const rule=css('--rule'),muted=css('--muted-foreground'),ink=css('--foreground'),cols=[css('--series-l1'),css('--series-l2'),css('--series-l3')],cc=css('--series-circle'),sph=css('--series-sphere');
   const S=(a,b,col,w,dash,alpha)=>{const A=P(a),B=P(b);ctx.save();ctx.globalAlpha=alpha??1;ctx.strokeStyle=col;ctx.lineWidth=w*d;
     ctx.setLineDash((dash||[]).map(x=>x*d));ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.stroke();ctx.restore()};
   const T=(p,txt,col,size,weight,align)=>{const A=P(p);ctx.fillStyle=col;ctx.font=`${weight||400} ${size*d}px "IBM Plex Mono", monospace`;
@@ -717,7 +1159,6 @@ function attachDrag(v){
   box.addEventListener('wheel',e=>{e.preventDefault();v.zoom=Math.min(6,Math.max(.25,v.zoom*Math.exp(-e.deltaY*0.0015)));v.draw()},{passive:false});
 }
 const redrawAll=()=>views.forEach(v=>v.draw());
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawAll);
 
 // ---------- explorer wiring ----------
 const main=makeView(document.getElementById('cv'),{});
@@ -746,12 +1187,11 @@ PRESETS.forEach(grp=>grp.items.forEach(([name,Ls])=>{
   const act=s.active.length===3?'<span class="chip a3">활성 3</span>':s.active.length===2?`<span class="chip a2">활성 2: L${s.active[0]+1}, L${s.active[1]+1}</span>`:'<span class="chip a0">r = 0</span>';
   card.innerHTML=`<div class="gtitle"><span class="eyebrow">${grp.g}</span><b>${name}</b></div>
     <div class="canvasbox gbox"><canvas aria-label="${name} 3D 그림"></canvas></div>
-    <div class="ginfo">${act}<span class="mono">r = ${fmt(c.r,3)}</span><button type="button">탐색기에서 열기</button></div>`;
+    <div class="ginfo">${act}<span class="mono">r = ${fmt(c.r,3)}</span><button type="button">탐색기에서 열기</button><span class="ill">r은 설명용 값(Illustrative values)</span></div>`;
   gal.appendChild(card);
   const v=makeView(card.querySelector('canvas'),{compact:true,feet:false});v.set(Ls,c);
-  card.querySelector('button').addEventListener('click',()=>{select(Ls,buttons[idx]);document.getElementById('explorer-sec').scrollIntoView({behavior:'smooth'})});
+  card.querySelector('button').addEventListener('click',()=>{select(Ls,buttons[idx]);window.openStep('s1-2')});
 }));
-new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 
 
 // ---------- timeline ----------
@@ -759,7 +1199,7 @@ const T0=16.5, T1=33, phases=[
  ['Wylie에게 질문, 해석 확정',16.5,17.5,''],
  ['Lemma 1–2, 결정 흐름도',17.5,19.5,''],
  ['케이스 A–E 닫힌 해',19.5,22.5,''],
- ['코드 + SOCP 검증 (클러스터)',22.5,24.5,''],
+ ['코드 + 이차 원뿔 계획법(second-order cone programming, SOCP) 검증 (클러스터)',22.5,24.5,''],
  ['꼬인 케이스 차수 (보너스)',24.5,27,'bonus'],
  ['그림 + 논문 초안',27,30,'write'],
  ['교정, 제출',30,32.5,'write'],
@@ -767,13 +1207,104 @@ const T0=16.5, T1=33, phases=[
 const tl=document.getElementById('tl');
 const hh=t=>{const h=Math.floor(t)%24,m=Math.round((t%1)*60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};
 phases.forEach(([n,a,b,k])=>{const row=document.createElement('div');row.className='tlrow';
-  row.innerHTML=`<span>${n} <span class="mono" style="color:var(--muted)">${hh(a)}–${hh(b)}</span></span><div class="tltrack"><div class="tlbar ${k}" style="left:${(a-T0)/(T1-T0)*100}%;width:${(b-a)/(T1-T0)*100}%"></div></div>`;tl.appendChild(row)});
+  row.innerHTML=`<span>${n} <span class="mono" style="color:var(--muted-foreground)">${hh(a)}–${hh(b)}</span></span><div class="tltrack"><div class="tlbar ${k}" style="left:${(a-T0)/(T1-T0)*100}%;width:${(b-a)/(T1-T0)*100}%"></div></div>`;tl.appendChild(row)});
 const axis=document.createElement('div');axis.className='tlaxis';
 axis.innerHTML='<span></span><div class="ticks">'+[17,20,23,26,29,32].map(t=>`<span style="left:${(t-T0)/(T1-T0)*100}%">${hh(t)}</span>`).join('')+'</div>';
 tl.appendChild(axis);
 
 select(PRESETS[2].items[2][1],buttons[15]);
 })();
+</script>
+<script>
+(function(){
+  // 상위 탭 4개와 탭마다 하위 단계 탭. 탭마다 고른 단계를 기억한다.
+  const tabs=[...document.querySelectorAll('.tabs [role=tab]')], names=tabs.map(t=>t.dataset.tab);
+  const subs={}, cur={}, back=document.getElementById('termsBack');
+  names.forEach(n=>{subs[n]=[...document.getElementById('tab-'+n).querySelectorAll('.subtabs [role=tab]')];cur[n]=0});
+  let active='now', from=null;
+  const hashOf=()=>'#'+(subs[active].length?active+'-'+(cur[active]+1):active);
+  function render(){
+    tabs.forEach(t=>{const on=t.dataset.tab===active;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;
+      document.getElementById('tab-'+t.dataset.tab).hidden=!on});
+    names.forEach(n=>subs[n].forEach((b,i)=>{const on=i===cur[n];b.setAttribute('aria-selected',on?'true':'false');b.tabIndex=on?0:-1;
+      document.getElementById(b.getAttribute('aria-controls')).hidden=!on}));
+  }
+  function go(name,step){active=name;if(step!=null&&step>=0&&subs[name].length)cur[name]=step;render()}
+  // 허용 해시: now, background, papers, terms, 그리고 now-2 꼴. 그 밖의 해시는 null.
+  function parse(h){const m=h.match(/^([a-z]+)(?:-(\d+))?$/);if(!m||!names.includes(m[1]))return null;
+    if(m[2]===undefined)return {name:m[1],step:null};
+    const s=+m[2]-1;return s>=0&&s<subs[m[1]].length?{name:m[1],step:s}:null}
+  function openStep(id){const el=document.getElementById(id),p=el&&el.closest('.tabpanel');if(!p)return;
+    const name=p.id.slice(4);go(name,subs[name].findIndex(b=>b.getAttribute('aria-controls')===id));
+    history.replaceState(null,'',hashOf());el.scrollIntoView({behavior:'smooth',block:'start'})}
+  window.openStep=openStep;
+  function openTerm(a,target){from={name:active,step:cur[active],el:a};go('terms');back.hidden=false;history.replaceState(null,'','#terms');
+    document.querySelectorAll('.termlist li.hl').forEach(x=>x.classList.remove('hl'));
+    target.classList.add('hl');setTimeout(()=>target.classList.remove('hl'),1500);
+    target.scrollIntoView({behavior:'smooth',block:'center'})}
+  back.addEventListener('click',()=>{if(!from)return;const f=from;from=null;back.hidden=true;go(f.name,f.step);
+    history.replaceState(null,'',hashOf());f.el.scrollIntoView({block:'center'})});
+  function manual(name,step,focusEl){from=null;back.hidden=true;go(name,step);history.replaceState(null,'',hashOf());if(focusEl)focusEl.focus()}
+  function arrows(list,i,e,pick){if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;e.preventDefault();
+    pick((i+(e.key==='ArrowRight'?1:list.length-1))%list.length)}
+  tabs.forEach((t,i)=>{
+    t.addEventListener('click',()=>manual(t.dataset.tab));
+    t.addEventListener('keydown',e=>arrows(tabs,i,e,j=>manual(tabs[j].dataset.tab,null,tabs[j])));
+  });
+  names.forEach(n=>subs[n].forEach((b,i)=>{
+    b.addEventListener('click',()=>manual(n,i));
+    b.addEventListener('keydown',e=>arrows(subs[n],i,e,j=>manual(n,j,subs[n][j])));
+  }));
+  const apply=h=>{const r=parse(h);if(r)go(r.name,r.step)};
+  render();apply(location.hash.slice(1));
+  window.addEventListener('hashchange',()=>{const r=parse(location.hash.slice(1));if(r){from=null;back.hidden=true;go(r.name,r.step)}});
+  // 문서 안 링크: 용어 링크는 용어 탭으로, 단계 상자 id 링크는 그 단계로 간다.
+  document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;
+    const id=a.getAttribute('href').slice(1),t=document.getElementById(id);if(!t)return;
+    if(id.startsWith('term-')){e.preventDefault();openTerm(a,t)}
+    else if(t.classList.contains('stepbox')){e.preventDefault();openStep(id)}});
+})();
+
+</script>
+<script>
+(function(){
+  // 상자 요약 데이터: 상자 id -> [제목, 무엇, 결과, 왜, 왜 중요한가, 다음]. 문장은 ". "로 나눠 항목이 된다.
+  const D={
+b1:[`아폴로니우스 접원 (BC 200)`,`점, 직선, 원 세 대상에 접하는 원을 작도한다`,`원전은 소실됐다. 1600년 비에트(Viète)가 재구성했다`,`세 대상에 동시에 닿는 원을 그리려고 했다`,`수직선 특수 케이스가 평면의 아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)로 바뀐다`,`"세 대상에 닿는 원"이 최소 반지름 문제로 이어진다 (Sylvester)`],
+b2:[`Sylvester 1857`,`평면 점들을 모두 감싸는 가장 작은 원을 묻는다`,`최소 포함원(minimum enclosing circle, MEC) 문제가 생겼다. 1885년 Chrystal이 알고리즘을 냈다`,`점 집합을 덮는 가장 작은 원을 찾으려고 했다`,`3 평행선 케이스의 답이 단면 삼각형의 최소 포함원(minimum enclosing circle, MEC)이다`,`Megiddo가 선형 시간으로 푼다`],
+b3:[`Megiddo 1983`,`최소 포함원(minimum enclosing circle, MEC)을 결정적 O(n) 시간에 푼다`,`prune-and-search 기법을 만들었다`,`더 빠른 정확 알고리즘이 필요했다`,`최소 반지름 문제를 알고리즘 문제로 다룬 출발점이다`,`Welzl의 랜덤 알고리즘과 LP형 문제(LP-type problem) 틀로 이어진다`],
+b4:[`Welzl 1991 · Sharir-Welzl 1992`,`기대 O(n) 랜덤 증분 알고리즘을 낸다. LP형 문제(LP-type problem)를 정의한다`,`CGAL 같은 라이브러리에 구현됐다. 이론의 표준 틀이 됐다`,`단순한 알고리즘과 일반 틀이 필요했다`,`최소 교차 구가 LP형 문제(LP-type problem)면 기저 연산(basis computation)이 곧 우리 닫힌 형태(closed form) 해다`,`대상이 점에서 직선과 초평면으로 넓어진다 (Bhattacharya 외)`],
+b5:[`Bhattacharya 외 1994`,`초평면, 선분과 모두 만나는 최소 구와 원을 구한다`,`최적 시간 알고리즘을 냈다. 초평면 경우는 (d+1)차원 선형 계획으로 바꿨다`,`대상이 점이 아닌 도형인 경우를 풀려고 했다`,`이 문제의 가장 직접적인 선행 연구다`,`고차원 flat으로 넓어진다 (Gao 외)`],
+b6:[`Gao 외 2008`,`직선과 flat 집합의 교차 반지름(intersection radius)을 다룬다`,`Δ+2개 부분집합이 전체 반지름의 절반 이상을 보장한다. 직선이면 O(nd·poly(1/ε)) 근사를 낸다`,`좌표가 빠진 데이터 점은 flat이 된다`,`직선들과 만나는 최소 구의 근사 알고리즘이다`,`이동 궤적으로 넓어진다 (Phillips-Schou)`],
+b7:[`Phillips-Schou 2025`,`선분 궤적 모두와 만나는 최소 접촉 구(minimum touching ball)를 구한다`,`선분 하나짜리 궤적은 LP형 문제(LP-type problem)이고 조합 차원(combinatorial dimension)은 d+1이다. 그래서 선형 시간에 풀린다. 선분이 4개 이상인 궤적은 조합 차원이 무한해지는 구성이 있다. 2차원 정확 알고리즘과 근사 알고리즘도 냈다`,`원인을 모르는 공간 사건의 위치를 찾으려고 했다. 예: 감염된 WiFi 공유기를 지난 휴대폰들, 같은 물웅덩이를 지난 동물들`,`이 문제와 같은 계열의 가장 최근 연구다. 작은 기저(basis)의 닫힌 형태(closed form) 해는 주지 않는다. 그 빈칸을 이 문제가 채울 수 있다`,`이 문제`],
+b8:[`Plücker 1868`,`직선을 6개 동차좌표로 나타낸다`,`3차원 직선 기하의 대수적 언어가 생겼다`,`3차원 직선을 좌표로 계산하려고 했다`,`입력 형식의 후보다. 직선 관계 판정에 쓴다`,`Schubert의 계수 기하로 이어진다`],
+b9:[`Schubert 1879`,`조건을 만족하는 기하 대상의 개수를 센다`,`일반 위치의 네 직선과 만나는 직선은 2개다`,`해의 개수를 미리 알려고 했다`,`해의 개수는 닫힌 형태(closed form) 해가 있는지 판단하는 도구다`,`직선과 구의 공통 접선 개수로 이어진다`],
+b10:[`Macdonald-Pach-Theobald 2001`,`단위 구 4개의 공통 접선 개수를 센다`,`최대 12개다. 이 값은 실제로 달성된다`,`Larman의 질문에 답하려고 했다`,`직선과 구의 접촉 문제가 대수적으로 복잡함을 보인다. 꼬인 위치(skew lines) 케이스 분석의 본보기다`,`n차원으로 일반화된다`],
+b11:[`Sottile-Theobald 2002`,`Rⁿ의 구 2n−2개에 접하는 직선을 다룬다`,`앞 결과를 n차원으로 일반화했다`,`3차원 결과가 일반 차원에서도 성립하는지 보려고 했다`,`차수 계산 방법을 준다`,`이 문제의 꼬인 위치(skew lines) 케이스 차수 계산`],
+b12:[`Lobo 외 1998`,`이차 원뿔 계획법(second-order cone programming, SOCP)의 응용을 정리한다`,`최소 포함 구 같은 문제를 이차 원뿔 계획법(second-order cone programming, SOCP)으로 푼다`,`볼록 문제를 효율적인 솔버로 풀려고 했다`,`우리 r*를 수치로 검증하는 방법이다`,`컴퓨터 비전의 L∞ 노름(L-infinity norm) 재구성으로 이어진다`],
+b13:[`Hartley-Schaffalitzky 2004`,`L∞ 노름(L-infinity norm) 오차로 기하 재구성을 한다`,`전역 최적 재구성을 얻었다`,`최대 오차를 줄이는 전역 해가 필요했다`,`광선까지의 최대 거리를 줄이는 것이 우리 r*와 같은 구조다`,`Kahl의 이차 원뿔 계획법(second-order cone programming, SOCP) 틀로 이어진다`],
+b14:[`Kahl 2005 · Kahl-Hartley 2008`,`삼각측량 같은 문제를 준볼록(quasi-convex) 문제로 바꿔 이차 원뿔 계획법(second-order cone programming, SOCP)으로 푼다`,`2008년 판은 공개 Matlab 툴박스를 냈다`,`다중 시점 기하를 전역 최적으로 풀려고 했다`,`이 문제를 이차 원뿔 계획법(second-order cone programming, SOCP)으로 보는 직접적인 선례다`,`이 문제의 검증 관점`],
+b15:[`이 문제 (2026 해커톤)`,`세 직선과 만나는 최소 원의 케이스별 닫힌 형태(closed form) 해를 구한다`,`(계획) 아직 결과가 없다. 대원(great circle) 정리 가설과 케이스 표 초안이 있다`,`출제자 Tim Wylie가 낸 해커톤 문제다`,`문헌은 구를 다룬다. 원과 케이스별 닫힌 형태(closed form) 해는 빈칸이다`,`대원 정리, 케이스 표, 꼬인 위치(skew lines) 케이스 차수, 그다음 2쪽 논문`],
+b16:[`대원(great circle) 정리 (계획)`,`최소 원이 최소 구의 대원임을 증명한다`,`(계획)`,`케이스 분석을 활성 제약(active constraint) 판정 하나로 줄이려고 한다`,`원 문제와 구 문제를 잇는다`,`2쪽 논문`],
+b17:[`케이스별 닫힌 형태(closed form) 표 (계획)`,`Figure 1의 모든 케이스에 (c, r, n) 공식을 준다`,`(계획)`,`출제자가 요구한 결과물이다`,`심사의 중심이 되는 결과다`,`2쪽 논문`],
+b18:[`꼬인 위치(skew lines) 케이스 차수 (계획)`,`일반 꼬인 위치 케이스의 다항식 차수를 구한다`,`(계획)`,`닫힌 형태(closed form) 해가 가능한지 판단하려고 한다`,`닫힌 형태 해의 한계를 보인다`,`2쪽 논문`],
+b19:[`2쪽 논문 (계획)`,`결과를 2쪽으로 정리해 제출한다`,`(계획)`,`해커톤에서 심사받는 유일한 제출물이다`,`결과가 평가받는 형태다`,`11/8 09:00 제출. 그다음 향후 연구`],
+b20:[`향후 연구 (계획)`,`2025 논문의 빈칸 6개에서 이어지는 연구를 고른다`,`(계획)`,`해커톤 결과를 더 큰 연구로 잇기 위해서다`,`닫힌 형태(closed form) 기저는 n개 대상 알고리즘의 부품이 될 수 있다`,`이 탭의 향후 연구 Step 표`]};
+  const ROWS=['무엇(What)','결과(Results)','왜(Why)','왜 중요한가(Why it matters)','다음(What\'s next)'];
+  const boxes=[...document.querySelectorAll('.lineage [data-box]')], out=document.getElementById('nodeinfo');
+  function items(s){const p=s.split('. ');return p.map((x,i)=>'<li>'+x+(i<p.length-1?'.':'')+'</li>').join('')}
+  function select(id){
+    boxes.forEach(b=>b.setAttribute('aria-pressed',b.dataset.box===id?'true':'false'));
+    const d=D[id];
+    out.innerHTML='<h3>'+d[0]+'</h3><table><tbody>'+ROWS.map((r,i)=>'<tr><th scope="row">'+r+'</th><td><ul>'+items(d[i+1])+'</ul></td></tr>').join('')+'</tbody></table>';
+  }
+  boxes.forEach(b=>{
+    b.addEventListener('click',()=>select(b.dataset.box));
+    b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(b.dataset.box)}});
+  });
+  select('b15');
+})();
+
 </script>
 </body>
 </html>

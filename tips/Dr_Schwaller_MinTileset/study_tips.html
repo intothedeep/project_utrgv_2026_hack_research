@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2×n 최소 타일 집합 학습 팁</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500&display=swap">
+<style>
+/* html-theme: the one theme for HTML output (rules/answering.md §3).
+   Light tokens: ported from the owner's earlier web project's globals.css
+   (shadcn neutral, achromatic, radius 0, whole-UI IBM Plex Mono).
+   Dark tokens: added 2026-10-02 in the same achromatic family; the source had no dark theme. */
+
+:root {
+    --radius: 0;
+
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.55 0 0);
+    --rule: oklch(0.9 0 0);          /* hairlines and chart grid; the source --border is too strong for grids */
+    --ring: oklch(0.45 0 0);
+
+    /* signal colours carry meaning, not decoration */
+    --signal-instruction: #d40000;   /* an instruction / something the reader must act on */
+    --signal-plan: #0432ff;          /* a plan / a pre-registered line */
+    --signal-flag-fill: #fff3a0;     /* a highlighted cell or row */
+    --signal-flag-line: #e6d24a;
+    --signal-dead-fill: #e4e4e2;     /* retired, skipped, out of scope */
+    --signal-dead-ink: oklch(0.53 0.01 260);
+
+    /* Plex Mono has no Hangul; Korean falls through to Plex Sans KR */
+    --font: "IBM Plex Mono", "IBM Plex Sans KR", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+* { box-sizing: border-box; border-radius: var(--radius); }
+body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font);
+    font-feature-settings: "cv11", "ss01";
+    font-size: 14px;
+    line-height: 1.6;
+    padding-inline: 16px;
+    padding-block: 32px 64px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1 { font-size: 24px; line-height: 1.3; font-weight: 700; margin: 0; text-wrap: balance; }
+h2 { font-size: 17px; font-weight: 500; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.muted { color: var(--muted-foreground); }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+.panel { background: var(--card); color: var(--card-foreground); border: 1px solid var(--border); padding: 16px; }
+.scroll-x { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
+th { font-weight: 500; color: var(--muted-foreground); }
+th:first-child, td:first-child { text-align: left; }
+.flag { background: var(--signal-flag-fill); box-shadow: inset 2px 0 0 var(--signal-flag-line); }
+.instruction { color: var(--signal-instruction); }
+.plan { color: var(--signal-plan); }
+.dead { background: var(--signal-dead-fill); color: var(--signal-dead-ink); }
+button { font: inherit; padding: 4px 12px; border: 1px solid var(--border); background: var(--card); color: var(--foreground); cursor: pointer; }
+button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+svg text { fill: var(--muted-foreground); font-family: var(--font); font-size: 11px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+/* 차트 계열색: 페이지가 정한다. 신호색(빨강, 파랑, 노랑, 회색 채움)과 겹치지 않는다. */
+:root{
+  --series-l1:#0e7490; --series-l2:#b45309; --series-l3:#4d7c0f;
+  --series-circle:#a21caf; --series-sphere:#6b7280;
+}
+/* 페이지 레이아웃 */
+body{word-break:keep-all}
+section,.stepbox{display:flex;flex-direction:column;gap:16px}
+.stepbox{border-top:6px solid var(--foreground);padding-top:12px;scroll-margin-top:60px}
+.stepno{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+[hidden]{display:none!important}
+.subtabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border)}
+.subtabs button{font-size:13px;font-weight:500;background:none;color:var(--muted-foreground);border:none;border-bottom:3px solid transparent;padding:8px 12px;margin-bottom:-1px;text-align:left}
+.subtabs button:hover{color:var(--foreground)}
+.subtabs button[aria-selected="true"]{color:var(--primary-foreground);background:var(--primary);font-weight:700}
+.termlist li.hl{outline:2px solid var(--ring);outline-offset:2px}
+.back{align-self:flex-start}
+a{color:var(--foreground);text-decoration:underline}
+a.t{text-decoration:underline dotted}
+.lede{display:flex;flex-direction:column;gap:12px}
+.lede p{max-width:80ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted-foreground);font-size:13px}
+.meta b{color:var(--foreground);font-weight:700}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+code,.mono{font-size:.95em}
+h3{font-size:14px;font-weight:700;margin:0}
+p{max-width:80ch}
+.box{background:var(--card);border:1px solid var(--border);padding:16px}
+.note{font-size:13px;color:var(--muted-foreground)}
+.why{border-left:3px solid var(--foreground);padding:2px 0 2px 12px}
+.thm{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.thm .stmt{display:flex;flex-direction:column;gap:10px}
+.thm figure,figure.fig{margin:0;display:flex;flex-direction:column;gap:8px}
+figcaption{font-size:12.5px;color:var(--muted-foreground)}
+figcaption b.n{color:var(--foreground)}
+.formula{background:var(--muted);padding:8px 12px;font-size:13px;overflow-x:auto;white-space:nowrap}
+.explorer{display:grid;grid-template-columns:230px minmax(0,1fr) 300px;gap:16px;align-items:start}
+.presets{display:flex;flex-direction:column;gap:14px;max-height:640px;overflow-y:auto;padding-right:4px}
+.pgroup{display:flex;flex-direction:column;gap:5px}
+.presets button,.ctrl button{font-size:13px;text-align:left;line-height:1.35;padding:6px 9px}
+.stage{display:flex;flex-direction:column;gap:8px;min-width:0}
+.canvasbox{position:relative;background:var(--card);border:1px solid var(--border);aspect-ratio:4/3;max-width:100%;overflow:hidden;touch-action:none;cursor:grab}
+.canvasbox:active{cursor:grabbing}
+.figbox{aspect-ratio:1/1}
+canvas{display:block;width:100%;height:100%}
+.ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted-foreground)}
+.ctrl label{display:flex;gap:5px;align-items:center;cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted-foreground)}
+.sw{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
+.readout{display:flex;flex-direction:column;gap:12px;min-width:0}
+.case{font-size:15px;line-height:1.4;font-weight:500}
+.chip{display:inline-flex;font-size:12px;font-weight:700;padding:2px 9px;width:fit-content;border:1px solid var(--border)}
+.chip.a2{background:var(--muted)}
+.chip.a3{background:var(--primary);color:var(--primary-foreground)}
+.chip.a0{background:var(--card)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;font-size:13px;margin:0}
+.kv dt{color:var(--muted-foreground)}
+.kv dd{margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+th,td{text-align:left;white-space:normal;vertical-align:top;font-size:13px}
+td.num{font-variant-numeric:tabular-nums}
+.readout th,.readout td{white-space:nowrap}
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--border)}
+.st{font-size:12px;font-weight:700;padding:2px 8px;white-space:nowrap;border:1px solid var(--border);display:inline-block}
+.st.ok{background:var(--primary);color:var(--primary-foreground)}
+.st.q{background:var(--signal-flag-fill);border-color:var(--signal-flag-line);color:var(--foreground)}
+.st.open{background:var(--card);color:var(--foreground);border-style:dashed}
+.flow{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center}
+.node{background:var(--card);border:1px solid var(--border);padding:10px 14px;max-width:580px;width:100%;text-align:center;font-size:13px}
+.node.q{border-width:2px;background:var(--muted)}
+.arrow{height:26px;width:2px;background:var(--border);position:relative}
+.arrow::after{content:"";position:absolute;bottom:-1px;left:-5px;border:6px solid transparent;border-top-color:var(--border)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;width:100%;max-width:980px}
+.branch{display:flex;flex-direction:column;align-items:center}
+.branch .tag{font-size:12px;color:var(--muted-foreground);padding:6px 0}
+.leafs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;width:100%}
+.leaf{background:var(--card);border:1px solid var(--border);padding:8px 10px;font-size:12.5px}
+.leaf b{display:block}
+.node.yes{border-width:2px}
+.node.no{border-style:dashed}
+.tl{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--border);padding:16px}
+.tlrow{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;align-items:center;font-size:12.5px}
+.tltrack{position:relative;height:20px;background:var(--muted)}
+.tlbar{position:absolute;top:0;bottom:0;background:var(--series-l1)}
+.tlbar.bonus{background:var(--series-l2)}
+.tlbar.write{background:var(--series-circle)}
+.tlaxis{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;font-size:11px;color:var(--muted-foreground)}
+.ticks{position:relative;height:16px}
+.ticks span{position:absolute;transform:translateX(-50%)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.col{display:flex;flex-direction:column;gap:10px}
+ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.files li{font-size:13px}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px}
+.steps li::before{content:counter(s);font-weight:700}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--background);z-index:5;padding-top:8px}
+.tabs button{font-size:13px;font-weight:500;background:none;color:var(--muted-foreground);border:none;border-bottom:3px solid transparent;padding:10px 14px;margin-bottom:-1px}
+.tabs button:hover{color:var(--foreground)}
+.tabs button[aria-selected="true"]{color:var(--foreground);border-bottom-color:var(--foreground);font-weight:700;background:none}
+.tabpanel{display:flex;flex-direction:column;gap:40px}
+.timeline{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0;border-left:2px solid var(--border);margin-left:8px}
+.timeline li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;padding:0 0 18px 18px;position:relative}
+.timeline li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--card);border:2px solid var(--foreground)}
+.timeline li.now::before{background:var(--series-circle);border-color:var(--series-circle)}
+.timeline .yr{font-size:12.5px;padding-top:2px}
+.timeline li.now .yr{font-weight:700}
+.timeline b{display:block}
+.lineage{width:100%;min-width:2540px;height:auto;display:block}
+.lineage.flow2{min-width:780px}
+.lineage.flow2 .edges path{marker-end:url(#ah2)}
+.lineage .lane{font-size:12px;font-weight:700;fill:var(--muted-foreground)}
+.lineage rect{fill:var(--card);stroke:var(--border);stroke-width:1.2}
+.lineage text{font-size:12px;fill:var(--foreground)}
+.lineage text.y{font-size:11px;fill:var(--muted-foreground)}
+.lineage .target polygon{fill:var(--muted);stroke:var(--series-circle);stroke-width:2.5}
+.lineage .plan rect{stroke-dasharray:5 3}
+.lineage [data-box]{cursor:pointer}
+.lineage [data-box]:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.lineage [data-box][aria-pressed="true"] rect,.lineage [data-box][aria-pressed="true"] polygon{stroke:var(--primary);stroke-width:4}
+.nodeinfo h3{margin:0 0 8px}
+.nodeinfo th{text-align:left;white-space:nowrap;vertical-align:top;width:1%}
+.nodeinfo ul{margin:0;padding-left:18px}
+.lineage text.al{font-size:11px;fill:var(--foreground)}
+.lineage .edges path{fill:none;stroke:var(--muted-foreground);stroke-width:1.4;marker-end:url(#ah)}
+.lineage .edges path.hot{stroke:var(--series-circle);stroke-width:2}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.gcard{background:var(--card);border:1px solid var(--border);padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.gtitle{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.gbox{aspect-ratio:1/1}
+.ginfo{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12px}
+.ginfo button{font-size:12px;margin-left:auto;padding:4px 8px}
+.ginfo .ill{flex-basis:100%;font-size:11px;color:var(--muted-foreground)}
+.termlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px 24px;margin:0;padding:0;list-style:none}
+.termlist li{font-size:13px;scroll-margin-top:60px}
+.termlist li:target{background:var(--signal-flag-fill)}
+@media (max-width:900px){
+  .explorer{grid-template-columns:minmax(0,1fr)}
+  .presets{max-height:none;flex-direction:row;flex-wrap:wrap}
+  .pgroup{flex:1 1 200px}
+  .thm,.three{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .split,.two{grid-template-columns:minmax(0,1fr)}
+  .tlrow,.tlaxis{grid-template-columns:120px minmax(0,1fr)}
+  .timeline li{grid-template-columns:minmax(0,1fr);gap:2px}
+}
+/* 이 페이지 전용 추가 */
+.st.dead{background:var(--signal-dead-fill);color:var(--signal-dead-ink);border-color:var(--border)}
+.lineage.lin2{min-width:900px}
+.asm svg text.nm{fill:var(--foreground);font-size:15px;font-weight:700}
+.asm svg text.gl{fill:var(--foreground);font-size:10px}
+.asm svg text.ax{fill:var(--muted-foreground);font-size:11px}
+.cht svg text.ax{fill:var(--muted-foreground);font-size:11px}
+.cht svg text.vl{fill:var(--foreground);font-size:11px;font-weight:700}
+.figA text{font-size:14px}
+.sline{fill:none;stroke-width:2}
+.sl1{stroke:var(--series-l1)}
+.sl2{stroke:var(--series-l2)}
+.sl3{stroke:var(--series-circle)}
+.grid{stroke:var(--rule);stroke-width:1}
+.axis{stroke:var(--border);stroke-width:1}
+.mark{stroke:var(--foreground);stroke-width:1;stroke-dasharray:4 3}
+.rng{width:100%;max-width:420px}
+.matrix th,.matrix td{text-align:left;white-space:normal}
+.matrix td{min-width:200px}
+.callout{border:2px solid var(--foreground);padding:12px 16px;background:var(--muted)}
+.tdl li{font-size:13px}
+td ul,td ol{padding-left:16px;gap:3px}
+.sm{font-size:12px;color:var(--muted-foreground)}
+.legendrow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:12px;color:var(--muted-foreground)}
+.usedrow{background:var(--signal-flag-fill)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="lede">
+  <span class="eyebrow">UTRGV Research Hackathon 2026 · 출제: Dr. Schwaller</span>
+  <h1>2×n 직사각형의 최소 타일 집합: 학습 팁</h1>
+  <p>초보자를 위한 학습 지도입니다. 무엇을 알아야 하고 왜 그런지 단계별로 배웁니다. 각 탭은 번호 붙은 단계 상자로 이어집니다.</p>
+  <p>문제는 이렇습니다. 모양 하나가 주어집니다. 그 모양을 유일하게 조립하는 타일 종류의 최소 개수를 구합니다. 이 페이지는 모양이 2×n 직사각형인 경우를 다룹니다.</p>
+  <div class="meta"><span>마감 <b>11/8(일) 09:00</b></span><span>제출물 <b>2쪽 논문</b></span><span>자료 기준일 <b>2026-11-07</b></span><span>출제자 <b>Dr. Schwaller</b> (UTRGV의 Robert Schweller로 추정, 미확인)</span></div>
+  <div class="legendrow"><span>상태 라벨:</span>
+    <span><span class="st ok">PROVEN</span> 증명됨, 출처 있음</span>
+    <span><span class="st q">DERIVED-BY-HAND</span> 손으로 유도, 실행 미확인</span>
+    <span><span class="st open">CONJECTURE</span> 추측</span>
+    <span><span class="st dead">UNVERIFIED</span> 확인하지 못함</span></div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="페이지 구역">
+  <button type="button" role="tab" id="tb-now" aria-controls="tab-now" data-tab="now">1. 현재 버전 · 학습 지도</button>
+  <button type="button" role="tab" id="tb-background" aria-controls="tab-background" data-tab="background">2. 배경과 역사</button>
+  <button type="button" role="tab" id="tb-papers" aria-controls="tab-papers" data-tab="papers">3. 핵심 논문 계보</button>
+  <button type="button" role="tab" id="tb-terms" aria-controls="tab-terms" data-tab="terms">4. 용어 부록</button>
+</nav>
+
+<div class="tabpanel" id="tab-now" role="tabpanel" aria-labelledby="tb-now">
+
+<div class="subtabs" role="tablist" aria-label="탭 1 단계">
+  <button type="button" role="tab" id="st-s1-1" aria-controls="s1-1">Step 1 문제와 핵심 아이디어</button>
+  <button type="button" role="tab" id="st-s1-2" aria-controls="s1-2">Step 2 2×n 조립 보기</button>
+  <button type="button" role="tab" id="st-s1-3" aria-controls="s1-3">Step 3 상한과 하한 그림</button>
+  <button type="button" role="tab" id="st-s1-4" aria-controls="s1-4">Step 4 케이스 지도</button>
+  <button type="button" role="tab" id="st-s1-5" aria-controls="s1-5">Step 5 열린 경우의 연구 방향</button>
+  <button type="button" role="tab" id="st-s1-6" aria-controls="s1-6">Step 6 공부 팁과 계획</button>
+</div>
+
+<section class="stepbox" id="s1-1" role="tabpanel" aria-labelledby="st-s1-1">
+  <span class="stepno">Step 1 of 6</span>
+  <h2>문제와 핵심 아이디어: 타일 몇 종류면 이 모양이 만들어지나</h2>
+  <div class="callout">
+    <p><b>결론.</b> 온도(temperature) τ = 2이고 시드(seed)가 모서리면, 2×n의 최소 타일 종류 수는 Θ(√n)입니다. 정확한 식은 찾지 못했습니다. 시드가 안쪽 칸이면 출제자도 "열려 있다"고 말합니다.</p>
+    <p class="note">근거: 하한 √n / 2 (PROVEN), 상한 4⌈√n⌉ + 2 (PROVEN). 둘 다 Aggarwal 외 2005 논문(S-MTS-2)에서 가져왔고 Step 3에서 그립니다.</p>
+  </div>
+  <p class="why"><b>풀려던 문제.</b> 모양 하나를 만들 때 타일을 몇 종류까지 줄일 수 있는지 모릅니다. 종류가 적을수록 조립 설계가 작습니다. 이 수를 <a class="t" href="#term-tilecomplexity">타일 복잡도(tile complexity)</a>라고 부릅니다.</p>
+  <div class="two">
+    <div class="box col">
+      <h3>추상 타일 조립 모델(abstract Tile Assembly Model, aTAM)을 한 장으로</h3>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>용어</th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td><a class="t" href="#term-tile">타일 종류(tile type)</a></td><td>정사각형 하나. 북, 동, 남, 서 네 변마다 글루 라벨이 붙습니다. 같은 종류의 복사본은 무한히 쓸 수 있습니다.</td></tr>
+          <tr><td><a class="t" href="#term-glue">글루(glue)</a>와 강도</td><td>마주 닿은 두 변은 라벨이 같고 강도가 0보다 클 때만 붙습니다.</td></tr>
+          <tr><td><a class="t" href="#term-tau">온도(temperature) τ</a></td><td>붙는 문턱값입니다. 맞닿은 변들의 강도 합이 τ 이상이어야 타일이 붙습니다.</td></tr>
+          <tr><td><a class="t" href="#term-cooperation">협동 결합(cooperation)</a></td><td>τ = 2에서 강도 2 글루 하나, 또는 강도 1 글루 둘이 함께 붙는 경우입니다.</td></tr>
+          <tr><td><a class="t" href="#term-seed">시드(seed)</a></td><td>정해진 자리에 놓인 처음 타일 하나입니다. 성장은 여기서 시작합니다.</td></tr>
+          <tr><td><a class="t" href="#term-directed">유일 조립(uniquely self-assemble, directed)</a></td><td>끝(terminal) 조립물이 단 하나이고 그 모양이 목표입니다. 어느 실행에서도 같은 자리에 같은 타일이 놓입니다.</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="note">타일은 회전하지 않고 이동만 합니다. 이 규칙은 정의에서 읽은 추론이며 부분 확인입니다. 출제문의 "uniquely self-assemble"은 표준 뜻으로 읽어 유일 조립(directed)으로 봅니다(추론). Step 6에서 출제자에게 확인합니다.</p>
+    </div>
+    <figure class="box fig">
+      <svg class="figA" viewBox="0 0 640 190" role="img" aria-label="타일이 붙는 세 경우" style="width:100%;height:auto">
+        <text class="ax" x="8" y="16">온도 τ = 2 일 때 새 타일(점선 칸)이 붙는가</text>
+        <!-- A: 강도 2 글루 하나 -->
+        <rect x="20" y="50" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
+        <rect x="80" y="50" width="50" height="50" fill="none" stroke="var(--foreground)" stroke-dasharray="5 3"/>
+        <line x1="70" y1="52" x2="70" y2="98" stroke="var(--series-l1)" stroke-width="5"/>
+        <text class="ax" x="75" y="46">a (강도 2)</text>
+        <text class="ax" x="20" y="130">글루 하나, 강도 2</text>
+        <text class="ax" x="20" y="146">2 ≥ 2: 붙음</text>
+        <!-- B: 협동 -->
+        <rect x="240" y="50" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
+        <rect x="300" y="50" width="50" height="50" fill="none" stroke="var(--foreground)" stroke-dasharray="5 3"/>
+        <rect x="300" y="110" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
+        <line x1="290" y1="52" x2="290" y2="98" stroke="var(--series-l2)" stroke-width="3"/>
+        <line x1="302" y1="100" x2="348" y2="100" stroke="var(--series-l2)" stroke-width="3"/>
+        <text class="ax" x="240" y="44">1</text>
+        <text class="ax" x="362" y="108">1</text>
+        <text class="ax" x="226" y="176">강도 1 둘</text>
+        <text class="ax" x="300" y="176">1 + 1 ≥ 2: 붙음</text>
+        <!-- C: 강도 1 하나 -->
+        <rect x="470" y="50" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
+        <rect x="530" y="50" width="50" height="50" fill="none" stroke="var(--foreground)" stroke-dasharray="5 3"/>
+        <line x1="520" y1="52" x2="520" y2="98" stroke="var(--series-circle)" stroke-width="3"/>
+        <text class="ax" x="500" y="44">b (강도 1)</text>
+        <text class="ax" x="470" y="130">글루 하나, 강도 1</text>
+        <text class="ax" x="470" y="146">1 &lt; 2: 안 붙음</text>
+      </svg>
+      <figcaption><b class="n">그림 1.</b> 온도 τ = 2에서 새 타일이 붙는 경우 둘과 안 붙는 경우 하나입니다. 왜: 이 문제의 모든 설계는 "강도 합이 τ 이상인가"라는 이 판정 하나 위에 서 있기 때문입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §1</figcaption>
+    </figure>
+  </div>
+  <div class="box col">
+    <h3>왜 2×n이 문제가 되나</h3>
+    <ul>
+      <li>일반 모양의 <a class="t" href="#term-mts">최소 타일 집합 문제(Minimum Tileset Problem)</a>는 <a class="t" href="#term-npc">NP-완전(NP-complete)</a>입니다 (Adleman 외 2002).</li>
+      <li>N×N 정사각형은 <a class="t" href="#term-polytime">다항 시간(polynomial time)</a>에 풀립니다.</li>
+      <li>2×n 직사각형의 정확한 복잡도 결과는 찾지 못했습니다(open as far as found).</li>
+      <li>출제문: 시드가 모서리에 있어야 한다면 식이 있어 보이고, 그 가정을 빼면 열려 있습니다.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="stepbox" id="s1-2" role="tabpanel" aria-labelledby="st-s1-2" hidden>
+  <span class="stepno">Step 2 of 6</span>
+  <h2>인터랙티브 2×n 조립 보기</h2>
+  <p class="why"><b>풀려던 문제.</b> 정의만 읽으면 "타일이 자란다"는 느낌이 오지 않습니다. 모서리 시드에서 한 타일씩 붙여 보면 아래 행은 종류가 늘고 위 행은 한 종류가 반복되는 이유가 보입니다.</p>
+  <p class="note">설명용 예시(Illustrative example). 노트 §4.1의 F3 빗(comb) 구성입니다. 검색이나 풀이가 아니라 손으로 쓴 타일 집합을 그리는 화면입니다.</p>
+  <div class="two">
+    <div class="box col asm">
+      <div class="ctrl">
+        <label>길이 n <input class="rng" type="range" id="asmN" min="1" max="8" value="5" style="max-width:160px"> <b id="asmNv">5</b></label>
+        <span>글루 강도 τ</span>
+        <button type="button" id="asmT1" aria-pressed="false">τ = 1</button>
+        <button type="button" id="asmT2" aria-pressed="true">τ = 2</button>
+      </div>
+      <div id="asmView" class="tablewrap" style="padding:8px"></div>
+      <div class="ctrl">
+        <button type="button" id="asmPrev">이전</button>
+        <button type="button" id="asmNext">다음 타일 붙이기</button>
+        <button type="button" id="asmReset">처음으로</button>
+      </div>
+      <p id="asmMsg" aria-live="polite"></p>
+      <p class="sm" id="asmStat"></p>
+      <figcaption style="font-size:12.5px;color:var(--muted-foreground)"><b class="n">그림 2.</b> 모서리 시드 B₁에서 시작해 한 번 누를 때마다 타일 하나가 붙는 2×n 빗(comb)입니다. 노랑 칸이 방금 붙은 타일이고 표시 없는 변은 강도 0인 널(null) 글루입니다. 왜: 아래 행의 B₁ ... B<sub>n</sub>은 모두 다른 종류이고 위 행은 T 하나로 채워져 합계 n + 1종이 됨을 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F3</figcaption>
+    </div>
+    <div class="box col">
+      <h3>이 타일 집합의 규칙</h3>
+      <div class="tablewrap" id="asmTypes"></div>
+      <ul class="tdl">
+        <li>모든 글루 강도는 τ입니다. 그래서 글루 하나로 충분합니다.</li>
+        <li>아래 칸마다 올 수 있는 타일이 하나뿐이어서 조립이 유일(directed)합니다.</li>
+        <li>T의 동쪽과 서쪽은 널(null)이라 열 n 너머로 자라지 않습니다.</li>
+        <li>종류 수는 n + 1입니다. 노트의 F3 상한이고 Furcy 외 2019의 N + k − 1 빗과 같습니다(k = 2).</li>
+        <li>n = 1이면 B₁과 T 두 종류입니다. 노트의 F1이 보이는 대로 1종류로는 안 됩니다. 시드 종류가 위 칸도 채우면 같은 글루가 반복해서 붙어 열이 끝없이 자라기 때문입니다.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="stepbox" id="s1-3" role="tabpanel" aria-labelledby="st-s1-3" hidden>
+  <span class="stepno">Step 3 of 6</span>
+  <h2>상한과 하한 그림: n이 커지면 어떻게 벌어지나</h2>
+  <p class="why"><b>풀려던 문제.</b> 공식만 보면 √n과 n의 차이가 와닿지 않습니다. n = 1 ... 100을 한 그림에 놓으면 τ = 2의 카운터(counter) 구성이 언제부터 빗보다 작아지는지 보입니다.</p>
+  <div class="box col cht">
+    <div class="legend">
+      <span><i class="sw" style="background:var(--series-l1)"></i>하한 √n / 2 (모든 τ, 모든 시드 위치, PROVEN)</span>
+      <span><i class="sw" style="background:var(--series-l2)"></i>상한 4⌈√n⌉ + 2 (τ = 2, 모서리 시드, PROVEN)</span>
+      <span><i class="sw" style="background:var(--series-circle)"></i>상한 n + 1 (빗, 손 유도: DERIVED-BY-HAND)</span>
+    </div>
+    <svg id="chart" viewBox="0 0 760 380" role="img" aria-label="n에 따른 하한과 상한" style="width:100%;height:auto;max-width:760px"></svg>
+    <div class="ctrl"><label>n <input class="rng" type="range" id="chN" min="1" max="100" value="100" style="max-width:260px"></label></div>
+    <dl class="kv" id="chRead"></dl>
+    <figcaption><b class="n">그림 3.</b> n = 1 ... 100에서 타일 종류 수 t의 하한과 두 상한입니다(세로축은 로그 눈금이고 값은 브라우저에서 식으로 계산했습니다). 왜: 하한과 상한의 간격이 상수배(약 8)로 유지되어 τ = 2에서 답이 Θ(√n)임을 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3</figcaption>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>n</th><th>하한 √n / 2</th><th>상한 4⌈√n⌉ + 2 (τ = 2)</th><th>상한 n + 1</th></tr></thead>
+      <tbody id="chTab"></tbody>
+    </table>
+  </div>
+  <p class="note">표 1. 노트의 예시 n = 100 (5 ≤ t ≤ 42)과 n = 10,000 (50 ≤ t ≤ 402)을 같은 식으로 다시 계산했습니다. 상수 간격은 약 8이며 추론입니다. 설명: Aggarwal 외 Thm 3.1의 증명에서 k = 2를 넣으면 t ≥ (n / 4)<sup>1/2</sup>이고 Thm 3.2의 구성에서 m = ⌈√n⌉, 타일 종류 4m + 2입니다.</p>
+</section>
+
+<section class="stepbox" id="s1-4" role="tabpanel" aria-labelledby="st-s1-4" hidden>
+  <span class="stepno">Step 4 of 6</span>
+  <h2>케이스 지도: τ와 시드 위치로 네 칸</h2>
+  <p class="why"><b>풀려던 문제.</b> "답을 안다"와 "모른다"가 섞여 있습니다. 칸마다 상태 라벨을 붙이면 어디가 증명되었고 어디가 비었는지 한눈에 보입니다.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table class="matrix">
+    <thead><tr><th></th><th><a class="t" href="#term-corner">모서리 시드(corner seed)</a></th><th>안쪽 시드(interior seed)</th></tr></thead>
+    <tbody>
+      <tr><td><b>τ = 1</b></td>
+        <td><span class="st q">조건부 n + 1</span><br><span class="sm">글루 불일치가 없다는 가정 아래</span></td>
+        <td><span class="st q">조건부 n + 1</span><br><span class="sm">같은 가정 아래</span></td></tr>
+      <tr><td><b>τ = 2</b></td>
+        <td><span class="st ok">Θ(√n)</span> <span class="st open">정확한 식 CONJECTURE</span></td>
+        <td><span class="st ok">하한 √n / 2</span> <span class="st open">상한과 정확한 값 열림</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">그림 4.</b> 2×2 케이스 지도의 요약입니다. 왜: 어느 칸이 풀렸고 어느 칸이 비었는지 먼저 보인 뒤 표 2에서 칸마다 근거를 읽게 하기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4</figcaption>
+  </figure>
+
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>칸</th><th>하한</th><th>상한</th><th>정확한 값</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td>τ = 1, 모서리 시드</td>
+        <td><ul><li>√n / 2 (모든 τ, Aggarwal 외 Thm 3.1)</li><li>Ω(√n) (Furcy 외, S-MTS-5)</li><li>n + 1 (<a class="t" href="#term-mismatch">글루 불일치(glue mismatch)</a>가 없다는 가정 아래, S-MTS-6)</li></ul></td>
+        <td><ul><li>n + 1 빗 (F3)</li><li>Furcy 외가 아는 가장 좋은 상한 N + k − 1과 같음</li></ul></td>
+        <td>가정 아래 정확히 n + 1. 가정 없이는 열림. <a class="t" href="#term-manhattan">맨해튼 지름(Manhattan diameter)</a>의 정의가 같은지 원문 확인 필요</td>
+        <td><span class="st q">PROVEN-conditional</span><br><span class="sm">S-MTS-6은 검색 요약만 읽음</span></td></tr>
+      <tr><td>τ = 1, 안쪽 시드</td>
+        <td>같음. 하한 √n / 2는 시드 위치와 무관</td>
+        <td>n + 1. 노트 §4.2는 "시드 위치와 무관"이라 적었고 F3 본문은 모서리 시드로 적었습니다. 두 문장이 어긋나므로 확인 필요</td>
+        <td>가정 아래 n + 1</td>
+        <td><span class="st q">PROVEN-conditional</span> <span class="st dead">UNVERIFIED (시드 위치 부분)</span></td></tr>
+      <tr><td>τ = 2, 모서리 시드</td>
+        <td>√n / 2 (Aggarwal 외 Thm 3.1)</td>
+        <td><ul><li>4⌈√n⌉ + 2 (Aggarwal 외 Thm 3.2, 시드 열이 동쪽 끝)</li><li>m + 3D + 2, n = 1 + m·D (손 유도, 아래 상자)</li></ul></td>
+        <td>정확한 식은 어느 출처에서도 찾지 못했습니다. 출제문은 식이 있어 보인다고 말합니다.</td>
+        <td><span class="st ok">PROVEN (Θ(√n))</span> <span class="st q">DERIVED-BY-HAND</span> <span class="st open">CONJECTURE: 정확한 식은 c·√n + O(1), 1/2 ≤ c ≤ 2√3 ≈ 3.46</span></td></tr>
+      <tr><td>τ = 2, 안쪽 시드</td>
+        <td>√n / 2. Thm 3.1의 증명은 시드가 어디에 있든 성립합니다.</td>
+        <td>이 노트에서 안쪽 시드용 구성을 찾지 못했습니다.</td>
+        <td>출제자: 열려 있음. 두 팔(arm)이 타일 종류를 공유할 수 있는지가 핵심입니다.</td>
+        <td><span class="st ok">PROVEN (하한)</span> <span class="st open">열림</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">표 2.</b> 케이스 네 칸의 하한, 상한, 정확한 값, 상태입니다. 왜: 논문에서 "증명됨"과 "추측"을 섞어 쓰지 않도록 칸마다 근거를 나누기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3, §4</figcaption>
+  </figure>
+
+  <div class="two">
+    <div class="box col">
+      <h3>작은 n의 표 (n = 1 ... 6)</h3>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>n</th><th>하한</th><th>찾은 가장 좋은 상한</th><th>정확한 값</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>2 (F1)</td><td>2</td><td><b>2</b> <span class="st q">DERIVED-BY-HAND</span></td></tr>
+          <tr><td>2</td><td>2</td><td>3 (빗)</td><td>실행 필요 (R1)</td></tr>
+          <tr><td>3</td><td>2</td><td>4</td><td>실행 필요 (R1)</td></tr>
+          <tr><td>4</td><td>2</td><td>5</td><td>실행 필요 (R1)</td></tr>
+          <tr><td>5</td><td>2</td><td>6</td><td>실행 필요 (R1)</td></tr>
+          <tr><td>6</td><td>2</td><td>7</td><td>실행 필요 (R1)</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="note">표 3. 노트 §4.4. τ = 2에서 카운터는 n이 커야 이득이므로 n ≤ 6에서는 빗 n + 1이 찾은 최선입니다(추론).</p>
+    </div>
+    <div class="box col">
+      <h3>손으로 유도한 2행 카운터 <span class="st q">DERIVED-BY-HAND</span></h3>
+      <p class="note">시뮬레이션으로 확인하지 않았습니다(R2 필요). 시드는 오른쪽 아래 모서리이고 성장은 서쪽으로 갑니다. 길이는 n = 1 + m·D로 m ≥ 2에서만 맞습니다.</p>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>타일 묶음</th><th>종류 수</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td>P<sub>1</sub> ... P<sub>m</sub></td><td>m</td><td>아래 행에서 블록 안 위치를 셉니다.</td></tr>
+          <tr><td>S<sub>d</sub></td><td>D</td><td>블록을 시작합니다.</td></tr>
+          <tr><td>M<sub>d</sub></td><td>D</td><td>위 행을 채웁니다.</td></tr>
+          <tr><td>X<sub>d</sub></td><td>D</td><td>블록 수 d를 하나 줄입니다.</td></tr>
+          <tr><td>Z, Y</td><td>2</td><td>시드 열입니다.</td></tr>
+          <tr><td><b>합계</b></td><td><b>m + 3D + 2</b></td><td></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <ul class="tdl">
+        <li>m ≈ 3D로 고르면 약 2√(3n) ≈ 3.46√n종입니다. 출처 [S-MTS-2]는 4√n + 2입니다.</li>
+        <li>D = 4, m = 12이면 n = 49에 26종입니다(빗은 50종).</li>
+        <li>D = 58, m = 173이면 n = 10,035에 349종입니다.</li>
+        <li>다른 길이는 첫 블록을 일부만 쓰는 방식이 필요하며 아직 풀지 않았습니다.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="stepbox" id="s1-5" role="tabpanel" aria-labelledby="st-s1-5" hidden>
+  <span class="stepno">Step 5 of 6</span>
+  <h2>열린 경우의 연구 방향</h2>
+  <p class="why"><b>풀려던 문제.</b> 24시간 안에 2쪽 논문을 써야 합니다. 시드가 안쪽인 열린 경우에서 무엇을 주장할 수 있는지, 위험은 어디인지 순위로 봅니다.</p>
+  <div class="box col">
+    <h3>핵심 갈림길</h3>
+    <ul>
+      <li>시드가 s열(1 &lt; s &lt; n)에 있으면 성장이 서쪽과 동쪽 두 팔(arm)로 갑니다. 길이는 s − 1과 n − s입니다.</li>
+      <li>하한 √n / 2는 그대로 성립합니다. Thm 3.1이 시드 위치와 무관하기 때문입니다.</li>
+      <li>두 팔에 카운터를 따로 쓰면 c√a + c√b (a + b = n − 1)로 모서리 시드의 c√n보다 큽니다(추론).</li>
+      <li>안쪽 시드가 이기려면 두 팔이 타일 종류를 공유해야 합니다. 타일은 회전하지 않아서 서쪽 성장용 글루와 동쪽 성장용 글루가 한 종류에 같이 맞아야 합니다.</li>
+    </ul>
+  </div>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>순위</th><th>방향</th><th>뒷받침할 수 있는 주장</th><th>위험</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><b>희소성에 의한 비-어려움.</b> 모양을 칸 목록으로 주면 결정 문제 (2×n, k)의 크기가 Θ(n)입니다. 길이 L의 입력은 L에 대해 다항식 개뿐이라 언어가 <a class="t" href="#term-sparse">희소 집합(sparse set)</a>입니다. <a class="t" href="#term-mahaney">Mahaney 정리(Mahaney's theorem)</a>: 희소한 NP-완전 집합이 있으면 P = NP.</td><td>"2×n의 최소 타일 집합은 P ≠ NP이면 NP-완전이 아니다"(시드 규칙과 무관). 짧고 엄밀한 정리입니다.</td><td>낮음. 인코딩을 명시해야 합니다. n을 이진수로 주면 희소하지 않아 논증이 깨집니다.</td></tr>
+      <tr><td>2</td><td><b><a class="t" href="#term-subexp">부분지수 시간(subexponential time)</a> 알고리즘.</b> τ = 2로 고정하고 타일 종류가 4⌈√n⌉ + 2 이하인 시스템을 모두 나열합니다. 후보는 2<sup>O(√n log n)</sup>개이고 각각 다항 시간에 검사합니다(S-MTS-1).</td><td>"2<sup>O(√n log n)</sup> 시간에 풀린다". 1순위와 짝이 좋습니다.</td><td>낮음. τ를 고정하거나 강도 상한을 S-MTS-4로 인용해야 합니다.</td></tr>
+      <tr><td>3</td><td><b>모서리로 옮기기 보조정리(WLOG-corner lemma).</b> 교환 논증으로, 안쪽 시드의 최적 시스템이 타일 종류를 더 쓰지 않고 모서리 시드 시스템으로 바뀜을 보입니다.</td><td>열린 경우를 풀고 일반 답이 모서리 식과 같아집니다.</td><td>높음. 두 팔이 타일을 공유하면 거짓일 수 있습니다.</td></tr>
+      <tr><td>4</td><td><b>시드 위치 분해.</b> OPT = min<sub>s</sub> f(s − 1, n − s), f는 팔 두 개의 비용(공유 포함). f의 닫힌 식이 있으면 O(n) 시간 알고리즘입니다.</td><td>f에 조건을 단 다항 시간 알고리즘.</td><td>중간 이상.</td></tr>
+      <tr><td>5</td><td><b>상수 근사(constant-factor approximation).</b> 모서리 구성 약 3.46√n(손 유도)과 하한 √n / 2를 맞대어 어느 시드 위치에서나 O(1) 근사를 얻습니다.</td><td>"다항 시간 7-근사"(조이기 전, 약 3.46 / 0.5).</td><td>낮음. 단 손 유도 구성을 먼저 검증해야 합니다.</td></tr>
+      <tr><td>6</td><td><b>작은 n의 정확한 표.</b> 클러스터에서 n ≤ 8의 모서리 최적과 안쪽 최적을 비교합니다(R1).</td><td>3순위에 대한 증거.</td><td>클러스터 실행과 소유자 승인이 필요합니다.</td></tr>
+      <tr><td>7</td><td><b>NP-어려움 증명.</b> 단항 인코딩에서는 1순위가 막습니다.</td><td>권하지 않음.</td><td>매우 높음.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">표 4.</b> 연구 방향 7개와 주장, 위험입니다(모두 추론이고 증명이 아님). 왜: 24시간 안에 어느 결과를 정리로 쓰고 어느 결과를 추측으로 남길지 고르기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §5</figcaption>
+  </figure>
+  <div class="box col">
+    <h3>현실적인 24시간 논문 (노트의 추론)</h3>
+    <ol>
+      <li>1순위와 2순위를 정리로 씁니다.</li>
+      <li>5순위는 손 유도 구성이 검증되면 정리로 씁니다.</li>
+      <li>3순위는 추측으로 쓰고 6순위 자료가 있으면 근거로 붙입니다.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="stepbox" id="s1-6" role="tabpanel" aria-labelledby="st-s1-6" hidden>
+  <span class="stepno">Step 6 of 6</span>
+  <h2>공부 팁과 계획</h2>
+  <p class="why"><b>풀려던 문제.</b> 마감까지 시간이 짧습니다. 무엇을 먼저 익히고 어디서 틀리기 쉬운지 알아야 시간을 아낍니다.</p>
+  <div class="three">
+    <div class="box col">
+      <h3>먼저 익힐 기초</h3>
+      <ol class="steps">
+        <li><a class="t" href="#term-tile">타일 종류(tile type)</a>, <a class="t" href="#term-glue">글루(glue)</a>, <a class="t" href="#term-tau">온도(temperature) τ</a>, <a class="t" href="#term-cooperation">협동 결합(cooperation)</a>의 규칙</li>
+        <li><a class="t" href="#term-producible">생성 가능(producible)</a>과 <a class="t" href="#term-terminal">끝 조립물(terminal assembly)</a></li>
+        <li><a class="t" href="#term-directed">유일 조립(directed)</a>과 <a class="t" href="#term-strict">엄격 조립(strict)</a>의 차이</li>
+        <li>2×1에 타일 한 종류로는 안 되는 이유(F1)를 손으로 쓰기</li>
+        <li>빗(comb) 상한 n + 1을 직접 확인하기(F3)</li>
+        <li>하한 논증: 세로로 자르면 타일 2개만 지나가므로 상태가 최대 2t²개이고, 같은 상태가 반복되면 <a class="t" href="#term-pumping">펌핑(pumping)</a>이 가능합니다(DERIVED-BY-HAND)</li>
+        <li>Aggarwal 외의 <a class="t" href="#term-counter">카운터(counter)</a> 구성(Fig 3.1, Thm 3.2) 읽기</li>
+        <li><a class="t" href="#term-bigo">O, Ω, Θ 표기(big-O, Omega, Theta notation)</a>와 <a class="t" href="#term-sparse">희소 집합(sparse set)</a></li>
+      </ol>
+    </div>
+    <div class="box col">
+      <h3>학습 순서</h3>
+      <ol class="steps">
+        <li>출제문과 <a class="t" href="#term-atam">추상 타일 조립 모델(abstract Tile Assembly Model, aTAM)</a> 정의를 한 쪽으로 요약하기</li>
+        <li>Step 2 화면에서 n = 1 ... 8을 눌러 보고 같은 조립을 손으로 따라 하기</li>
+        <li>F1과 F3을 각각 5줄로 증명하기</li>
+        <li>Aggarwal 외 Thm 3.1에서 k = 2를 대입해 √n / 2 얻기</li>
+        <li>Step 4 지도에서 비어 있는 칸 고르기</li>
+        <li>Step 5의 1순위와 2순위 증명 초안 쓰기. 인코딩 가정을 먼저 적기</li>
+        <li>R1과 R2 결과가 없어도 논문 뼈대 완성하기</li>
+      </ol>
+    </div>
+    <div class="box col">
+      <h3>함정</h3>
+      <ul>
+        <li><b>정의 혼동.</b> 유일 조립(directed)과 엄격 조립(strict)은 다릅니다. Adleman 외는 앞의 것, Bryans 외는 뒤의 것을 다룹니다.</li>
+        <li><b>온도.</b> τ = 1과 τ = 2는 답이 다릅니다. 고정된 τ인지 풀이자가 고르는 τ인지 확인하세요.</li>
+        <li><b>인코딩.</b> 1순위는 모양을 칸 목록으로 줄 때만 맞습니다. n을 이진수로 주면 깨집니다.</li>
+        <li><b>미확인 출처.</b> S-MTS-8, 9, 11, 12는 인용하기 전에 원문을 확인하세요.</li>
+        <li><b>손 유도 카운터.</b> 시뮬레이션 전에는 정리로 쓰지 말고 후보로 쓰세요.</li>
+        <li><b>τ = 1의 n + 1.</b> 글루 불일치가 없다는 가정 아래에서만 증명되었습니다.</li>
+        <li><b>출제자 이름.</b> Dr. Schwaller가 Robert Schweller인지는 추정입니다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>실행</th><th>무엇을</th><th>얻는 것</th><th>어디서</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td>2×n, n = 2 ... 8, τ = 1과 τ = 2, 모든 시드 위치에서 최소 타일 집합 전수 탐색. 후보 검사는 S-MTS-1의 다항 시간 유일성 검사를 씁니다.</td><td>n, 시드 위치, 최소 타일 종류 수, 증거 타일 집합 하나의 표</td><td><b>클러스터에서 실행</b></td><td><span class="st open">미실행</span></td></tr>
+      <tr><td>R2</td><td>손 유도 카운터를 몇 개의 (m, D)로 aTAM 시뮬레이션 한 번씩.</td><td>유일 조립인지와 끝 모양 확인</td><td><b>클러스터에서 실행</b></td><td><span class="st open">미실행</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">표 5.</b> 검증 실행 두 개입니다. 왜: 이 페이지의 DERIVED-BY-HAND 항목을 CONJECTURE나 PROVEN으로 바꿀 수 있는 유일한 증거이기 때문입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §6</figcaption>
+  </figure>
+  <p class="note">탐색은 이 컴퓨터에서 돌리지 않습니다. 클러스터 제출은 메인 세션이 소유자 승인 후에 합니다. 에이전트는 제출하지 않습니다.</p>
+
+  <div class="two">
+    <div class="box col">
+      <h3>Dr. Schwaller에게 먼저 물어볼 것</h3>
+      <ol>
+        <li>온도는 τ = 2로 고정인가요, τ = 1인가요, 풀이자가 고르나요?</li>
+        <li>유일 조립(directed)인가요, 엄격 조립(strict)인가요?</li>
+        <li>모양은 칸 목록(단항 n)으로 주나요, n을 이진수로 주나요?</li>
+        <li>타일 회전은 허용하지 않는 것이 맞나요?</li>
+        <li>모서리 시드의 "식"은 어떤 꼴을 생각하셨나요?</li>
+      </ol>
+    </div>
+    <div class="box col">
+      <h3>2쪽 논문 구성 계획 (노트의 추론에서)</h3>
+      <ol>
+        <li>모델 선택 명시: τ, 유일 조립, 인코딩</li>
+        <li>알려진 경계 표: √n / 2, 4⌈√n⌉ + 2, n + 1</li>
+        <li>정리: 희소성으로 NP-완전이 아님 (1순위)</li>
+        <li>정리: 2<sup>O(√n log n)</sup> 알고리즘 (2순위)</li>
+        <li>검증되면: 상수 근사 (5순위)</li>
+        <li>추측: 모서리로 옮기기 (3순위), 있으면 작은 n 자료 (6순위)</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="col">
+    <span class="eyebrow">tips/Dr_Schwaller_MinTileset 의 파일</span>
+    <ul class="files">
+      <li>00_research_notes.md: 이 페이지의 유일한 사실 출처</li>
+      <li>01_study_guide.md, 02_possible_solutions.md, 03_plan_and_design.md: 같은 폴더의 문서</li>
+      <li>study_tips.html: 이 페이지</li>
+    </ul>
+  </div>
+</section>
+
+</div><!-- /tab-now -->
+
+<div class="tabpanel" id="tab-background" role="tabpanel" aria-labelledby="tb-background" hidden>
+
+<div class="subtabs" role="tablist" aria-label="탭 2 단계">
+  <button type="button" role="tab" id="st-s2-1" aria-controls="s2-1">Step 1 이 문제의 정체</button>
+  <button type="button" role="tab" id="st-s2-2" aria-controls="s2-2">Step 2 역사 타임라인</button>
+  <button type="button" role="tab" id="st-s2-3" aria-controls="s2-3">Step 3 응용</button>
+</div>
+
+<section class="stepbox" id="s2-1" role="tabpanel" aria-labelledby="st-s2-1">
+  <span class="stepno">Step 1 of 3</span>
+  <h2>이 문제의 정체</h2>
+  <p class="why"><b>풀려던 문제.</b> 처음 보는 문제는 이름이 없으면 문헌을 찾을 수 없습니다. 이름을 붙이면 선행 연구와 이어집니다.</p>
+  <p>이 문제는 <a class="t" href="#term-mts">최소 타일 집합 문제(Minimum Tileset Problem)</a>의 2×n 직사각형 경우입니다. 2×n은 더 일반적인 <a class="t" href="#term-thin">얇은 직사각형(thin rectangle)</a> k×N에서 k = 2인 경우입니다.</p>
+  <div class="three">
+    <div class="box col"><h3>조립으로 보면</h3><p class="note">시드 하나에서 시작해 글루가 맞는 타일만 붙입니다. 끝 조립물이 하나뿐이고 그 모양이 2×n이면 성공입니다.</p></div>
+    <div class="box col"><h3>복잡도로 보면</h3><p class="note">일반 모양은 <a class="t" href="#term-npc">NP-완전(NP-complete)</a>이고 정사각형은 다항 시간입니다. 2×n의 정확한 복잡도는 찾지 못했습니다.</p></div>
+    <div class="box col"><h3>설계로 보면</h3><p class="note">길이 n을 세는 <a class="t" href="#term-counter">카운터(counter)</a>를 높이 2에 넣는 문제입니다. 높이가 2라서 이진 카운터는 안 들어가고 밑이 약 √n인 2자리 카운터가 들어갑니다.</p></div>
+  </div>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>비교</th><th>N×N 정사각형 (τ = 2)</th><th>2×n 직사각형</th></tr></thead>
+    <tbody>
+      <tr><td>타일 종류 수</td><td>Θ(log N / log log N) (거의 모든 N에서 하한, 모든 N에서 상한)</td><td>Θ(√n)</td></tr>
+      <tr><td>후보 시스템 수</td><td>다항식 개</td><td>(√n)<sup>O(√n)</sup> = 2<sup>O(√n log n)</sup> (추론)</td></tr>
+      <tr><td>알려진 복잡도</td><td>다항 시간 (S-MTS-1, S-MTS-4)</td><td>결과를 찾지 못함</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">표 6.</b> 정사각형과 2×n의 비교입니다. 왜: 정사각형의 다항 시간 알고리즘이 "후보가 다항식 개"라는 이유로 성립하는데 2×n에서는 그 이유가 깨짐을 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2</figcaption>
+  </figure>
+  <p class="note">정사각형 알고리즘은 타일 종류가 O(log n / log log n) 이하인 τ = 2 시스템을 모두 시험하는 전수 탐색입니다. 입력 크기는 칸 목록이라 약 n²입니다.</p>
+</section>
+
+<section class="stepbox" id="s2-2" role="tabpanel" aria-labelledby="st-s2-2" hidden>
+  <span class="stepno">Step 2 of 3</span>
+  <h2>역사 타임라인</h2>
+  <p class="why"><b>풀려던 문제.</b> 이 문제가 갑자기 생긴 것은 아닙니다. 어떤 결과들이 쌓여 여기에 왔는지 알면 어디를 읽어야 하는지 보입니다.</p>
+  <figure class="fig" style="margin:0;gap:12px">
+  <ol class="timeline">
+    <li><span class="yr">1982</span><div><b>Mahaney: 희소 NP-완전 집합</b><p class="note">희소한 NP-완전 집합이 있으면 P = NP입니다. 연구 방향 1순위의 근거입니다(<a class="t" href="#term-mahaney">Mahaney 정리</a>, 부분 확인).</p></div></li>
+    <li><span class="yr">2000</span><div><b>Rothemund–Winfree: 정사각형의 하한</b><p class="note">N×N 정사각형에 Ω(log N / log log N)종이 필요합니다. 제목은 기억에 의존해 미확인입니다.</p></div></li>
+    <li><span class="yr">2001</span><div><b>Adleman 외: 정사각형의 상한</b><p class="note">O(log N / log log N)로 맞춥니다. 제목은 미확인입니다.</p></div></li>
+    <li><span class="yr">2002</span><div><b>Adleman 외 (STOC 2002): 조합 최적화 문제</b><p class="note">최소 타일 집합이 일반적으로 NP-완전이고 트리와 정사각형에서는 다항 시간입니다. 주어진 시스템이 모양을 유일하게 만드는지의 확인도 다항 시간입니다. 초록만 읽었습니다.</p></div></li>
+    <li><span class="yr">2004 / 2005</span><div><b>Aggarwal 외 (Schweller 공저): 일반화 모델의 복잡도</b><p class="note">얇은 직사각형 k×N의 하한 Ω(N<sup>1/k</sup>/k)와 상한 O(N<sup>1/k</sup> + k)를 냈습니다. 이 문제의 가장 직접적인 선행 연구입니다. SODA 2004 예비판, SIAM J. Comput. 2005.</p></div></li>
+    <li><span class="yr">2010</span><div><b>Maňuch–Stacho–Stoll: τ = 1의 두 하한</b><p class="note">글루 불일치가 없다는 가정 아래 τ = 1 시스템은 (맨해튼 지름 + 1)종 이상이 필요합니다. 검색 요약만 읽었습니다.</p></div></li>
+    <li><span class="yr">2010 / 2011</span><div><b>Bryans 외: 비결정성의 힘</b><p class="note">엄격 모델의 최소 타일 집합은 <a class="t" href="#term-sigma2">Σ₂ᴾ-완전(Σ₂ᴾ-complete)</a>입니다. 유일 조립(directed)과 엄격 조립(strict) 정의를 구분해 줍니다. SODA 2011, arXiv 1006.2897.</p></div></li>
+    <li><span class="yr">2011</span><div><b>Chen–Doty–Seki: 프로그램 크기와 온도</b><p class="note">정사각형 알고리즘이 τ = 2 가정을 갖던 것을 빼고 모든 온도에서 다항 시간임을 보였습니다. arXiv 1011.3493.</p></div></li>
+    <li><span class="yr">2018 / 2019</span><div><b>Furcy–Summers–Wendlandt: τ = 1 얇은 직사각형</b><p class="note">하한 Ω(N<sup>1/k</sup>)와 아는 가장 좋은 상한 N + k − 1(빗)을 정리했습니다. arXiv 1808.04358.</p></div></li>
+    <li><span class="yr">2020</span><div><b>3D 얇은 직사각형 (arXiv 2007.11093)</b><p class="note">저자와 경계는 미확인입니다(검색 요약만).</p></div></li>
+    <li class="now"><span class="yr">2026</span><div><b>이 해커톤 문제</b><p class="note">2×n의 복잡도를 묻습니다. 모서리 시드는 식이 있어 보이고, 시드 위치를 풀면 열린 문제입니다.</p></div></li>
+  </ol>
+  <figcaption><b class="n">그림 5.</b> 1982년부터 2026년까지 이 문제로 이어진 결과의 시간순 목록입니다. 왜: 현재 문제가 어떤 결과의 빈칸인지 위치를 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2, §3, §7</figcaption>
+  </figure>
+  <p class="note">모델 자체(추상 타일 조립 모델)의 기원은 노트에서 확인하지 못해 타임라인에서 뺐습니다.</p>
+</section>
+
+<section class="stepbox" id="s2-3" role="tabpanel" aria-labelledby="st-s2-3" hidden>
+  <span class="stepno">Step 3 of 3</span>
+  <h2>응용</h2>
+  <p class="why"><b>풀려던 문제.</b> 이 문제를 풀면 어디에 쓰이는지 알아야 논문의 동기를 쓸 수 있습니다. 노트에 근거가 있는 것과 일반 배경을 구분합니다.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>분야</th><th>연결 방식</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td><a class="t" href="#term-dna">DNA(디옥시리보핵산, deoxyribonucleic acid) 타일 자기조립(DNA tile self-assembly)</a></td><td>실험에서는 타일 종류마다 DNA 가닥을 설계합니다. 그러므로 타일 종류 수는 설계해야 할 가닥 종류 수에 해당합니다.</td><td><span class="st dead">UNVERIFIED</span><br><span class="sm">일반 배경이며 노트에서 확인하지 못함</span></td></tr>
+      <tr><td>정사각형의 최소 타일 수 연구</td><td>같은 모델에서 모양 하나를 가장 작은 설계로 만드는 연구의 선례입니다.</td><td><span class="st q">부분 확인</span><br><span class="sm">S-MTS-11, S-MTS-12를 S-MTS-2~4가 인용함</span></td></tr>
+      <tr><td>카운터를 이용한 길이 제어</td><td>종류 수를 Θ(√n)으로 줄이는 설계 기법입니다. 길이 1 ... m<sup>k</sup>를 모두 만들 수 있습니다.</td><td><span class="st ok">확인</span><br><span class="sm">S-MTS-2 p.8</span></td></tr>
+      <tr><td>복잡도 이론의 희소 집합 논증</td><td>입력 크기가 n에 비례하는 문제가 NP-완전이 될 수 없음을 보이는 도구입니다.</td><td><span class="st q">부분 확인</span><br><span class="sm">S-MTS-7</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">표 7.</b> 응용과 연결 방식의 4행입니다. 왜: 논문에 인용해도 되는 행과 일반 배경에 그치는 행을 가르기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2, §3, §7</figcaption>
+  </figure>
+  <p class="note">노트는 응용 분야를 따로 조사하지 않았습니다. 첫 행은 일반 배경이라 논문에 쓰기 전에 출처를 찾아야 합니다.</p>
+</section>
+
+</div><!-- /tab-background -->
+
+<div class="tabpanel" id="tab-papers" role="tabpanel" aria-labelledby="tb-papers" hidden>
+
+<div class="subtabs" role="tablist" aria-label="탭 3 단계">
+  <button type="button" role="tab" id="st-s3-1" aria-controls="s3-1">Step 1 계보도</button>
+  <button type="button" role="tab" id="st-s3-2" aria-controls="s3-2">Step 2 마일스톤 논문 표</button>
+  <button type="button" role="tab" id="st-s3-3" aria-controls="s3-3">Step 3 이 문제의 자리</button>
+  <button type="button" role="tab" id="st-s3-4" aria-controls="s3-4">Step 4 출처</button>
+</div>
+
+<section class="stepbox" id="s3-1" role="tabpanel" aria-labelledby="st-s3-1">
+  <span class="stepno">Step 1 of 4</span>
+  <h2>계보: 어디서 와서 어디로 가나</h2>
+  <p class="why"><b>풀려던 문제.</b> 논문이 많으면 무엇부터 읽을지 모릅니다. 계보도는 읽는 순서와 이 문제의 위치를 보입니다.</p>
+  <p class="note">위쪽은 정사각형, 가운데는 얇은 직사각형, 아래쪽은 τ = 1과 엄격 모델입니다. 각 줄 안에서는 왼쪽에서 오른쪽으로 시간 순서입니다.</p>
+  <figure class="fig" style="margin:0">
+  <p class="legend">실선 상자는 논문, 점선 상자는 상세를 확인하지 못한 논문, 모서리를 깎은 상자는 이 문제입니다.</p>
+  <div class="tablewrap" style="padding:12px">
+  <svg class="lineage lin2" viewBox="0 0 960 460" role="img" aria-label="관련 논문 흐름도">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted-foreground)"/></marker></defs>
+    <text x="8" y="22" class="lane">정사각형 N×N</text><text x="8" y="172" class="lane">얇은 직사각형 k×N</text><text x="8" y="322" class="lane">τ = 1 과 엄격 모델</text>
+    <g class="edges"><path d="M170,90 H200"/><path d="M360,90 H390"/><path d="M550,90 H580"/><path d="M360,240 H390"/><path d="M550,240 H580"/><path d="M360,390 H390"/><path class="hot" d="M740,240 H780"/><path d="M740,90 H765 V225 H780"/><path d="M550,390 H765 V255 H780"/></g>
+    <g class="nodes">
+      <g><rect x="10" y="40" width="160" height="100"/><text x="20" y="60" class="y">2000</text><text x="20" y="78">Rothemund–Winfree</text><text x="20" y="93">정사각형 하한</text></g>
+      <g><rect x="200" y="40" width="160" height="100"/><text x="210" y="60" class="y">2001</text><text x="210" y="78">Adleman 외</text><text x="210" y="93">정사각형 상한</text></g>
+      <g><rect x="390" y="40" width="160" height="100"/><text x="400" y="60" class="y">2002</text><text x="400" y="78">Adleman 외</text><text x="400" y="93">NP-완전, 정사각형</text><text x="400" y="108">다항 시간</text></g>
+      <g><rect x="580" y="40" width="160" height="100"/><text x="590" y="60" class="y">2011</text><text x="590" y="78">Chen–Doty–Seki</text><text x="590" y="93">정사각형, 모든 τ</text></g>
+      <g><rect x="200" y="190" width="160" height="100"/><text x="210" y="210" class="y">2004 / 2005</text><text x="210" y="228">Aggarwal 외</text><text x="210" y="243">k×N 하한과 상한</text><text x="210" y="258">모서리 시드</text></g>
+      <g><rect x="390" y="190" width="160" height="100"/><text x="400" y="210" class="y">2018 / 2019</text><text x="400" y="228">Furcy 외</text><text x="400" y="243">τ = 1 얇은 직사각형</text></g>
+      <g class="plan"><rect x="580" y="190" width="160" height="100"/><text x="590" y="210" class="y">2020 (미확인)</text><text x="590" y="228">arXiv 2007.11093</text><text x="590" y="243">3D 얇은 직사각형</text></g>
+      <g><rect x="200" y="340" width="160" height="100"/><text x="210" y="360" class="y">2010</text><text x="210" y="378">Maňuch 외</text><text x="210" y="393">τ = 1 하한</text></g>
+      <g><rect x="390" y="340" width="160" height="100"/><text x="400" y="360" class="y">2011</text><text x="400" y="378">Bryans 외</text><text x="400" y="393">엄격 모델 Σ₂ᴾ-완전</text></g>
+      <g class="target"><polygon points="794,190 936,190 950,204 950,276 936,290 794,290 780,276 780,204"/><text x="790" y="222">이 문제:</text><text x="790" y="239">2×n 최소</text><text x="790" y="256">타일 집합</text></g>
+    </g>
+  </svg>
+  </div>
+  <figcaption><b class="n">그림 6.</b> 세 갈래의 선행 연구가 이 문제로 모이는 흐름도입니다. 왜: 어느 논문이 이 문제의 어느 부분(상한과 하한, τ = 1, 정의)을 주는지 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §7</figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s3-2" role="tabpanel" aria-labelledby="st-s3-2" hidden>
+  <span class="stepno">Step 2 of 4</span>
+  <h2>마일스톤 논문 표</h2>
+  <p class="why"><b>풀려던 문제.</b> 논문에 인용할 문헌을 골라야 합니다. 각 논문이 무엇을 했고 우리 문제와 어떻게 이어지는지 한 표에 모읍니다.</p>
+  <p class="note">"확인 상태"는 노트의 Verified 칸을 그대로 옮겼습니다. 부분 확인과 미확인은 인용 전에 원문을 읽어야 합니다.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table class="papers">
+    <thead><tr><th>연도</th><th>논문</th><th>무엇을 했나</th><th>이 문제와의 연결</th><th>확인 상태</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1982</td><td>Mahaney, "Sparse complete sets for NP: solution of a conjecture of Berman and Hartmanis", JCSS (S-MTS-7)</td><td>희소한 NP-완전 집합이 있으면 P = NP</td><td>연구 방향 1순위(희소성)의 근거</td><td><span class="st q">부분 확인</span></td></tr>
+      <tr><td class="num">2000</td><td>Rothemund, Winfree, STOC 2000 (S-MTS-11)</td><td>N×N 정사각형 하한 Ω(log N / log log N)</td><td>정사각형과 2×n의 대비</td><td><span class="st q">부분 확인</span><br><span class="sm">제목은 기억에 의존해 미확인</span></td></tr>
+      <tr><td class="num">2001</td><td>Adleman, Cheng, Goel, Huang, STOC 2001 (S-MTS-12)</td><td>맞는 상한 O(log N / log log N)</td><td>정사각형과 2×n의 대비</td><td><span class="st q">부분 확인</span><br><span class="sm">제목은 기억에 의존해 미확인</span></td></tr>
+      <tr><td class="num">2002</td><td>Adleman, Cheng, Goel, Huang, Kempe, Moisset de Espanés, Rothemund, "Combinatorial optimization problems in self-assembly", STOC 2002, pp. 23–32 (S-MTS-1)</td><td>일반 NP-완전, 트리와 정사각형 다항 시간, 검증 다항 시간</td><td>이 문제의 정의가 나온 곳이고 R1의 후보 검사를 줍니다.</td><td><span class="st q">부분 확인</span><br><span class="sm">초록만 읽음</span></td></tr>
+      <tr><td class="num">2004 / 2005</td><td>Aggarwal, Cheng, Goldwasser, Kao, Moisset de Espanés, Schweller, "Complexities for generalized models of self-assembly", SIAM J. Comput. 2005 (S-MTS-2)</td><td>Thm 3.1 하한, Thm 3.2 카운터 구성, 모서리 시드</td><td><b>가장 직접적인 선행 연구</b>. 하한 √n / 2와 상한 4⌈√n⌉ + 2의 출처</td><td><span class="st ok">확인</span><br><span class="sm">전문 pp. 1–8</span></td></tr>
+      <tr><td class="num">2010</td><td>Maňuch, Stacho, Stoll, "Two lower bounds for self-assemblies at temperature 1", J. Comput. Biol. 17(6) (S-MTS-6)</td><td>글루 불일치가 없다는 가정 아래 (맨해튼 지름 + 1)종 이상</td><td>τ = 1에서 n + 1이 정확하다는 조건부 결과</td><td><span class="st q">부분 확인</span><br><span class="sm">검색 요약만</span></td></tr>
+      <tr><td class="num">2011</td><td>Bryans, Chiniforooshan, Doty, Kari, Seki, "The power of nondeterminism in self-assembly", SODA 2011 (S-MTS-3)</td><td>엄격 모델 Σ₂ᴾ-완전, 두 정의의 구분</td><td>"유일 조립"이 어느 정의인지 판단하는 기준</td><td><span class="st ok">확인</span><br><span class="sm">pp. 1–5</span></td></tr>
+      <tr><td class="num">2011</td><td>Chen, Doty, Seki, "Program size and temperature in self-assembly", arXiv 1011.3493 (S-MTS-4)</td><td>정사각형은 모든 온도에서 다항 시간</td><td>정사각형 알고리즘의 τ 가정을 걷어 냄</td><td><span class="st ok">확인</span><br><span class="sm">pp. 1–3, 학술지 정보는 부분 확인</span></td></tr>
+      <tr><td class="num">2018 / 2019</td><td>Furcy, Summers, Wendlandt, "New bounds on the tile complexity of thin rectangles at temperature-1", arXiv 1808.04358 (S-MTS-5)</td><td>τ = 1 하한 Ω(N<sup>1/k</sup>), 상한 N + k − 1</td><td>τ = 1의 현재 최선 경계. 정확한 값은 열림</td><td><span class="st ok">확인</span></td></tr>
+      <tr><td class="num">2020</td><td>"Improved lower and upper bounds on the tile complexity of uniquely self-assembling a thin rectangle non-cooperatively in 3D", arXiv 2007.11093 (S-MTS-8)</td><td>3D τ = 1 얇은 직사각형</td><td>저자와 경계를 읽지 못했습니다.</td><td><span class="st dead">미확인</span></td></tr>
+      <tr><td class="num">미확인</td><td>"Proving new directed tile complexity lower bounds at temperature 1 by folding between 2D and just-barely 3D self-assembly", ResearchGate 379409972 (S-MTS-9)</td><td>2D τ = 1 유일 조립 하한을 조일 수 있음</td><td>시간이 있으면 가장 먼저 확인할 논문</td><td><span class="st dead">미확인</span><br><span class="sm">페이지가 403</span></td></tr>
+      <tr><td class="num">미확인</td><td>Chalk, Luchsinger, Schweller, Wylie (UTRGV 논문), core.ac.uk/download/160477919.pdf (S-MTS-10)</td><td>Schweller의 UTRGV 소속 근거</td><td>출제자 이름 추정의 근거</td><td><span class="st q">부분 확인</span><br><span class="sm">검색 요약만</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">표 8.</b> 논문 12편의 연도, 서지, 내용, 연결, 확인 상태입니다(확인 4편, 부분 확인 6편, 미확인 2편). 왜: 어떤 논문이 어느 부분의 근거인지 인용 전에 확인하기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §7</figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s3-3" role="tabpanel" aria-labelledby="st-s3-3" hidden>
+  <span class="stepno">Step 3 of 4</span>
+  <h2>이 문제의 자리</h2>
+  <p class="why"><b>풀려던 문제.</b> 해커톤에서 무엇을 새로 낼 수 있는지 알아야 합니다. 이미 알려진 것과 빈칸을 나누면 기여가 보입니다.</p>
+  <div class="two">
+    <div class="box col">
+      <h3>이미 알려진 것</h3>
+      <ul>
+        <li>일반 모양은 NP-완전, 트리와 정사각형은 다항 시간입니다.</li>
+        <li>k×N 얇은 직사각형의 경계: 하한 Ω(N<sup>1/k</sup>/k)와 상한 O(N<sup>1/k</sup> + k) (τ = 2).</li>
+        <li>하한은 시드가 어디에 있든 성립합니다.</li>
+        <li>τ = 1에서는 Ω(N<sup>1/k</sup>) ≤ t ≤ N + k − 1입니다.</li>
+      </ul>
+    </div>
+    <div class="box col">
+      <h3>이 해커톤에서 채울 수 있는 빈칸</h3>
+      <ul>
+        <li>모서리 시드 τ = 2의 정확한 식(출제문이 있다고 말하는 식)</li>
+        <li>안쪽 시드의 복잡도와 상한</li>
+        <li>τ = 1의 정확한 값(가정 없이)</li>
+        <li>2×n의 정확한 복잡도 결과: 찾지 못했습니다.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box col">
+    <h3>같은 폴더에서 이어서 읽을 것</h3>
+    <ul>
+      <li>읽지 못해 뺀 자료 3건: "Self-assemblying classes of shapes with a minimum number of tiles" (ResearchGate 221583734), "Toward minimum size self-assembled counters" (Springer 10.1007/s11047-008-9070-3), "Size-dependent tile self-assembly: constant-height rectangles" (arXiv 1509.06898).</li>
+      <li>그중 카운터 논문은 다음에 읽을 가치가 있다고 노트가 적었습니다.</li>
+      <li>마지막 것은 크기에 따른 온도를 쓰는 다른 모델이라 표준 모델 밖입니다.</li>
+      <li>Furcy–Micka–Summers의 3D 정사각형 τ = 1 논문은 검색하지 않았습니다(미확인).</li>
+    </ul>
+  </div>
+</section>
+
+<section class="stepbox" id="s3-4" role="tabpanel" aria-labelledby="st-s3-4" hidden>
+  <span class="stepno">Step 4 of 4</span>
+  <h2>출처</h2>
+  <p class="why"><b>목적.</b> 이 페이지의 주장을 직접 확인할 수 있게 원문 링크를 모았습니다. 접속일은 모두 2026-11-07입니다.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>ID</th><th>링크</th><th>종류와 읽은 범위</th><th>확인 상태</th></tr></thead>
+    <tbody>
+      <tr><td>S-MTS-1</td><td><a href="https://authors.library.caltech.edu/3141">Combinatorial optimization problems in self-assembly</a> (doi 10.1145/509907.509913)</td><td>논문, 초록만</td><td><span class="st q">부분 확인</span></td></tr>
+      <tr><td>S-MTS-2</td><td><a href="https://users.cs.northwestern.edu/~schwellerr/papers/CGM_siam.pdf">Complexities for generalized models of self-assembly</a></td><td>논문, 전문 pp. 1–8</td><td><span class="st ok">확인</span></td></tr>
+      <tr><td>S-MTS-3</td><td><a href="https://arxiv.org/abs/1006.2897">The power of nondeterminism in self-assembly</a></td><td>논문, pp. 1–5</td><td><span class="st ok">확인</span></td></tr>
+      <tr><td>S-MTS-4</td><td><a href="https://arxiv.org/abs/1011.3493">Program size and temperature in self-assembly</a></td><td>논문, pp. 1–3</td><td><span class="st ok">확인</span></td></tr>
+      <tr><td>S-MTS-5</td><td><a href="https://arxiv.org/abs/1808.04358">New bounds on the tile complexity of thin rectangles at temperature-1</a></td><td>논문, ar5iv 본문</td><td><span class="st ok">확인</span></td></tr>
+      <tr><td>S-MTS-6</td><td><a href="https://journals.sagepub.com/doi/pdf/10.1089/cmb.2009.0067">Two lower bounds for self-assemblies at temperature 1</a></td><td>논문, 검색 요약만</td><td><span class="st q">부분 확인</span></td></tr>
+      <tr><td>S-MTS-7</td><td><a href="https://en.wikipedia.org/wiki/Mahaney%27s_theorem">Mahaney's theorem</a></td><td>모음 사이트, 요약만</td><td><span class="st q">부분 확인</span></td></tr>
+      <tr><td>S-MTS-8</td><td><a href="https://arxiv.org/abs/2007.11093">Improved bounds, thin rectangle, 3D</a></td><td>논문, 검색 요약만</td><td><span class="st dead">미확인</span></td></tr>
+      <tr><td>S-MTS-9</td><td><a href="https://www.researchgate.net/publication/379409972">Folding between 2D and just-barely 3D</a></td><td>논문, 403으로 못 읽음</td><td><span class="st dead">미확인</span></td></tr>
+      <tr><td>S-MTS-10</td><td><a href="https://core.ac.uk/download/160477919.pdf">UTRGV Schweller paper</a></td><td>논문, 검색 요약만</td><td><span class="st q">부분 확인</span></td></tr>
+      <tr><td>S-MTS-11, S-MTS-12</td><td>링크 없음</td><td>S-MTS-2, 3, 4가 인용한 것을 옮김. 제목은 기억에 의존</td><td><span class="st dead">미확인</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">표 9.</b> 출처 12건의 링크와 읽은 범위입니다. 왜: 어느 주장이 전문을 읽고 쓴 것이고 어느 주장이 요약만 본 것인지 가르기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §7</figcaption>
+  </figure>
+</section>
+
+</div><!-- /tab-papers -->
+
+<div class="tabpanel" id="tab-terms" role="tabpanel" aria-labelledby="tb-terms" hidden>
+
+<button type="button" class="back" id="termsBack" hidden>← 돌아가기</button>
+
+<section class="stepbox" id="terms">
+  <span class="stepno">용어 부록 (terms appendix)</span>
+  <h2>용어 부록 (terms appendix)</h2>
+  <p class="why"><b>목적.</b> 본문의 용어는 한영 병기만 둡니다. 전체 이름과 한 줄 뜻은 여기서 찾습니다. 어느 탭에서든 링크가 작동합니다.</p>
+  <ul class="termlist">
+    <li id="term-atam"><b>추상 타일 조립 모델(abstract Tile Assembly Model, aTAM)</b>: 정사각형 타일이 글루 강도의 합이 온도 이상일 때 붙으며 자라는 수학 모델</li>
+    <li id="term-tile"><b>타일 종류(tile type)</b>: 네 변(북, 동, 남, 서)에 글루 라벨이 붙은 정사각형 설계. 복사본은 무한히 쓸 수 있고 회전하지 않음</li>
+    <li id="term-glue"><b>글루(glue)</b>: 타일 변의 라벨과 강도. 라벨이 같고 강도가 양수인 마주 본 변끼리 붙음</li>
+    <li id="term-tau"><b>온도(temperature) τ</b>: 타일이 붙기 위해 맞닿은 변들의 강도 합이 넘어야 하는 문턱값</li>
+    <li id="term-cooperation"><b>협동 결합(cooperation)</b>: τ = 2에서 강도 1 글루 둘이 합쳐 타일을 붙이는 방식</li>
+    <li id="term-seed"><b>시드(seed)</b>: 정해진 자리에 놓인 처음 타일. 성장이 여기서 시작함</li>
+    <li id="term-corner"><b>모서리 시드(corner seed)</b>: 모양의 모서리 칸에 놓인 시드. Aggarwal 외의 카운터 구성이 이 경우</li>
+    <li id="term-assembly"><b>조립물(assembly)</b>: 격자 Z² 위에 연결되게 놓인 타일들</li>
+    <li id="term-producible"><b>생성 가능(producible)</b>: 시드에서 시작해 강도 합이 τ 이상으로 한 타일씩 붙여 얻을 수 있는 조립물</li>
+    <li id="term-terminal"><b>끝 조립물(terminal assembly)</b>: 더 이상 타일이 붙을 수 없는 생성 가능 조립물</li>
+    <li id="term-directed"><b>유일 조립(uniquely self-assemble, directed)</b>: 끝 조립물이 단 하나이고 모양이 목표인 경우. 어느 실행에서도 같은 자리에 같은 타일이 놓임</li>
+    <li id="term-strict"><b>엄격 조립(strictly self-assemble)</b>: 모든 끝 조립물의 모양이 목표인 경우. 실행마다 같은 자리에 다른 타일이 놓일 수 있음</li>
+    <li id="term-tilecomplexity"><b>타일 복잡도(tile complexity)</b>: 모양을 유일하게 조립하는 데 필요한 최소 타일 종류 수</li>
+    <li id="term-mts"><b>최소 타일 집합 문제(Minimum Tileset Problem)</b>: 모양을 입력받아 그것을 유일하게 조립하는 최소 타일 종류 수를 출력하는 문제</li>
+    <li id="term-npc"><b>NP-완전(NP-complete)</b>: 답을 빨리 확인할 수 있고 NP의 모든 문제만큼 어려운 문제의 부류</li>
+    <li id="term-thin"><b>얇은 직사각형(thin rectangle)</b>: 높이 k가 작고 길이 N이 긴 k×N 직사각형. 2×n은 k = 2</li>
+    <li id="term-counter"><b>카운터(counter)</b>: 열을 따라 자릿수 값을 올리거나 내려 길이를 센 뒤 멈추는 타일 설계. 높이 k면 k자리, 밑 m = ⌈N<sup>1/k</sup>⌉</li>
+    <li id="term-pumping"><b>펌핑(pumping)</b>: 같은 상태가 두 번 나온 사이의 구간을 되풀이해 끝없이 긴 조립물을 만드는 논증</li>
+    <li id="term-comb"><b>빗(comb)</b>: 아래 행에 n종, 위 행에 1종을 쓰는 n + 1종 구성</li>
+    <li id="term-sparse"><b>희소 집합(sparse set)</b>: 길이 L인 원소의 수가 L의 다항식 이하인 집합</li>
+    <li id="term-mahaney"><b>Mahaney 정리(Mahaney's theorem)</b>: 희소한 NP-완전 집합이 있으면 P = NP라는 정리</li>
+    <li id="term-bigo"><b>O, Ω, Θ 표기(big-O, Omega, Theta notation)</b>: 위에서 막음(상한), 아래서 막음(하한), 양쪽에서 막는 증가율의 표기</li>
+    <li id="term-polytime"><b>다항 시간(polynomial time)</b>: 입력 크기의 다항식으로 계산 시간이 묶이는 알고리즘</li>
+    <li id="term-subexp"><b>부분지수 시간(subexponential time)</b>: 2<sup>n</sup>보다는 작고 다항식보다는 큰 계산 시간. 여기서는 2<sup>O(√n log n)</sup></li>
+    <li id="term-manhattan"><b>맨해튼 지름(Manhattan diameter)</b>: 모양 안 두 칸 사이 가로와 세로 이동 거리의 최댓값. 정의가 같은지는 원문 확인 필요(S-MTS-6)</li>
+    <li id="term-mismatch"><b>글루 불일치(glue mismatch)</b>: 맞닿은 두 변의 글루 라벨이 서로 다른 상태</li>
+    <li id="term-sigma2"><b>Σ₂ᴾ-완전(Σ₂ᴾ-complete)</b>: NP보다 한 층 위인 다항 계층(polynomial hierarchy)의 완전 문제</li>
+    <li id="term-dna"><b>DNA(디옥시리보핵산, deoxyribonucleic acid) 타일 자기조립(DNA tile self-assembly)</b>: DNA 가닥으로 만든 타일이 스스로 붙어 구조를 이루는 실험 분야</li>
+  </ul>
+</section>
+
+</div><!-- /tab-terms -->
+
+</div>
+<script>
+(function(){
+"use strict";
+// ---------- Step 2: 빗(comb) 조립 보기. 손으로 쓴 타일 집합을 그릴 뿐 탐색이나 풀이는 하지 않는다 ----------
+const sub=n=>String(n).replace(/\d/g,d=>'₀₁₂₃₄₅₆₇₈₉'[d]);
+const CELL=64, PAD=16, TOP=18;
+const $=id=>document.getElementById(id);
+const nIn=$('asmN'), nOut=$('asmNv'), view=$('asmView'), msg=$('asmMsg'), stat=$('asmStat'), typesBox=$('asmTypes');
+const b1=$('asmT1'), b2=$('asmT2');
+let n=5, k=1, tau=2;
+
+function seq(n){
+  const s=[];
+  for(let i=1;i<=n;i++){
+    s.push({name:'B'+sub(i),c:i,r:0,kind:'B',i});
+    s.push({name:'T',c:i,r:1,kind:'T',i});
+  }
+  return s;
+}
+function glues(t,n){ // 변마다 글루 라벨. 없는 변은 널(null)
+  if(t.kind==='B') return {N:'u',E:t.i<n?'e'+sub(t.i):'',S:'',W:t.i>1?'e'+sub(t.i-1):''};
+  return {N:'',E:'',S:'u',W:''};
+}
+function why(t){
+  if(t.kind==='B' && t.i===1) return '타일 B₁이 시드입니다. 처음부터 모서리 칸에 놓여 있습니다.';
+  if(t.kind==='B') return `타일 B${sub(t.i)}은 왼쪽 B${sub(t.i-1)}의 동쪽 글루 e${sub(t.i-1)}에 붙습니다. 강도 ${tau}가 온도 τ = ${tau} 이상이라 글루 하나로 충분합니다.`;
+  if(t.i===1) return `타일 T는 B₁ 위에 붙습니다. 북쪽 글루 u와 남쪽 글루 u가 맞고 강도는 ${tau}입니다. T는 위 행 전체에서 다시 쓰이는 종류입니다.`;
+  return `타일 T가 B${sub(t.i)} 위에 붙습니다. 새 종류가 아니라 같은 T의 복사본입니다.`;
+}
+function draw(){
+  const s=seq(n), W=n*CELL+2*PAD, H=2*CELL+2*PAD+TOP;
+  let h=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="2×${n} 조립 화면" style="width:100%;max-width:${W}px;height:auto">`;
+  for(let c=1;c<=n;c++)for(let r=0;r<2;r++){
+    const x=PAD+(c-1)*CELL, y=PAD+TOP+(1-r)*CELL;
+    h+=`<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" fill="none" stroke="var(--rule)" stroke-dasharray="4 3"/>`;
+  }
+  for(let j=0;j<k;j++){
+    const t=s[j], x=PAD+(t.c-1)*CELL, y=PAD+TOP+(1-t.r)*CELL, g=glues(t,n);
+    const fill=j===k-1?'var(--signal-flag-fill)':(t.kind==='T'?'var(--card)':'var(--muted)');
+    h+=`<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" fill="${fill}" stroke="var(--foreground)" stroke-width="${j===0?3.5:1.5}"/>`;
+    h+=`<text class="nm" x="${x+CELL/2}" y="${y+CELL/2+5}" text-anchor="middle">${t.name}</text>`;
+    if(g.N) h+=`<text class="gl" x="${x+CELL/2}" y="${y+12}" text-anchor="middle">${g.N}</text>`;
+    if(g.S) h+=`<text class="gl" x="${x+CELL/2}" y="${y+CELL-5}" text-anchor="middle">${g.S}</text>`;
+    if(g.W) h+=`<text class="gl" x="${x+4}" y="${y+CELL/2+4}">${g.W}</text>`;
+    if(g.E) h+=`<text class="gl" x="${x+CELL-4}" y="${y+CELL/2+4}" text-anchor="end">${g.E}</text>`;
+  }
+  h+=`<text class="ax" x="${PAD}" y="12">위 행</text>`;
+  h+='</svg>';
+  view.innerHTML=h;
+  const used=new Set(s.slice(0,k).map(t=>t.name));
+  msg.textContent = k===0 ? '"다음 타일 붙이기"를 누르면 시드 B₁이 놓입니다.' :
+    (why(s[k-1]) + (k===2*n ? ' 더 붙일 칸이 없습니다. 끝 조립물(terminal)이고 모양은 2×'+n+'입니다.' : ''));
+  stat.textContent = `붙인 타일 ${k} / ${2*n}개, 쓴 종류 ${used.size} / ${n+1}종, 글루 강도 ${tau}, 온도 τ = ${tau}`;
+  let t='<table><thead><tr><th>종류</th><th>북</th><th>동</th><th>남</th><th>서</th><th>쓴 횟수</th></tr></thead><tbody>';
+  for(let i=1;i<=n;i++){const nm='B'+sub(i), g=glues({kind:'B',i},n), cnt=s.slice(0,k).filter(x=>x.name===nm).length;
+    t+=`<tr class="${cnt?'usedrow':''}"><td>${nm}</td><td>${g.N||'null'}</td><td>${g.E||'null'}</td><td>null</td><td>${g.W||'null'}</td><td>${cnt}</td></tr>`}
+  const cT=s.slice(0,k).filter(x=>x.name==='T').length;
+  t+=`<tr class="${cT?'usedrow':''}"><td>T</td><td>null</td><td>null</td><td>u</td><td>null</td><td>${cT}</td></tr></tbody></table>`;
+  typesBox.innerHTML=t;
+  $('asmPrev').disabled=k<=1; $('asmNext').disabled=k===2*n;
+  b1.setAttribute('aria-pressed',tau===1?'true':'false'); b2.setAttribute('aria-pressed',tau===2?'true':'false');
+}
+nIn.addEventListener('input',()=>{n=+nIn.value;nOut.textContent=n;k=1;draw()});
+$('asmNext').addEventListener('click',()=>{if(k<2*n){k++;draw()}});
+$('asmPrev').addEventListener('click',()=>{if(k>1){k--;draw()}});
+$('asmReset').addEventListener('click',()=>{k=1;draw()});
+b1.addEventListener('click',()=>{tau=1;draw()});
+b2.addEventListener('click',()=>{tau=2;draw()});
+draw();
+
+// ---------- Step 3: 식으로 계산한 그래프 (n = 1..100) ----------
+const low=m=>Math.sqrt(m)/2, up2=m=>4*Math.ceil(Math.sqrt(m))+2, up1=m=>m+1;
+const CW=760, CH=380, ml=58, mr=24, mt=18, mb=46;
+const lo=Math.log10(.3), hi=Math.log10(150);
+const X=m=>ml+(m-1)/99*(CW-ml-mr), Y=v=>mt+(1-(Math.log10(v)-lo)/(hi-lo))*(CH-mt-mb);
+const pts=f=>{let s='';for(let m=1;m<=100;m++)s+=(m>1?' ':'')+X(m).toFixed(1)+','+Y(f(m)).toFixed(1);return s};
+let svg='';
+[0.5,1,2,5,10,20,50,100].forEach(v=>{svg+=`<line class="grid" x1="${ml}" x2="${CW-mr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${ml-6}" y="${Y(v)+4}" text-anchor="end">${v}</text>`});
+[1,10,20,30,40,50,60,70,80,90,100].forEach(m=>{svg+=`<line class="grid" x1="${X(m)}" x2="${X(m)}" y1="${mt}" y2="${CH-mb}"/><text class="ax" x="${X(m)}" y="${CH-mb+16}" text-anchor="middle">${m}</text>`});
+svg+=`<line class="axis" x1="${ml}" x2="${CW-mr}" y1="${CH-mb}" y2="${CH-mb}"/><line class="axis" x1="${ml}" x2="${ml}" y1="${mt}" y2="${CH-mb}"/>`;
+svg+=`<text class="ax" x="${(ml+CW-mr)/2}" y="${CH-8}" text-anchor="middle">n (직사각형의 길이, 열 수)</text>`;
+svg+=`<text class="ax" transform="translate(14 ${(mt+CH-mb)/2}) rotate(-90)" text-anchor="middle">타일 종류 수 t (로그 눈금)</text>`;
+svg+=`<polyline class="sline sl3" points="${pts(up1)}"/><polyline class="sline sl2" points="${pts(up2)}"/><polyline class="sline sl1" points="${pts(low)}"/>`;
+svg+=`<g id="chMark"></g>`;
+$('chart').innerHTML=svg;
+const f1=v=>v.toFixed(2);
+function mark(){
+  const m=+$('chN').value, g=$('chMark');
+  g.innerHTML=`<line class="mark" x1="${X(m)}" x2="${X(m)}" y1="${mt}" y2="${CH-mb}"/>`+
+   [[low,'var(--series-l1)'],[up2,'var(--series-l2)'],[up1,'var(--series-circle)']].map(([f,c])=>`<circle cx="${X(m)}" cy="${Y(f(m))}" r="4" fill="${c}" stroke="var(--card)"/>`).join('')+
+   `<text class="vl" x="${Math.min(X(m)+6,CW-mr-60)}" y="${mt+12}">n = ${m}</text>`;
+  $('chRead').innerHTML=`<dt>하한 √n / 2</dt><dd>${f1(low(m))}</dd><dt>상한 4⌈√n⌉ + 2 (τ = 2)</dt><dd>${up2(m)}</dd><dt>상한 n + 1 (빗)</dt><dd>${up1(m)}</dd>`+
+   `<dt>τ = 2 구성이 빗보다 작은가</dt><dd>${up2(m)<up1(m)?'예':(up2(m)===up1(m)?'같음':'아니오')}</dd>`;
+}
+$('chN').addEventListener('input',mark);mark();
+let cross=0;for(let m=1;m<=100;m++){if(up2(m)<up1(m)){cross=m;break}}
+const rows=[1,cross,100,10000].map(m=>`<tr><td>${m}${m===cross?' (빗보다 처음 작아지는 n)':''}</td><td class="num">${f1(low(m))}</td><td class="num">${up2(m)}</td><td class="num">${up1(m)}</td></tr>`).join('');
+$('chTab').innerHTML=rows;
+})();
+</script>
+<script>
+(function(){
+  // 상위 탭 4개와 탭마다 하위 단계 탭. 탭마다 고른 단계를 기억한다.
+  const tabs=[...document.querySelectorAll('.tabs [role=tab]')], names=tabs.map(t=>t.dataset.tab);
+  const subs={}, cur={}, back=document.getElementById('termsBack');
+  names.forEach(n=>{subs[n]=[...document.getElementById('tab-'+n).querySelectorAll('.subtabs [role=tab]')];cur[n]=0});
+  let active='now', from=null;
+  const hashOf=()=>'#'+(subs[active].length?active+'-'+(cur[active]+1):active);
+  function render(){
+    tabs.forEach(t=>{const on=t.dataset.tab===active;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;
+      document.getElementById('tab-'+t.dataset.tab).hidden=!on});
+    names.forEach(n=>subs[n].forEach((b,i)=>{const on=i===cur[n];b.setAttribute('aria-selected',on?'true':'false');b.tabIndex=on?0:-1;
+      document.getElementById(b.getAttribute('aria-controls')).hidden=!on}));
+  }
+  function go(name,step){active=name;if(step!=null&&step>=0&&subs[name].length)cur[name]=step;render()}
+  // 허용 해시: now, background, papers, terms, 그리고 now-2 꼴. 그 밖의 해시는 null.
+  function parse(h){const m=h.match(/^([a-z]+)(?:-(\d+))?$/);if(!m||!names.includes(m[1]))return null;
+    if(m[2]===undefined)return {name:m[1],step:null};
+    const s=+m[2]-1;return s>=0&&s<subs[m[1]].length?{name:m[1],step:s}:null}
+  function openStep(id){const el=document.getElementById(id),p=el&&el.closest('.tabpanel');if(!p)return;
+    const name=p.id.slice(4);go(name,subs[name].findIndex(b=>b.getAttribute('aria-controls')===id));
+    history.replaceState(null,'',hashOf());el.scrollIntoView({behavior:'smooth',block:'start'})}
+  window.openStep=openStep;
+  function openTerm(a,target){from={name:active,step:cur[active],el:a};go('terms');back.hidden=false;history.replaceState(null,'','#terms');
+    document.querySelectorAll('.termlist li.hl').forEach(x=>x.classList.remove('hl'));
+    target.classList.add('hl');setTimeout(()=>target.classList.remove('hl'),1500);
+    target.scrollIntoView({behavior:'smooth',block:'center'})}
+  back.addEventListener('click',()=>{if(!from)return;const f=from;from=null;back.hidden=true;go(f.name,f.step);
+    history.replaceState(null,'',hashOf());f.el.scrollIntoView({block:'center'})});
+  function manual(name,step,focusEl){from=null;back.hidden=true;go(name,step);history.replaceState(null,'',hashOf());if(focusEl)focusEl.focus()}
+  function arrows(list,i,e,pick){if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;e.preventDefault();
+    pick((i+(e.key==='ArrowRight'?1:list.length-1))%list.length)}
+  tabs.forEach((t,i)=>{
+    t.addEventListener('click',()=>manual(t.dataset.tab));
+    t.addEventListener('keydown',e=>arrows(tabs,i,e,j=>manual(tabs[j].dataset.tab,null,tabs[j])));
+  });
+  names.forEach(n=>subs[n].forEach((b,i)=>{
+    b.addEventListener('click',()=>manual(n,i));
+    b.addEventListener('keydown',e=>arrows(subs[n],i,e,j=>manual(n,j,subs[n][j])));
+  }));
+  const apply=h=>{const r=parse(h);if(r)go(r.name,r.step)};
+  render();apply(location.hash.slice(1));
+  window.addEventListener('hashchange',()=>{const r=parse(location.hash.slice(1));if(r){from=null;back.hidden=true;go(r.name,r.step)}});
+  // 문서 안 링크: 용어 링크는 용어 탭으로, 단계 상자 id 링크는 그 단계로 간다.
+  document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;
+    const id=a.getAttribute('href').slice(1),t=document.getElementById(id);if(!t)return;
+    if(id.startsWith('term-')){e.preventDefault();openTerm(a,t)}
+    else if(t.classList.contains('stepbox')){e.preventDefault();openStep(id)}});
+})();
+
+</script>
+</body>
+</html>
