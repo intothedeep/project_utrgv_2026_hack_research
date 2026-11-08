@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>세 직선 최소 원 학습 팁</title>
+<title>HACK · 세 직선 최소 원 학습 팁</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500&display=swap">
 <style>
 /* html-theme: the one theme for HTML output (rules/answering.md §3).
@@ -227,7 +227,7 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 <header class="lede">
   <span class="eyebrow">UTRGV Research Hackathon 2026 · 출제: Tim Wylie</span>
   <h1>3차원 세 직선과 만나는 가장 작은 원: 학습 팁</h1>
-  <p>초보자를 위한 학습 지도입니다. 무엇을 알아야 하고 왜 그런지 단계별로 배웁니다. 각 탭은 번호 붙은 단계 상자로 이어집니다.</p>
+  <p>초보자를 위한 학습 지도입니다. 무엇을 알아야 하고 왜 그런지 단계별로 배웁니다. 탭 1은 6단계, 탭 2와 탭 3은 5단계이고, 각 단계는 앞 단계 위에 쌓입니다.</p>
   <p>문제는 이렇습니다. 공간의 무한 직선 세 개가 주어집니다. 세 직선 모두와 만나는 가장 작은 원(중심, 반지름, 평면)을 구합니다.</p>
   <div class="meta"><span>마감 <b>11/8(일) 09:00</b></span><span>제출물 <b>2쪽 논문</b> (Overleaf, 이것만 심사)</span><span>상태 <b>계획 단계, 논문 본문 미작성</b></span></div>
 </header>
@@ -260,11 +260,11 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
       <div class="formula">dist(c, L) ≤ |c − p| = r</div>
       <p>따라서 조건을 만족하는 모든 원은 아래를 만족합니다.</p>
       <div class="formula">r ≥ r* = min<sub>c</sub> max<sub>i</sub> dist(c, L<sub>i</sub>)</div>
-      <p>r*는 세 직선 모두와 만나는 가장 작은 구의 반지름입니다. 점과 직선 사이 거리는 <a class="t" href="#term-convex">볼록 함수(convex function)</a>입니다. 그래서 이것은 변수 3개짜리 볼록 최적화, 곧 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>입니다.</p>
-      <p><b>하한은 항상 달성됩니다.</b> 최적점에서 <a class="t" href="#term-kkt">카루시-쿤-터커 조건(Karush-Kuhn-Tucker conditions, KKT)</a>이 성립합니다. 이는 접점에서 c로 향하는 단위벡터 u<sub>i</sub>들의 양의 결합이 0이라는 뜻입니다.</p>
+      <p>r*는 세 직선 모두와 만나는 가장 작은 구의 반지름입니다. 점과 직선 사이 거리는 <a class="t" href="#term-convex">볼록 함수(convex function)</a>입니다. 볼록 함수 세 개의 최댓값도 볼록 함수입니다. 그래서 c에 대한 <a class="t" href="#term-convexopt">볼록 최적화(convex optimization)</a>입니다. 변수 r을 더하면 변수 (c, r) 4개의 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>이 됩니다.</p>
+      <p><b>하한은 항상 달성됩니다.</b> 평행하지 않은 쌍이 있으면 c가 멀어질수록 거리가 커지므로 최솟값이 존재합니다. 세 직선이 모두 평행이면 단면으로 줄입니다. 최적점에서 <a class="t" href="#term-kkt">카루시-쿤-터커 조건(Karush-Kuhn-Tucker conditions, KKT)</a>이 성립합니다. 이는 접점에서 c로 향하는 단위벡터 u<sub>i</sub>들의 양의 결합이 0이라는 뜻입니다. 단 r* = 0이면 u<sub>i</sub>가 정의되지 않으므로, 이 논증은 r* &gt; 0일 때만 씁니다.</p>
       <p>이런 벡터 세 개는 한 평면 위에 있어야 합니다. 그래서 접점들과 c가 같은 평면에 놓입니다. 그 평면이 세 직선을 모두 지나는 <a class="t" href="#term-greatcircle">대원(great circle)</a>을 만듭니다.</p>
       <p><a class="t" href="#term-active">활성 제약(active constraint)</a>이 두 개면 두 접점이 구의 <a class="t" href="#term-antipodal">대척점(antipodal points)</a>이 됩니다. 이때는 평면을 돌려서 세 번째 직선을 잡을 수 있습니다.</p>
-      <p class="note">결론: 케이스 분석 전체가 "활성 직선이 2개인가 3개인가"라는 질문 하나로 줄어듭니다. 활성 직선은 최적 중심에서 거리가 정확히 r인 직선입니다.</p>
+      <p class="note">결론: 케이스 분석이 "활성 직선이 2개인가 3개인가"라는 판정과 활성 3개 하위 케이스 풀이로 줄어듭니다. 활성 직선은 <a class="t" href="#term-kkt">카루시-쿤-터커 조건(Karush-Kuhn-Tucker conditions, KKT)</a>의 <a class="t" href="#term-multiplier">승수(multiplier)</a>가 양수인 직선입니다. 그 직선은 최적 중심에서 거리가 정확히 r입니다.</p>
     </div>
     <figure class="box fig">
       <div class="canvasbox figbox"><canvas id="fig1" aria-label="3중 대칭 꼬인 세 직선과 최소 구, 대원"></canvas></div>
@@ -309,9 +309,9 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 
 <section class="stepbox" id="s1-3" role="tabpanel" aria-labelledby="st-s1-3" hidden>
   <span class="stepno">Step 3 of 6</span>
-  <h2>PDF Figure 1 케이스 갤러리</h2>
+  <h2>케이스 갤러리: PDF Figure 1과 추가 4개</h2>
   <p class="why"><b>풀려던 문제.</b> 20개 케이스를 한눈에 비교할 방법이 필요했습니다. 같은 축과 같은 방식으로 그리면 차이가 보입니다.</p>
-  <p class="note">문제 PDF의 모든 구성을 3D 좌표축 위에 그렸습니다. 각 그림은 드래그로 회전하고, 버튼을 누르면 위 탐색기에 불러옵니다. 자홍색 원이 최소 원, 점선 원이 최소 구의 윤곽입니다.</p>
+  <p class="note">카드 20장은 문제 PDF Figure 1의 16개 케이스와 추가 4개입니다. 추가 4개는 공점 1개와 변형 3개(2 meet 멂, 2 평행 멀리 꼬인 직선, 둔각 프리즘)입니다. 모두 3D 좌표축 위에 그렸습니다. 각 그림은 드래그로 회전하고, 버튼을 누르면 위 탐색기에 불러옵니다. 자홍색 원이 최소 원, 점선 원이 최소 구의 윤곽입니다.</p>
   <figure class="fig" style="margin:0">
     <div class="gallery" id="gallery"></div>
     <figcaption><b class="n">그림 4.</b> 카드 20장의 구성별 최소 원과 활성 직선 수이고, 카드의 r 값은 설명용 값(Illustrative values)입니다. 왜: 케이스마다 답의 모양이 어떻게 달라지는지 나란히 보이기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
@@ -326,14 +326,14 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
   <div class="flow">
     <div class="node">세 직선 L<sub>i</sub> = a<sub>i</sub> + t·d<sub>i</sub></div>
     <div class="arrow"></div>
-    <div class="node">각 쌍이 평행, 교차, 꼬인 중 무엇인지 판정합니다. 쌍마다 ρ<sub>ij</sub> = dist(L<sub>i</sub>, L<sub>j</sub>)/2를 구합니다. 최적 중심 집합 C<sub>ij</sub>도 구합니다. C<sub>ij</sub>는 교점, <a class="t" href="#term-commonperp">공통 수선(common perpendicular)</a>의 중점, 또는 중앙선입니다.</div>
+    <div class="node">각 쌍이 평행, 교차, 꼬인 중 무엇인지 판정합니다. 쌍마다 ρ<sub>ij</sub> = dist(L<sub>i</sub>, L<sub>j</sub>)/2를 구합니다. 최적 중심 집합 C<sub>ij</sub>도 구합니다. C<sub>ij</sub>는 교점, <a class="t" href="#term-commonperp">공통 수선(common perpendicular)</a>의 중점, <a class="t" href="#term-midline">중앙선(midline)</a>, 또는 (두 직선이 일치하면) 그 직선입니다.</div>
     <div class="arrow"></div>
     <div class="node q">ρ가 가장 큰 쌍 (i, j)를 고릅니다. 세 번째 직선 L<sub>k</sub>가 C<sub>ij</sub>에서 ρ<sub>ij</sub> 이내를 지나가나요?</div>
     <div class="arrow"></div>
     <div class="split">
       <div class="branch">
         <span class="tag">예</span>
-        <div class="node yes"><b>활성 2개.</b> r = ρ<sub>ij</sub>입니다. 평면은 두 <a class="t" href="#term-antipodal">대척점(antipodal points)</a> 접점과, 구면 위에 있는 L<sub>k</sub>의 한 점을 지납니다. <a class="t" href="#term-closedform">닫힌 형태(closed form)</a>이고 O(1)입니다.</div>
+        <div class="node yes"><b>활성 2개.</b> r = ρ<sub>ij</sub>입니다. 평면은 두 <a class="t" href="#term-antipodal">대척점(antipodal points)</a> 접점과, 구면 위에 있는 L<sub>k</sub>의 한 점을 지납니다. <a class="t" href="#term-closedform">닫힌 형태(closed form)</a>이고 계산 시간은 <a class="t" href="#term-bigo">빅오 표기(big-O notation)</a>로 O(1)입니다.</div>
       </div>
       <div class="branch">
         <span class="tag">아니오</span>
@@ -343,13 +343,13 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
           <div class="leaf"><b>공면 삼각형</b><a class="t" href="#term-incircle">내접원(incircle)</a></div>
           <div class="leaf"><b>3 평행, 예각</b>단면 삼각형의 <a class="t" href="#term-circumcircle">외접원(circumcircle)</a></div>
           <div class="leaf"><b>2 평행</b>높이 z에 대한 2차방정식 하나</div>
-          <div class="leaf"><b>수직선 특수 케이스</b>평면 위 <a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a></div>
+          <div class="leaf"><b>1 meet + 수직선</b>평면 위 <a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a></div>
           <div class="leaf"><b>일반 꼬인 직선</b>다항식 연립이고 차수는 미해결</div>
         </div>
       </div>
     </div>
   </div>
-  <figcaption><b class="n">그림 5.</b> 입력 직선 세 개에서 활성 직선 수와 공식까지의 판정 흐름입니다. 왜: 케이스 분석 전체가 "세 번째 직선이 안에 드는가"라는 질문 하나로 갈라지기 때문입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  <figcaption><b class="n">그림 5.</b> 입력 직선 세 개에서 활성 직선 수와 공식까지의 판정 흐름입니다. 왜: 케이스 분석의 첫 갈림이 "세 번째 직선이 안에 드는가"라는 질문 하나이기 때문입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
   </figure>
 </section>
 
@@ -357,31 +357,48 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
   <span class="stepno">Step 5 of 6</span>
   <h2>케이스별 해 표</h2>
   <p class="why"><b>풀려던 문제.</b> 케이스마다 답과 진행 상태가 다릅니다. 표 하나로 모아야 어디가 비었는지 보입니다.</p>
-  <p class="note">행은 문제 PDF의 Figure 1 순서입니다. 그림에 없는 케이스 두 개를 추가했습니다. "상태"는 유도의 진행 상황입니다. 논문에 넣기 전에 모든 행을 손으로 다시 확인해야 합니다.</p>
+  <p class="note">행은 문제 PDF의 Figure 1 순서입니다. 한 행이 케이스 둘을 묶은 곳이 있습니다. 그림에 없는 케이스 두 개를 추가했습니다. "상태"는 유도의 진행 상황입니다. 논문에 넣기 전에 모든 행을 손으로 다시 확인해야 합니다.</p>
+  <div class="box col">
+    <h3>표의 기호</h3>
+    <ul>
+      <li>δ: 꼬인 두 직선 사이의 최단 거리입니다.</li>
+      <li>w: 평행한 두 직선 사이의 간격입니다. h = w/2입니다.</li>
+      <li>M: 두 평행선의 <a class="t" href="#term-midline">중앙선(midline)</a>입니다.</li>
+      <li>z: 중심이 두 평행선의 평면에서 떨어진 높이입니다.</li>
+      <li>q(z): (L3까지 거리)² − z²를 y에 대해 최소화한 2차식입니다. q(z) = h²이면 세 거리가 같습니다.</li>
+      <li>수직선: L1, L2와 평행한 평면에 수직인 직선입니다. S는 수직선이 그 평면과 만나는 점입니다.</li>
+      <li>a: S에서 M까지의 거리입니다.</li>
+      <li>P, θ: 두 직선의 교점과 사잇각입니다.</li>
+      <li>b: S 쪽 <a class="t" href="#term-bisector">각이등분선(angle bisector)</a>의 단위벡터입니다.</li>
+      <li>t: P에서 중심 c까지 b 방향 거리입니다.</li>
+      <li>v = S − P입니다.</li>
+      <li>A, B, C: 삼각형의 꼭짓점입니다. ℓ<sub>a</sub>, ℓ<sub>b</sub>, ℓ<sub>c</sub>: 각 꼭짓점 맞은편 변의 길이입니다.</li>
+    </ul>
+  </div>
   <figure class="fig" style="margin:0">
   <div class="tablewrap">
   <table>
     <thead><tr><th>PDF Figure 1 케이스</th><th>활성 수</th><th>답</th><th>상태</th></tr></thead>
     <tbody>
-      <tr><td>3 meet (삼각형)</td><td>3</td><td><a class="t" href="#term-incircle">내접원(incircle)</a>: c = (aA+bB+cC)/(a+b+c), r = 2·넓이/둘레</td><td><span class="st ok">닫힌 해</span></td></tr>
+      <tr><td>3 meet (삼각형)</td><td>3</td><td><a class="t" href="#term-incircle">내접원(incircle)</a><ul><li>c = (ℓ<sub>a</sub>A + ℓ<sub>b</sub>B + ℓ<sub>c</sub>C)/(ℓ<sub>a</sub> + ℓ<sub>b</sub> + ℓ<sub>c</sub>)</li><li>r = 2·넓이/(ℓ<sub>a</sub> + ℓ<sub>b</sub> + ℓ<sub>c</sub>)</li></ul></td><td><span class="st ok">닫힌 해</span></td></tr>
       <tr><td>세 직선이 한 점에서 만남 (그림에 없음)</td><td>없음</td><td>r = 0이고 <a class="t" href="#term-degenerate">퇴화(degenerate)</a>된 점 원</td><td><span class="st ok">닫힌 해</span></td></tr>
       <tr><td>2 meet, 1 cross</td><td>2 또는 3</td><td><a class="t" href="#term-transversal">횡단선(transversal)</a>이 꼬인 쌍의 <a class="t" href="#term-commonperp">공통 수선(common perpendicular)</a> 중점에서 δ/2 이내를 지나면 활성 2개이고 r = δ/2</td><td><span class="st q">2개는 완료, 3개는 미해결</span></td></tr>
       <tr><td>1 meet, 2 cross (over / over-under)</td><td>2 또는 3</td><td>결정 흐름도로 판정. 라벨은 L3가 두 교차 지점에서 평면의 같은 쪽을 지나는지 여부</td><td><span class="st q">스케치</span></td></tr>
-      <tr><td>0 meet (모두 꼬인)</td><td>2 또는 3</td><td>활성 2개는 닫힌 해. 활성 3개는 (c, r)에 대한 2차식 3개와 3차식 1개이고, <a class="t" href="#term-bezout">베주 상한(Bézout bound)</a>은 24</td><td><span class="st open">연구 질문</span></td></tr>
-      <tr><td>2 parallel, 1 meets both</td><td>2</td><td>r = w/2. 중심은 중앙선 위의 선분 전체</td><td><span class="st ok">닫힌 해</span></td></tr>
+      <tr><td>0 meet (모두 꼬인)</td><td>2 또는 3</td><td>활성 2개는 닫힌 해. 활성 3개는 (c, r)에 대한 2차식 3개와 3차식 1개이고, <a class="t" href="#term-bezout">베주 상한(Bézout bound)</a>은 24. r이 r²로만 나와 (c, r)와 (c, −r)가 짝이므로 r &gt; 0인 해는 최대 12개</td><td><span class="st open">연구 질문</span></td></tr>
+      <tr><td>2 parallel, 1 meets both</td><td>2</td><td>r = w/2. 중심은 <a class="t" href="#term-midline">중앙선(midline)</a> 위의 선분 전체</td><td><span class="st ok">닫힌 해</span></td></tr>
       <tr><td>2 parallel, 1 meet 1 cross</td><td>2</td><td>항상 r = w/2</td><td><span class="st ok">닫힌 해</span></td></tr>
-      <tr><td>2 parallel, 0 meet (over, over/under)</td><td>2 또는 3</td><td>dist(중앙선, L3) ≤ w/2이면 활성 2개. 아니면 2차방정식의 가장 작은 근</td><td><span class="st q">2차식, 전개 필요</span></td></tr>
-      <tr><td>3 parallel, 공면</td><td>2</td><td>r = 바깥 두 직선 간격의 절반. 중심은 중앙선 위 어디든 가능</td><td><span class="st ok">닫힌 해</span></td></tr>
-      <tr><td>3 parallel, 프리즘</td><td>예각이면 3, 둔각이면 2</td><td>단면 삼각형의 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>. 둔각이면 원의 평면이 기울어짐</td><td><span class="st ok">닫힌 해</span></td></tr>
-      <tr><td>1 meet + 수직선</td><td>2 또는 3</td><td>대칭으로 c가 평면 위. 활성 3개는 <a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a>: t²cos²(θ/2) − 2t(b·w) + |w|² = 0</td><td><span class="st q">2차식, 확인 필요</span></td></tr>
-      <tr><td>1 cross + 수직선</td><td>2 또는 3</td><td>대칭이 깨짐. 일반 결정 흐름도로 처리</td><td><span class="st open">미해결</span></td></tr>
-      <tr><td>2 parallel + 수직선 (사이)</td><td>2</td><td>r = w/2. 원은 L3를 포함하는 평면 위</td><td><span class="st ok">닫힌 해</span></td></tr>
+      <tr><td>2 parallel, 0 meet (over, over/under)</td><td>2 또는 3</td><td><ul><li>결정 흐름도를 먼저 적용합니다.</li><li>최대 ρ 쌍이 (L1, L2)이고 dist(M, L3) ≤ h이면 활성 2개이고 r = h입니다.</li><li>최대 ρ 쌍이 다른 쌍이면 그 쌍이 흐름도를 통과할 때 r은 그 쌍의 ρ입니다. 예: "2 parallel + 수직선 (바깥)"</li><li>활성 3개로 판정되면 q(z) = h²를 풉니다. |z|가 가장 작은 근을 고릅니다.</li></ul></td><td><span class="st q">2차식, 전개 필요</span></td></tr>
+      <tr><td>3 parallel, 공면</td><td>2</td><td>r = 바깥 두 직선 간격의 절반. 중심은 <a class="t" href="#term-midline">중앙선(midline)</a> 위 어디든 가능</td><td><span class="st ok">닫힌 해</span></td></tr>
+      <tr><td>3 parallel, 2 coplanar (세 직선이 한 평면에 없는 프리즘으로 해석)</td><td>예각이면 3, 직각 또는 둔각이면 2</td><td>단면 삼각형의 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>. 둔각이면 원의 평면이 기울어짐</td><td><span class="st ok">닫힌 해</span></td></tr>
+      <tr><td>1 meet + 수직선</td><td>2 또는 3</td><td>대칭으로 c가 평면 위. 활성 3개는 <a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a><ul><li>c = P + t·b, r = t·sin(θ/2)</li><li>t²cos²(θ/2) − 2t(b · v) + |v|² = 0</li></ul></td><td><span class="st q">2차식, 확인 필요</span></td></tr>
+      <tr><td>1 cross + 수직선</td><td>2 또는 3</td><td><ul><li>z 반사 대칭은 깨집니다. <a class="t" href="#term-rotsym">180° 회전 대칭(rotational symmetry)</a>은 남을 수 있습니다.</li><li>S가 L1과 L2를 서로 바꾸는 회전의 축 위에 있으면 L3도 제자리입니다. 그러면 중심이 회전축 위에 있습니다. 중심에서 L1과 L3까지 거리의 제곱이 같다는 식은 한 변수의 2차방정식입니다.</li><li>예: 탐색기 프리셋에서 r ≈ 0.70이고 활성 3개입니다.</li><li>S가 이등분선 밖이면 일반 결정 흐름도로 처리합니다.</li></ul></td><td><span class="st q">부분 닫힌 해</span></td></tr>
+      <tr><td>2 parallel + 수직선 (사이)</td><td>2</td><td>r = w/2. 중심은 하나가 아닙니다. 예: 중심을 S에서 <a class="t" href="#term-midline">중앙선(midline)</a>에 내린 <a class="t" href="#term-foot">수선의 발(foot of perpendicular)</a>에 두면 원이 L3를 담는 평면 위에 놓입니다</td><td><span class="st ok">닫힌 해</span></td></tr>
       <tr><td>2 parallel + 수직선 (바깥)</td><td>2</td><td>먼 평행선과 L3가 활성: r = (a + h)/2</td><td><span class="st ok">닫힌 해</span></td></tr>
       <tr><td>두 직선 일치 (그림에 없음)</td><td>2</td><td>두 직선 문제로 축소: r = 두 직선 거리의 절반</td><td><span class="st ok">닫힌 해</span></td></tr>
     </tbody>
   </table>
   </div>
-  <figcaption><b class="n">표 1.</b> PDF Figure 1의 케이스 14개와 활성 직선 수, 답, 유도 상태입니다. 왜: 어느 케이스가 닫힌 해이고 어느 케이스가 비었는지 한눈에 보이기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  <figcaption><b class="n">표 1.</b> PDF Figure 1의 16개 케이스(13행)와 그림 밖 2개 케이스(2행)의 활성 직선 수, 답, 유도 상태입니다. 왜: 어느 케이스가 닫힌 해이고 어느 케이스가 비었는지 한눈에 보이기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
   </figure>
 </section>
 
@@ -417,7 +434,7 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
     <div class="box col">
       <h3>함정</h3>
       <ul>
-        <li><b>"touch"의 해석.</b> 만남(intersect)과 <a class="t" href="#term-tangent">접함(tangent)</a>은 활성 2개 케이스에서 답이 다릅니다. 출제자에게 확인하고 논문에 명시하세요.</li>
+        <li><b>"touch"의 해석.</b> 만남(intersect)과 <a class="t" href="#term-tangent">접함(tangent)</a>은 공면 삼각형 말고는 거의 모든 케이스에서 답이 다릅니다. 활성 3개 해도 직선이 구에 접할 뿐 원에는 접하지 않습니다. 예: 그림 1, 예각 프리즘. 출제자에게 확인하고 논문에 명시하세요.</li>
         <li><b>빠진 <a class="t" href="#term-degenerate">퇴화(degenerate)</a> 케이스.</b> <a class="t" href="#term-concurrent">공점(concurrent lines)</a>(r = 0)과 두 직선 일치입니다.</li>
         <li><b>해가 유일하지 않음.</b> 평행 케이스는 해의 족을 서술하세요.</li>
         <li><b>둔각 프리즘.</b> 원의 평면이 직선에 수직이 아닙니다.</li>
@@ -488,8 +505,8 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
   <p>출발점은 점 집합을 감싸는 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>입니다. 대상을 점에서 직선으로 바꾸고, 원판을 곡선으로 바꾼 문제라고 보면 됩니다.</p>
   <div class="three">
     <div class="box col"><h3>기하로 보면</h3><p class="note">세 직선 모두와 공유점을 갖는 원 중 반지름이 가장 작은 것입니다. 중심, 반지름, 평면을 구합니다.</p></div>
-    <div class="box col"><h3>최적화로 보면</h3><p class="note">min<sub>c</sub> max<sub>i</sub> dist(c, L<sub>i</sub>)입니다. 직선까지의 최대 거리를 최소화하는 1-center 문제입니다. <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 풀립니다.</p></div>
-    <div class="box col"><h3>대수로 보면</h3><p class="note">활성 3개인 경우 2차식 3개와 3차식 1개의 연립방정식입니다. 해의 개수(차수)가 <a class="t" href="#term-closedform">닫힌 형태(closed form)</a>의 존재 여부를 정합니다.</p></div>
+    <div class="box col"><h3>최적화로 보면</h3><p class="note">min<sub>c</sub> max<sub>i</sub> dist(c, L<sub>i</sub>)입니다. 직선까지의 최대 거리를 최소화하는 <a class="t" href="#term-onecenter">1-센터 문제(1-center problem)</a>입니다. <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 풀립니다.</p></div>
+    <div class="box col"><h3>대수로 보면</h3><p class="note">활성 3개인 경우 2차식 3개와 3차식 1개의 연립방정식입니다. 해의 차수와 <a class="t" href="#term-galois">갈루아 군(Galois group)</a>이 <a class="t" href="#term-closedform">닫힌 형태(closed form)</a>의 존재 여부를 정합니다.</p></div>
   </div>
 </section>
 
@@ -502,12 +519,12 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
     <li><span class="yr">BC 200년경</span><div><b>아폴로니우스, 『접촉(Tangencies)』</b><p class="note">점, 직선, 원 세 개에 접하는 원을 작도하는 문제입니다. 원전은 소실되었고 1600년 비에트(Viète)가 재구성했습니다. "세 대상에 닿는 원"이라는 문제 유형의 원조입니다. 우리 문제의 수직선 특수 케이스가 이것(<a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a>)으로 환원됩니다.</p></div></li>
     <li><span class="yr">1857</span><div><b>실베스터(Sylvester), <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a> 문제 제기</b><p class="note">평면의 점들을 모두 감싸는 가장 작은 원입니다. "최소 반지름" 계열 문제의 출발점입니다. 1885년 크리스털(Chrystal)이 알고리즘을 냈습니다.</p></div></li>
     <li><span class="yr">1868–1879</span><div><b><a class="t" href="#term-plucker">플뤼커 좌표(Plücker coordinates)</a>와 슈베르트(Schubert)의 계수 기하</b><p class="note">플뤼커의 직선 기하는 3차원 직선을 좌표로 다루는 방법입니다. 슈베르트는 "일반 위치의 네 직선과 만나는 직선은 2개" 같은 계수 결과를 냈습니다. 3D 직선 문제의 대수적 언어가 여기서 나왔습니다.</p></div></li>
-    <li><span class="yr">1983–1992</span><div><b>계산기하의 시대: 선형 시간 알고리즘과 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a></b><p class="note">메기도(Megiddo)가 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>을 O(n)에 풀었습니다. 뒤이어 <a class="t" href="#term-welzl">Welzl식 랜덤 알고리즘(Welzl's randomized algorithm)</a>과 샤리르-웰즐(Sharir-Welzl)의 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a> 틀이 나왔습니다. 이 틀은 작은 부분집합(기저)의 해를 닫힌 형태로 구하는 <a class="t" href="#term-basis">기저 연산(basis computation)</a>을 요구합니다.</p></div></li>
+    <li><span class="yr">1983–1992</span><div><b>계산기하의 시대: 선형 시간 알고리즘과 <a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a></b><p class="note">메기도(Megiddo)가 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>을 <a class="t" href="#term-bigo">빅오 표기(big-O notation)</a>로 O(n)에 풀었습니다. 뒤이어 <a class="t" href="#term-welzl">Welzl식 랜덤 알고리즘(Welzl's randomized algorithm)</a>과 샤리르-웰즐(Sharir-Welzl)의 <a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a> 틀이 나왔습니다. 이 틀은 작은 부분집합(기저)의 해를 닫힌 형태로 구하는 <a class="t" href="#term-basis">기저 연산(basis computation)</a>을 요구합니다.</p></div></li>
     <li><span class="yr">1991–1994</span><div><b>점에서 직선으로: <a class="t" href="#term-intradius">교차 반지름(intersection radius)</a> 문제</b><p class="note">바타차리야(Bhattacharya) 등이 초평면과 선분 모두와 만나는 최소 구와 원을 최적 시간에 풀었습니다. 대상이 점이 아닌 도형으로 바뀐 첫 체계적 연구입니다.</p></div></li>
     <li><span class="yr">2001–2002</span><div><b>직선과 구의 접촉을 세는 문제</b><p class="note">맥도널드-파흐-테오발트는 단위 구 네 개에 공통으로 접하는 직선이 최대 12개임을 보였습니다. 직선-구 접촉 문제의 대수적 복잡도를 보여준 결과입니다.</p></div></li>
     <li><span class="yr">2004–2008</span><div><b>컴퓨터 비전의 <a class="t" href="#term-linf">L∞ 노름(L-infinity norm)</a> 기하</b><p class="note">하틀리-샤팔리츠키와 칼(Kahl)은 여러 카메라 광선에 대한 최대 오차를 최소화하는 삼각측량을 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 전역 최적으로 풀었습니다. "직선들까지의 최대 거리 최소화"가 실제 응용에서 쓰인 대표 사례입니다.</p></div></li>
-    <li><span class="yr">2006–2008</span><div><b>결측 데이터는 직선</b><p class="note">가오-랭버그-슐만은 좌표 일부가 빠진 데이터 점이 직선이나 평면(flat)이 된다고 보았습니다. 이런 flat 전체와 만나는 최소 구를 근사하는 Helly형 정리와 <a class="t" href="#term-coreset">코어셋(core-set)</a>을 제시했습니다.</p></div></li>
-    <li><span class="yr">2025</span><div><b>궤적 <a class="t" href="#term-mtb">최소 접촉 구(minimum touching ball)</a></b><p class="note">필립스-슈는 선분으로 된 이동 궤적 모두와 만나는 최소 구를 다뤘습니다. 선분 하나짜리 궤적이면 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>이고 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>이 d+1이라 선형 시간입니다. 지금도 진행 중인 연구 주제라는 증거입니다.</p></div></li>
+    <li><span class="yr">2006–2008</span><div><b>결측 데이터는 직선</b><p class="note">가오-랭버그-슐만은 좌표 일부가 빠진 데이터 점이 직선이나 평면 같은 <a class="t" href="#term-flat">플랫(flat)</a>이 된다고 보았습니다. 이런 <a class="t" href="#term-flat">플랫(flat)</a> 전체와 만나는 최소 구를 근사하는 <a class="t" href="#term-helly">헬리형 정리(Helly-type theorem)</a>와 <a class="t" href="#term-coreset">코어셋(core-set)</a>을 제시했습니다.</p></div></li>
+    <li><span class="yr">2025</span><div><b>궤적 <a class="t" href="#term-mtb">최소 접촉 구(minimum touching ball)</a></b><p class="note">필립스-슈는 선분으로 된 이동 궤적 모두와 만나는 최소 구를 다뤘습니다. 선분 하나짜리 궤적이면 <a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a>이고 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>이 d+1이라 선형 시간입니다. 지금도 진행 중인 연구 주제라는 증거입니다.</p></div></li>
     <li class="now"><span class="yr">2026</span><div><b>이 해커톤 문제</b><p class="note">구가 아닌 <i>원</i>을 요구합니다. 수치 알고리즘이 아닌 <i>케이스별 닫힌 해</i>를 요구합니다. 위 계보에서 비어 있는 칸입니다.</p></div></li>
   </ol>
   <figcaption><b class="n">그림 7.</b> 기원전 200년경부터 2026년까지 이 문제로 이어진 사건의 시간순 목록입니다. 왜: 현재 문제가 어떤 선행 연구의 빈칸인지 위치를 보이기 위해서입니다. 출처: <code>tips/Wylie_SmallestCircle/</code></figcaption>
@@ -522,7 +539,7 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
     <div class="box col">
       <h3>확인된 사실</h3>
       <ul>
-        <li>출제자는 Tim Wylie입니다. 2013년 Montana State University 박사입니다. 논문은 이산 Fréchet 거리와 응용이고 지도교수는 Binhai Zhu입니다.</li>
+        <li>출제자는 Tim Wylie입니다. 2013년 Montana State University 박사입니다. 논문은 <a class="t" href="#term-frechet">이산 프레셰 거리(discrete Fréchet distance)</a>와 응용이고 지도교수는 Binhai Zhu입니다.</li>
         <li>출판 목록은 타일 자기조립, 로봇 재배치, 계산기하 쪽입니다.</li>
         <li>문제 PDF는 출제 동기를 밝히지 않습니다. "단순하지만 지루한 대수적 케이스 분석"이라고만 설명합니다.</li>
       </ul>
@@ -531,7 +548,7 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
       <h3>추정 (출제자에게 확인 권장)</h3>
       <ul>
         <li>계산기하에서는 일반 알고리즘보다 <b><a class="t" href="#term-degenerate">퇴화(degenerate)</a> 케이스 처리</b>가 더 어렵습니다. PDF Figure 1이 바로 퇴화 케이스 목록입니다.</li>
-        <li><a class="t" href="#term-welzl">Welzl식 랜덤 알고리즘(Welzl's randomized algorithm)</a>은 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>용입니다. 상수 크기 부분집합의 해를 구하는 <a class="t" href="#term-basis">기저 연산(basis computation)</a>이 필요합니다. 세 직선의 닫힌 해는 n개 직선 문제의 그 기저 연산입니다.</li>
+        <li><a class="t" href="#term-welzl">Welzl식 랜덤 알고리즘(Welzl's randomized algorithm)</a>은 <a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a>용입니다. 상수 크기 부분집합의 해를 구하는 <a class="t" href="#term-basis">기저 연산(basis computation)</a>이 필요합니다. 세 직선의 닫힌 해는 n개 직선 문제의 그 기저 연산입니다.</li>
         <li>해커톤 형식상 하루 안에 "부분 결과"를 많이 낼 수 있게 설계된 문제로 보입니다 ("Try to find as many solutions as you can").</li>
       </ul>
     </div>
@@ -543,9 +560,9 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
   <h2>이 맥락에서의 의미: 왜 중요한가</h2>
   <p class="why"><b>풀려던 문제.</b> 세 직선만의 닫힌 해가 왜 가치 있는지 설명해야 합니다. 그 답은 더 큰 알고리즘의 부품이라는 점에 있습니다.</p>
   <div class="three">
-    <div class="box col"><h3>1. 알고리즘의 부품</h3><p class="note">n개 직선의 최소 교차 구를 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>로 풉니다. 이때 매 단계에서 3~4개 직선의 최소 구를 정확히 구해야 합니다. 닫힌 해는 이 내부 루프를 빠르고 정확하게 만듭니다.</p></div>
+    <div class="box col"><h3>1. 알고리즘의 부품</h3><p class="note">n개 직선의 최소 교차 구를 <a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a>로 풉니다. 이때 매 단계에서 3~4개 직선의 최소 구를 정확히 구해야 합니다. 닫힌 해는 이 내부 루프를 빠르고 정확하게 만듭니다.</p></div>
     <div class="box col"><h3>2. 견고성(robustness)</h3><p class="note">평행, 교차, <a class="t" href="#term-concurrent">공점(concurrent lines)</a> 같은 <a class="t" href="#term-degenerate">퇴화(degenerate)</a> 입력에서 수치 해법은 쉽게 불안정해집니다. 케이스 분류와 케이스별 공식이 있으면 <a class="t" href="#term-exact">정확 산술(exact arithmetic)</a>로 처리할 수 있습니다.</p></div>
-    <div class="box col"><h3>3. 원 대 구</h3><p class="note">문헌은 대부분 "구"를 다룹니다. 세 직선이면 최소 원이 최소 구의 <a class="t" href="#term-greatcircle">대원(great circle)</a>입니다. 이 페이지의 핵심 정리이고, 두 문제를 잇는 다리입니다. 직선이 4개 이상이면 깨집니다.</p></div>
+    <div class="box col"><h3>3. 원 대 구</h3><p class="note">문헌은 대부분 "구"를 다룹니다. 세 직선이면 최소 원이 최소 구의 <a class="t" href="#term-greatcircle">대원(great circle)</a>입니다. 이 페이지의 핵심 정리이고, 두 문제를 잇는 다리입니다. 직선이 4개 이상이면 일반적으로 깨집니다. 예: 단위 구의 <a class="t" href="#term-tetra">정사면체(regular tetrahedron)</a> 꼭짓점 4곳에서 반지름에 수직인 직선 4개입니다. 이때 최소 구는 단위 구 하나뿐입니다. 접점 4개가 한 평면에 없어 대원이 답이 될 수 없습니다.</p></div>
   </div>
 </section>
 
@@ -559,10 +576,10 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
     <thead><tr><th>분야</th><th>무엇이 직선인가</th><th>연결 방식</th><th>근거</th></tr></thead>
     <tbody>
       <tr><td>다중 시점 삼각측량 (컴퓨터 비전)</td><td>각 카메라에서 나온 광선</td><td>광선들까지의 최대 거리를 최소화하는 점이 우리 문제의 중심 c (<a class="t" href="#term-linf">L∞ 노름(L-infinity norm)</a> 삼각측량, <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>)</td><td><span class="st ok">문헌</span></td></tr>
-      <tr><td>결측 데이터 분석과 클러스터링</td><td>좌표 일부가 빠진 데이터 점</td><td>모든 flat과 만나는 최소 구는 결측 데이터의 1-center</td><td><span class="st ok">문헌</span></td></tr>
+      <tr><td>결측 데이터 분석과 클러스터링</td><td>좌표 일부가 빠진 데이터 점</td><td>모든 <a class="t" href="#term-flat">플랫(flat)</a>과 만나는 최소 구는 결측 데이터의 <a class="t" href="#term-onecenter">1-센터 문제(1-center problem)</a>의 답</td><td><span class="st ok">문헌</span></td></tr>
       <tr><td>궤적 분석</td><td>이동 경로(선분)</td><td>모든 궤적이 지나가는 최소 영역 (만남 지점, 센서 위치)</td><td><span class="st ok">문헌</span></td></tr>
       <tr><td>직선-구 접촉 계산 (그래픽스, 기하 모델링)</td><td>시선, 접선</td><td>구에 접하는 직선의 개수와 위치</td><td><span class="st ok">문헌</span></td></tr>
-      <tr><td>로봇과 CAD 기하 제약 해결</td><td>관절 축, 모서리</td><td>"원(회전 경로)이 세 축과 만나야 한다" 같은 제약</td><td><span class="st q">예시</span></td></tr>
+      <tr><td>로봇과 <a class="t" href="#term-cad">컴퓨터 지원 설계(computer-aided design, CAD)</a> 기하 제약 해결</td><td>관절 축, 모서리</td><td>"원(회전 경로)이 세 축과 만나야 한다" 같은 제약</td><td><span class="st q">예시</span></td></tr>
       <tr><td>통신과 감시 범위 설계</td><td>도로, 항로</td><td>세 경로를 모두 덮는 최소 반경 링 또는 구</td><td><span class="st q">예시</span></td></tr>
     </tbody>
   </table>
@@ -591,14 +608,15 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
   <p class="note">세 갈래의 연구 흐름이 이 문제에서 만납니다. 위쪽은 최소 반지름 문제(점에서 직선으로), 가운데는 3D 직선의 대수 기하, 아래쪽은 최적화와 응용입니다. 각 갈래 안에서는 왼쪽에서 오른쪽으로 시간 순서입니다.</p>
   <figure class="fig" style="margin:0">
   <p class="legend">사각형은 논문, 모서리를 깎은 상자는 이 문제, 점선 상자는 계획한 산출물입니다. 화살표 옆 글자는 그 단계가 다음 논문에 넘긴 것입니다.</p>
-  <p class="legend">상자를 누르면 그림 아래에 요약이 나옵니다.</p>
-  <div class="tablewrap" style="padding:12px">
+  <p class="legend">상자를 누르면 그림 아래에 요약이 나옵니다. 그림 안의 LP형 문제는 선형 계획법형 문제(linear programming-type problem, LP-type problem)입니다.</p>
+  <p class="legend">그림은 가로로 넓습니다. 오른쪽으로 스크롤하거나 버튼을 누르세요. <button type="button" id="lineJumpTarget">이 문제 상자로 이동</button><button type="button" id="lineJumpStart">처음으로</button></p>
+  <div class="tablewrap" id="lineagewrap" style="padding:12px">
   <svg class="lineage" viewBox="0 0 2540 470" role="img" aria-label="관련 논문 흐름도">
     <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted-foreground)"/></marker></defs>
     <text x="8" y="18" class="lane">최소 반지름 문제: 점 → 직선</text><text x="8" y="176" class="lane">3D 직선의 대수 기하</text><text x="8" y="332" class="lane">최적화와 응용</text>
     <g class="edges"><path d="M160,88 H256"/><path d="M396,88 H492"/><path d="M632,88 H728"/><path d="M868,88 H964"/><path d="M1104,88 H1200"/><path d="M1340,88 H1436"/><path d="M1576,88 H1672" class="hot"/><path d="M868,244 H964"/><path d="M1104,244 H1200"/><path d="M1340,244 H1436"/><path class="hot" d="M1576,244 H1712 V142"/><path d="M1104,400 H1200"/><path d="M1340,400 H1436"/><path class="hot" d="M1576,400 H1772 V142"/><path d="M1812,88 L1908,62"/><path d="M1812,88 L1908,192"/><path d="M1812,88 L1908,322"/><path d="M2048,62 L2144,192"/><path d="M2048,192 L2144,192"/><path d="M2048,322 L2144,192"/><path d="M2284,192 H2380"/></g>
     <g class="nodes"><g id="b1" data-box="b1" role="button" tabindex="0" aria-pressed="false"><rect x="20" y="34" width="140" height="108"/><text x="30" y="54" class="y">BC 200</text><text x="30" y="72">아폴로니우스 접원</text></g><g id="b2" data-box="b2" role="button" tabindex="0" aria-pressed="false"><rect x="256" y="34" width="140" height="108"/><text x="266" y="54" class="y">1857</text><text x="266" y="72">Sylvester</text><text x="266" y="87">최소 포함원</text><text x="266" y="102">(minimum</text><text x="266" y="117">enclosing circle)</text></g><g id="b3" data-box="b3" role="button" tabindex="0" aria-pressed="false"><rect x="492" y="34" width="140" height="108"/><text x="502" y="54" class="y">1983</text><text x="502" y="72">Megiddo</text></g><g id="b4" data-box="b4" role="button" tabindex="0" aria-pressed="false"><rect x="728" y="34" width="140" height="108"/><text x="738" y="54" class="y">1991 · 1992</text><text x="738" y="72">Welzl,</text><text x="738" y="87">Sharir-Welzl</text><text x="738" y="102">LP형 문제</text><text x="738" y="117">(LP-type problem)</text></g><g id="b5" data-box="b5" role="button" tabindex="0" aria-pressed="false"><rect x="964" y="34" width="140" height="108"/><text x="974" y="54" class="y">1994</text><text x="974" y="72">Bhattacharya 외</text><text x="974" y="87">교차 반지름</text><text x="974" y="102">(intersection</text><text x="974" y="117">radius)</text></g><g id="b6" data-box="b6" role="button" tabindex="0" aria-pressed="false"><rect x="1200" y="34" width="140" height="108"/><text x="1210" y="54" class="y">2008</text><text x="1210" y="72">Gao 외</text></g><g id="b7" data-box="b7" role="button" tabindex="0" aria-pressed="false"><rect x="1436" y="34" width="140" height="108"/><text x="1446" y="54" class="y">2025</text><text x="1446" y="72">Phillips-Schou</text></g><g id="b15" data-box="b15" role="button" tabindex="0" aria-pressed="false" class="target"><polygon points="1686,34 1798,34 1812,48 1812,128 1798,142 1686,142 1672,128 1672,48"/><text x="1682" y="72">이 문제:</text><text x="1682" y="89">3직선 최소 원</text><text x="1682" y="106">(2026 해커톤)</text></g><g id="b8" data-box="b8" role="button" tabindex="0" aria-pressed="false"><rect x="728" y="190" width="140" height="108"/><text x="738" y="210" class="y">1868</text><text x="738" y="228">Plücker</text></g><g id="b9" data-box="b9" role="button" tabindex="0" aria-pressed="false"><rect x="964" y="190" width="140" height="108"/><text x="974" y="210" class="y">1879</text><text x="974" y="228">Schubert</text></g><g id="b10" data-box="b10" role="button" tabindex="0" aria-pressed="false"><rect x="1200" y="190" width="140" height="108"/><text x="1210" y="210" class="y">2001</text><text x="1210" y="228">Macdonald-</text><text x="1210" y="243">Pach-Theobald</text></g><g id="b11" data-box="b11" role="button" tabindex="0" aria-pressed="false"><rect x="1436" y="190" width="140" height="108"/><text x="1446" y="210" class="y">2002</text><text x="1446" y="228">Sottile-</text><text x="1446" y="243">Theobald</text></g><g id="b12" data-box="b12" role="button" tabindex="0" aria-pressed="false"><rect x="964" y="346" width="140" height="108"/><text x="974" y="366" class="y">1998</text><text x="974" y="384">Lobo 외</text><text x="974" y="399">이차 원뿔 계획법</text><text x="974" y="414">(second-order</text><text x="974" y="429">cone programming,</text><text x="974" y="444">SOCP)</text></g><g id="b13" data-box="b13" role="button" tabindex="0" aria-pressed="false"><rect x="1200" y="346" width="140" height="108"/><text x="1210" y="366" class="y">2004</text><text x="1210" y="384">Hartley-</text><text x="1210" y="399">Schaffalitzky</text></g><g id="b14" data-box="b14" role="button" tabindex="0" aria-pressed="false"><rect x="1436" y="346" width="140" height="108"/><text x="1446" y="366" class="y">2005 · 2008</text><text x="1446" y="384">Kahl,</text><text x="1446" y="399">Kahl-Hartley</text></g><g id="b16" data-box="b16" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="1908" y="20" width="140" height="84"/><text x="1918" y="40" class="y">(계획)</text><text x="1918" y="58">대원 정리</text><text x="1918" y="73">(great circle)</text></g><g id="b17" data-box="b17" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="1908" y="150" width="140" height="84"/><text x="1918" y="170" class="y">(계획)</text><text x="1918" y="188">케이스별</text><text x="1918" y="203">닫힌 형태</text><text x="1918" y="218">(closed form) 표</text></g><g id="b18" data-box="b18" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="1908" y="280" width="140" height="84"/><text x="1918" y="300" class="y">(계획)</text><text x="1918" y="318">일반 꼬인 위치</text><text x="1918" y="333">(skew lines)</text><text x="1918" y="348">케이스의 차수</text></g><g id="b19" data-box="b19" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="2144" y="150" width="140" height="84"/><text x="2154" y="170" class="y">(계획)</text><text x="2154" y="188">2쪽 논문</text></g><g id="b20" data-box="b20" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="2380" y="150" width="140" height="84"/><text x="2390" y="170" class="y">(계획)</text><text x="2390" y="188">향후 연구</text></g></g>
-    <g class="labels"><text class="al" text-anchor="middle" x="208" y="67">세 대상에</text><text class="al" text-anchor="middle" x="208" y="80">닿는 원</text><text class="al" text-anchor="middle" x="444" y="67">최소</text><text class="al" text-anchor="middle" x="444" y="80">반지름 문제</text><text class="al" text-anchor="middle" x="680" y="80">선형 시간</text><text class="al" text-anchor="middle" x="916" y="80">일반 틀</text><text class="al" text-anchor="middle" x="1152" y="67">대상: 점에서</text><text class="al" text-anchor="middle" x="1152" y="80">직선으로</text><text class="al" text-anchor="middle" x="1388" y="54">고차원 flat,</text><text class="al" text-anchor="middle" x="1388" y="67">코어셋</text><text class="al" text-anchor="middle" x="1388" y="80">(core-set)</text><text class="al" text-anchor="middle" x="1624" y="41">선분 궤적,</text><text class="al" text-anchor="middle" x="1624" y="54">조합 차원</text><text class="al" text-anchor="middle" x="1624" y="67">(combinatorial</text><text class="al" text-anchor="middle" x="1624" y="80">dimension) d+1</text><text class="al" text-anchor="middle" x="1644" y="236">대수적 차수</text><text class="al" text-anchor="middle" x="1674" y="379">SOCP 검증</text><text class="al" text-anchor="middle" x="1674" y="392">관점</text></g>
+    <g class="labels"><text class="al" text-anchor="middle" x="208" y="67">세 대상에</text><text class="al" text-anchor="middle" x="208" y="80">닿는 원</text><text class="al" text-anchor="middle" x="444" y="67">최소</text><text class="al" text-anchor="middle" x="444" y="80">반지름 문제</text><text class="al" text-anchor="middle" x="680" y="80">선형 시간</text><text class="al" text-anchor="middle" x="916" y="80">일반 틀</text><text class="al" text-anchor="middle" x="1152" y="67">대상: 점에서</text><text class="al" text-anchor="middle" x="1152" y="80">직선으로</text><text class="al" text-anchor="middle" x="1388" y="41">고차원 플랫</text><text class="al" text-anchor="middle" x="1388" y="54">(flat),</text><text class="al" text-anchor="middle" x="1388" y="67">코어셋</text><text class="al" text-anchor="middle" x="1388" y="80">(core-set)</text><text class="al" text-anchor="middle" x="1624" y="41">선분 궤적,</text><text class="al" text-anchor="middle" x="1624" y="54">조합 차원</text><text class="al" text-anchor="middle" x="1624" y="67">(combinatorial</text><text class="al" text-anchor="middle" x="1624" y="80">dimension) d+1</text><text class="al" text-anchor="middle" x="1644" y="236">대수적 차수</text><text class="al" text-anchor="middle" x="1674" y="379">이차 원뿔 계획법</text><text class="al" text-anchor="middle" x="1674" y="392">검증 관점</text></g>
   </svg>
 
 
@@ -619,22 +637,22 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
   <table class="papers">
     <thead><tr><th>연도</th><th>논문</th><th>무엇을 했나</th><th>우리 문제와의 연결</th><th>현황</th></tr></thead>
     <tbody>
-      <tr><td class="num">BC 200<br>/1600</td><td>Apollonius, <i>Tangencies</i> (소실) · Viète, <i>Apollonius Gallus</i></td><td>세 대상(점, 직선, 원)에 접하는 원의 작도</td><td>수직선 특수 케이스는 평면 <a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a></td><td><span class="st ok">고전, 교재</span></td></tr>
+      <tr><td class="num">BC 200<br>/1600</td><td>Apollonius, <i>Tangencies</i> (소실)<br>Viète, <i>Apollonius Gallus</i></td><td>세 대상(점, 직선, 원)에 접하는 원의 작도</td><td>수직선 특수 케이스는 평면 <a class="t" href="#term-pll">아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</a></td><td><span class="st ok">고전, 교재</span></td></tr>
       <tr><td class="num">1857</td><td>J. J. Sylvester, "A question in the geometry of situation", <i>Quart. J. Pure Appl. Math.</i></td><td><a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a> 문제 제기</td><td>3 평행선 케이스는 단면 삼각형의 <a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a></td><td><span class="st ok">고전</span></td></tr>
       <tr><td class="num">1868</td><td>J. Plücker, <i>Neue Geometrie des Raumes</i></td><td>직선을 6개 동차좌표로 표현</td><td>입력 형식 후보. <a class="t" href="#term-plucker">플뤼커 좌표(Plücker coordinates)</a>는 직선 관계 판정의 언어</td><td><span class="st ok">그래픽스와 로봇에서 사용 중</span></td></tr>
-      <tr><td class="num">1983</td><td>N. Megiddo, "Linear-time algorithms for linear programming in R³ and related problems", <i>SIAM J. Comput.</i> 12(4)</td><td><a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>을 결정적 O(n)에 prune-and-search로 풀기</td><td>최소 반지름 문제의 알고리즘적 출발점</td><td><span class="st ok">교과서 표준</span></td></tr>
-      <tr><td class="num">1991</td><td>E. Welzl, "Smallest enclosing disks (balls and ellipsoids)", LNCS 555</td><td>기대 O(n) 랜덤 증분 알고리즘 (<a class="t" href="#term-welzl">Welzl식 랜덤 알고리즘(Welzl's randomized algorithm)</a>)</td><td>n개 직선으로 확장할 때의 알고리즘 틀</td><td><span class="st ok">CGAL 등 라이브러리에 구현</span></td></tr>
-      <tr><td class="num">1992</td><td>M. Sharir, E. Welzl, "A combinatorial bound for linear programming and related problems", STACS</td><td><a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a> 정의와 일반 알고리즘</td><td>최소 교차 구가 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>이면 <a class="t" href="#term-basis">기저 연산(basis computation)</a>이 우리 닫힌 해</td><td><span class="st ok">이론 표준</span></td></tr>
-      <tr><td class="num">1994</td><td>N. Amenta, "Helly-type theorems and generalized linear programming", <i>DCG</i> 12</td><td>Helly형 정리와 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>의 연결</td><td><a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>(필요한 활성 대상 수)의 근거</td><td><span class="st ok">이론 표준</span></td></tr>
+      <tr><td class="num">1983</td><td>N. Megiddo, "Linear-time algorithms for linear programming in R³ and related problems", <i>SIAM J. Comput.</i> 12(4)</td><td><a class="t" href="#term-mec">최소 포함원(minimum enclosing circle, MEC)</a>을 결정적으로 <a class="t" href="#term-bigo">빅오 표기(big-O notation)</a>로 O(n)에 <a class="t" href="#term-prune">가지치기 탐색(prune-and-search)</a>으로 풀기</td><td>최소 반지름 문제의 알고리즘적 출발점</td><td><span class="st ok">교과서 표준</span></td></tr>
+      <tr><td class="num">1991</td><td>E. Welzl, "Smallest enclosing disks (balls and ellipsoids)", LNCS 555</td><td>기대 시간이 <a class="t" href="#term-bigo">빅오 표기(big-O notation)</a>로 O(n)인 랜덤 증분 알고리즘 (<a class="t" href="#term-welzl">Welzl식 랜덤 알고리즘(Welzl's randomized algorithm)</a>)</td><td>n개 직선으로 확장할 때의 알고리즘 틀</td><td><span class="st ok"><a class="t" href="#term-cgal">계산기하 알고리즘 라이브러리(Computational Geometry Algorithms Library, CGAL)</a> 등에 구현</span></td></tr>
+      <tr><td class="num">1992</td><td>M. Sharir, E. Welzl, "A combinatorial bound for linear programming and related problems", STACS</td><td><a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a> 정의와 일반 알고리즘</td><td>최소 교차 구가 <a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a>이면 <a class="t" href="#term-basis">기저 연산(basis computation)</a>이 우리 닫힌 해</td><td><span class="st ok">이론 표준</span></td></tr>
+      <tr><td class="num">1994</td><td>N. Amenta, "Helly-type theorems and generalized linear programming", <i>DCG</i> 12</td><td><a class="t" href="#term-helly">헬리형 정리(Helly-type theorem)</a>와 <a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a>의 연결</td><td><a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>(필요한 활성 대상 수)의 근거</td><td><span class="st ok">이론 표준</span></td></tr>
       <tr><td class="num">1994</td><td>B. K. Bhattacharya, S. Jadhav, A. Mukhopadhyay, J.-M. Robert, "Optimal algorithms for some intersection radius problems", <i>Computing</i> 52(3) (SoCG 1991 초판)</td><td>초평면과 선분에 만나는 최소 구와 원을 최적 시간에 구하기</td><td><b>가장 직접적인 선행 연구</b>. 점 대신 직선형 대상을 다룸</td><td><span class="st ok">기초 결과</span></td></tr>
       <tr><td class="num">1998</td><td>M. S. Lobo, L. Vandenberghe, S. Boyd, H. Lebret, "Applications of second-order cone programming", <i>Linear Algebra Appl.</i> 284</td><td><a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a> 응용 정리 (최소 포함 구 등)</td><td>우리 r*를 수치로 검증하는 방법</td><td><span class="st ok">솔버로 일상 사용</span></td></tr>
       <tr><td class="num">2001</td><td>I. G. Macdonald, J. Pach, T. Theobald, "Common tangents to four unit balls in R³", <i>DCG</i> 26(1)</td><td>공통 접선은 최대 12개 (Larman의 질문)</td><td>직선-구 접촉의 대수적 차수. 일반 꼬인 케이스 분석의 모델</td><td><span class="st q">후속 연구 활발</span></td></tr>
       <tr><td class="num">2002</td><td>F. Sottile, T. Theobald, "Lines tangent to 2n−2 spheres in Rⁿ", <i>Trans. AMS</i> 354</td><td>위 결과의 n차원 일반화</td><td>차수 계산 방법론 (실대수기하)</td><td><span class="st q">연구 중</span></td></tr>
       <tr><td class="num">2002</td><td>M. Bădoiu, S. Har-Peled, P. Indyk, "Approximate clustering via core-sets", STOC</td><td>최소 포함 구의 <a class="t" href="#term-coreset">코어셋(core-set)</a> 근사</td><td>고차원과 대규모 확장 방향</td><td><span class="st ok">머신러닝에서 사용</span></td></tr>
       <tr><td class="num">2004</td><td>R. Hartley, F. Schaffalitzky, "L∞ minimization in geometric reconstruction problems", CVPR</td><td><a class="t" href="#term-linf">L∞ 노름(L-infinity norm)</a> 오차의 전역 최적 재구성</td><td>광선까지의 최대 거리 최소화는 r*와 같은 구조</td><td><span class="st ok">비전에서 사용</span></td></tr>
-      <tr><td class="num">2005<br>/2008</td><td>F. Kahl, "Multiple view geometry and the L∞-norm", ICCV 2005 · F. Kahl, R. Hartley, <i>IEEE TPAMI</i> 30(9) 2008</td><td>삼각측량 등을 <a class="t" href="#term-quasiconvex">준볼록(quasi-convex)</a> 문제로 바꿔 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 풀기</td><td>우리 문제를 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 보는 관점의 직접 선례</td><td><span class="st ok">공개 툴박스</span></td></tr>
-      <tr><td class="num">2008</td><td>J. Gao, M. Langberg, L. J. Schulman, "Analysis of incomplete data and an intrinsic-dimension Helly theorem", <i>DCG</i> 40(4) (SODA 2006 초판)</td><td>직선과 flat 집합의 최소 <a class="t" href="#term-intradius">교차 반지름(intersection radius)</a>, Helly형 정리, <a class="t" href="#term-coreset">코어셋(core-set)</a></td><td>직선들과 만나는 최소 구의 근사 알고리즘</td><td><span class="st q">데이터 분석 응용</span></td></tr>
-      <tr><td class="num">2025</td><td>J. M. Phillips, J. K. R. Schou, "Trajectory minimum touching ball", arXiv:2505.02472</td><td>궤적과 만나는 <a class="t" href="#term-mtb">최소 접촉 구(minimum touching ball)</a>. 선분이면 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>이고 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>은 d+1</td><td>R³에서 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a> 4이므로 직선 3~4개 기저의 닫힌 해가 필요</td><td><span class="st open">최신 연구</span></td></tr>
+      <tr><td class="num">2005<br>/2008</td><td>F. Kahl, "Multiple view geometry and the L∞-norm", ICCV 2005<br>F. Kahl, R. Hartley, <i>IEEE TPAMI</i> 30(9) 2008</td><td>삼각측량 등을 <a class="t" href="#term-quasiconvex">준볼록(quasi-convex)</a> 문제로 바꿔 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 풀기</td><td>우리 문제를 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 보는 관점의 직접 선례</td><td><span class="st ok">공개 툴박스</span></td></tr>
+      <tr><td class="num">2008</td><td>J. Gao, M. Langberg, L. J. Schulman, "Analysis of incomplete data and an intrinsic-dimension Helly theorem", <i>DCG</i> 40(4) (SODA 2006 초판)</td><td>직선과 <a class="t" href="#term-flat">플랫(flat)</a> 집합의 최소 <a class="t" href="#term-intradius">교차 반지름(intersection radius)</a>, <a class="t" href="#term-helly">헬리형 정리(Helly-type theorem)</a>, <a class="t" href="#term-coreset">코어셋(core-set)</a></td><td>직선들과 만나는 최소 구의 근사 알고리즘</td><td><span class="st q">데이터 분석 응용</span></td></tr>
+      <tr><td class="num">2025</td><td>J. M. Phillips, J. K. R. Schou, "Trajectory minimum touching ball", arXiv:2505.02472</td><td>궤적과 만나는 <a class="t" href="#term-mtb">최소 접촉 구(minimum touching ball)</a>. 선분이면 <a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a>이고 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>은 d+1</td><td>R³에서 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a> 4이므로 직선 3~4개 기저의 닫힌 해가 필요</td><td><span class="st open">최신 연구</span></td></tr>
     </tbody>
   </table>
   </div>
@@ -650,7 +668,7 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
     <div class="box col">
       <h3>이미 알려진 것</h3>
       <ul>
-        <li>직선, 선분, flat과 만나는 최소 <b>구</b>: 알고리즘과 근사 기법이 있음</li>
+        <li>직선, 선분, <a class="t" href="#term-flat">플랫(flat)</a>과 만나는 최소 <b>구</b>: 알고리즘과 근사 기법이 있음</li>
         <li>최소 반지름은 <a class="t" href="#term-socp">이차 원뿔 계획법(second-order cone programming, SOCP)</a>으로 전역 최적을 수치로 구할 수 있음</li>
         <li>직선-구 접촉 문제는 대수적으로 복잡함 (예: 12개 공통 접선)</li>
       </ul>
@@ -669,17 +687,17 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 <section class="stepbox" id="s3-4" role="tabpanel" aria-labelledby="st-s3-4" hidden>
   <span class="stepno">Step 4 of 5</span>
   <h2>향후 연구(future work)</h2>
-  <p class="why"><b>풀려던 문제.</b> 2025년 Phillips-Schou 논문이 남긴 빈칸을 찾는다. 그 빈칸에서 이어지는 연구를 고른다.</p>
-  <p class="note">빈칸은 원문에서 확인한 사실이다. 제안 연구는 우리의 제안이고 원문의 주장이 아니다.</p>
+  <p class="why"><b>풀려던 문제.</b> 2025년 Phillips-Schou 논문이 남긴 빈칸을 찾습니다. 그 빈칸에서 이어지는 연구를 고릅니다.</p>
+  <p class="note">빈칸은 원문에서 확인한 사실입니다. 제안 연구는 우리의 제안이고 원문의 주장이 아닙니다.</p>
   <figure class="fig" style="margin:0">
   <div class="tablewrap">
   <table class="papers">
     <thead><tr><th>빈칸 (원문 확인)</th><th>근거</th><th>제안 연구</th><th>시기</th></tr></thead>
     <tbody>
-      <tr><td>작은 <a class="t" href="#term-basisset">기저(basis)</a>의 <a class="t" href="#term-closedform">닫힌 형태(closed form)</a> 해가 없다</td><td><a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a> 부분을 일반 솔버(Clarkson, Seidel, Matoušek-Sharir-Welzl)에 맡긴다</td><td>3차원 직선 3개, 4개의 <a class="t" href="#term-closedform">닫힌 형태(closed form)</a> <a class="t" href="#term-basis">기저 연산(basis computation)</a></td><td><ul><li>해커톤: 직선 3개</li><li>이후: 직선 4개</li></ul></td></tr>
-      <tr><td>선분 2개, 3개짜리 궤적이 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>인지 열려 있다</td><td>선분 1개(예)와 4개 이상(아니오)만 다룬다</td><td>선분 2개, 3개 궤적의 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>을 정한다</td><td>이후</td></tr>
+      <tr><td>작은 <a class="t" href="#term-basisset">기저(basis)</a>의 <a class="t" href="#term-closedform">닫힌 형태(closed form)</a> 해가 없다</td><td><a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a> 부분을 일반 솔버(Clarkson, Seidel, Matoušek-Sharir-Welzl)에 맡긴다</td><td>3차원 직선 3개, 4개의 <a class="t" href="#term-closedform">닫힌 형태(closed form)</a> <a class="t" href="#term-basis">기저 연산(basis computation)</a></td><td><ul><li>해커톤: 직선 3개</li><li>이후: 직선 4개</li></ul></td></tr>
+      <tr><td>선분 2개, 3개짜리 궤적이 <a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a>인지 열려 있다</td><td>선분 1개(예)와 4개 이상(아니오)만 다룬다</td><td>선분 2개, 3개 궤적의 <a class="t" href="#term-combdim">조합 차원(combinatorial dimension)</a>을 정한다</td><td>이후</td></tr>
       <tr><td>정확 알고리즘이 평면(2차원)뿐이다</td><td>정확 알고리즘 정리(Theorem 4.1)가 ℝ²만 다룬다</td><td><ul><li>3차원 정확 알고리즘</li><li><a class="t" href="#term-closedform">닫힌 형태(closed form)</a> 기저를 부품으로 쓴다</li></ul></td><td>이후</td></tr>
-      <tr><td>계산 <a class="t" href="#term-lowerbound">하한(lower bound)</a>이 없다</td><td>하한이나 <a class="t" href="#term-hardness">어려움(hardness)</a> 결과가 없다</td><td>약 O((nk)² log n) 알고리즘의 하한을 증명하거나 알고리즘을 개선한다</td><td>이후</td></tr>
+      <tr><td>계산 <a class="t" href="#term-lowerbound">하한(lower bound)</a>이 없다</td><td>하한이나 <a class="t" href="#term-hardness">어려움(hardness)</a> 결과가 없다</td><td><a class="t" href="#term-bigo">빅오 표기(big-O notation)</a>로 약 O((nk)² log n)인 알고리즘의 하한을 증명하거나 알고리즘을 개선한다</td><td>이후</td></tr>
       <tr><td>구현과 실험이 없다</td><td><ul><li>구현, 실험, 수치 <a class="t" href="#term-robustness">견고성(robustness)</a> 논의가 없다</li><li>일반 위치를 가정한다</li></ul></td><td><ul><li><a class="t" href="#term-exact">정확 산술(exact arithmetic)</a> 구현</li><li>실제 궤적 데이터로 실험한다</li></ul></td><td>이후 (계산 환경 필요)</td></tr>
       <tr><td>무한 직선, 원, <a class="t" href="#term-tangent">접함(tangent)</a>, <a class="t" href="#term-outlier">이상치(outlier)</a> 변형이 없다</td><td>원문은 유한 선분과 구만 다룬다</td><td><ul><li>직선 버전(이 문제)</li><li>원 버전(<a class="t" href="#term-greatcircle">대원(great circle)</a> 정리)</li><li>이상치 m개를 버리는 버전</li></ul></td><td><ul><li>해커톤: 직선, 원</li><li>이후: 이상치</li></ul></td></tr>
     </tbody>
@@ -701,11 +719,11 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
   <div class="box col">
     <h3>이 문제에서 바로 이어지는 질문 (가설)</h3>
     <ul>
-      <li>직선이 4개 이상이면 <a class="t" href="#term-greatcircle">대원(great circle)</a> 정리가 깨질 수 있다(may). <a class="t" href="#term-active">활성 제약(active constraint)</a> 4개는 한 평면에 놓이지 않을 수 있기 때문이다.</li>
-      <li>그때 최소 원 문제가 <a class="t" href="#term-lptype">LP형 문제(LP-type problem)</a>인지는 열려 있다.</li>
-      <li><a class="t" href="#term-tangent">접함(tangent)</a> 해석의 최소 원은 활성 2개 케이스의 답이 달라진다.</li>
-      <li>선분 버전은 끝점에서 닿는 경우를 더 다뤄야 한다.</li>
-      <li>일반 <a class="t" href="#term-skew">꼬인 위치(skew lines)</a> 케이스의 다항식 차수는 아직 모른다.</li>
+      <li>직선이 4개 이상이면 <a class="t" href="#term-greatcircle">대원(great circle)</a> 정리가 일반적으로 깨집니다. 예: 정사면체 접선 4개는 접점이 한 평면에 놓이지 않습니다. <a class="t" href="#term-active">활성 제약(active constraint)</a> 4개가 한 평면에 놓일 이유가 없기 때문입니다.</li>
+      <li>그때 최소 원 문제가 <a class="t" href="#term-lptype">선형 계획법형 문제(linear programming-type problem, LP-type problem)</a>인지는 열려 있습니다.</li>
+      <li><a class="t" href="#term-tangent">접함(tangent)</a> 해석의 최소 원은 공면 삼각형 말고는 거의 모든 케이스에서 답이 달라집니다. 활성 3개 해도 직선이 구에 접할 뿐 원에는 접하지 않기 때문입니다.</li>
+      <li>선분 버전은 끝점에서 닿는 경우를 더 다뤄야 합니다.</li>
+      <li>일반 <a class="t" href="#term-skew">꼬인 위치(skew lines)</a> 케이스의 다항식 차수는 아직 모릅니다.</li>
     </ul>
   </div>
 </section>
@@ -719,9 +737,11 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
     <li><a href="https://link.springer.com/doi/10.1007/BF02246508">Bhattacharya et al., Computing 1994</a></li>
     <li><a href="https://arxiv.org/abs/2505.02472">Phillips &amp; Schou, arXiv:2505.02472</a></li>
     <li><a href="https://link.springer.com/content/pdf/10.1007/s00454-008-9107-5.pdf">Gao, Langberg, Schulman, DCG 2008</a></li>
-    <li><a href="https://vision.ucsd.edu/sites/default/files/publications/pdfs/Multiple%20View%20Geometry%20and%20the%20L-infinity%20Norm.pdf">Kahl, ICCV 2005</a> · <a href="https://lup.lub.lu.se/search/publication/788368">Kahl &amp; Hartley, TPAMI 2008</a></li>
+    <li><a href="https://vision.ucsd.edu/sites/default/files/publications/pdfs/Multiple%20View%20Geometry%20and%20the%20L-infinity%20Norm.pdf">Kahl, ICCV 2005</a></li>
+    <li><a href="https://lup.lub.lu.se/search/publication/788368">Kahl &amp; Hartley, TPAMI 2008</a></li>
     <li><a href="https://www.math.uni-frankfurt.de/~theobald/publications/tangents2.pdf">Macdonald, Pach, Theobald, DCG 2001</a></li>
-    <li><a href="https://mathgenealogy.org/id.php?id=175317">Timothy Wylie, Mathematics Genealogy</a> · <a href="https://portal.mardi4nfdi.de/wiki/Person:300221">출판 목록 (MaRDI)</a></li>
+    <li><a href="https://mathgenealogy.org/id.php?id=175317">Timothy Wylie, Mathematics Genealogy</a></li>
+    <li><a href="https://portal.mardi4nfdi.de/wiki/Person:300221">Timothy Wylie, 출판 목록 (MaRDI)</a></li>
   </ul>
   <p class="note">나머지 고전 문헌(Sylvester, Plücker, Megiddo, Welzl, Sharir-Welzl, Amenta, Lobo 외, Sottile-Theobald, Bădoiu 외, Hartley-Schaffalitzky)은 널리 알려진 서지 정보로 적었습니다. 이번에 따로 검색해 확인하지는 않았습니다.</p>
 </section>
@@ -741,14 +761,14 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
     <li id="term-kkt"><b>카루시-쿤-터커 조건(Karush-Kuhn-Tucker conditions, KKT)</b>: 제약 있는 최적점이 만족해야 하는 필요 조건</li>
     <li id="term-mec"><b>최소 포함원(minimum enclosing circle, MEC)</b>: 주어진 점들을 모두 안에 담는 가장 작은 원</li>
     <li id="term-pll"><b>아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)</b>: 점 하나와 직선 둘에 동시에 접하는 원을 구하는 문제</li>
-    <li id="term-lptype"><b>LP형 문제(LP-type problem)</b>: 선형 계획법의 구조를 일반화한 문제 틀. 작은 기저로 전체 해가 정해짐</li>
+    <li id="term-lptype"><b>선형 계획법형 문제(linear programming-type problem, LP-type problem)</b>: 선형 계획법의 구조를 일반화한 문제 틀. 작은 기저로 전체 해가 정해짐</li>
     <li id="term-intradius"><b>교차 반지름(intersection radius)</b>: 주어진 도형들과 모두 만나는 가장 작은 구나 원의 반지름</li>
     <li id="term-mtb"><b>최소 접촉 구(minimum touching ball)</b>: 주어진 도형들과 모두 만나는 가장 작은 구</li>
     <li id="term-greatcircle"><b>대원(great circle)</b>: 구의 중심을 지나는 평면이 구와 만나는 원</li>
     <li id="term-skew"><b>꼬인 위치(skew lines)</b>: 평행하지도 만나지도 않는 두 직선의 관계</li>
     <li id="term-commonperp"><b>공통 수선(common perpendicular)</b>: 꼬인 두 직선에 모두 수직인 선분</li>
     <li id="term-foot"><b>수선의 발(foot of perpendicular)</b>: 점에서 직선에 내린 수선이 직선과 만나는 점</li>
-    <li id="term-active"><b>활성 제약(active constraint)</b>: 최적점에서 등호로 성립해 해를 정하는 제약. 여기서는 거리가 정확히 r인 직선</li>
+    <li id="term-active"><b>활성 제약(active constraint)</b>: 최적점에서 등호로 성립해 해를 정하는 제약. 여기서는 카루시-쿤-터커 조건(Karush-Kuhn-Tucker conditions, KKT)의 승수(multiplier)가 양수인 직선. 그 직선의 거리는 정확히 r</li>
     <li id="term-convex"><b>볼록 함수(convex function)</b>: 그래프 위 두 점을 이은 선분이 그래프 위쪽에 있는 함수</li>
     <li id="term-minimax"><b>미니맥스(minimax)</b>: 여러 값 중 최댓값을 가장 작게 만드는 최적화</li>
     <li id="term-subgradient"><b>서브그래디언트(subgradient)</b>: 미분이 안 되는 볼록 함수에 쓰는 기울기의 일반화</li>
@@ -774,6 +794,21 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
     <li id="term-robustness"><b>견고성(robustness)</b>: 반올림 오차나 퇴화 입력에서도 결과가 크게 틀어지지 않는 성질</li>
     <li id="term-hardness"><b>어려움(hardness)</b>: 문제를 푸는 데 계산이 많이 든다는 것을 보이는 결과</li>
     <li id="term-basisset"><b>기저(basis)</b>: 해를 정하는 최소한의 제약 부분집합</li>
+    <li id="term-convexopt"><b>볼록 최적화(convex optimization)</b>: 볼록 함수의 최솟값을 구하는 문제. 지역 최솟값이 곧 전역 최솟값</li>
+    <li id="term-multiplier"><b>승수(multiplier)</b>: 카루시-쿤-터커 조건(Karush-Kuhn-Tucker conditions, KKT)에서 제약마다 붙는 0 이상의 가중치. 양수이면 그 제약이 해를 정함</li>
+    <li id="term-galois"><b>갈루아 군(Galois group)</b>: 다항식의 근들 사이의 대칭을 나타내는 군. 풀 수 있는 군이면 근호로 풀림</li>
+    <li id="term-bisector"><b>각이등분선(angle bisector)</b>: 두 직선이 이루는 각을 반으로 나누는 직선</li>
+    <li id="term-rotsym"><b>180° 회전 대칭(rotational symmetry)</b>: 한 축을 중심으로 180도 돌려도 도형이 자기 자신과 겹치는 성질</li>
+    <li id="term-tetra"><b>정사면체(regular tetrahedron)</b>: 정삼각형 4개로 둘러싸인 입체. 꼭짓점 4개가 한 평면에 없음</li>
+    <li id="term-midline"><b>중앙선(midline)</b>: 평행한 두 직선의 한가운데를 지나는 평행선</li>
+    <li id="term-onecenter"><b>1-센터 문제(1-center problem)</b>: 주어진 대상들까지의 최대 거리를 가장 작게 하는 점 하나를 찾는 문제</li>
+    <li id="term-flat"><b>플랫(flat)</b>: 직선, 평면처럼 휘지 않은 부분공간</li>
+    <li id="term-helly"><b>헬리형 정리(Helly-type theorem)</b>: 볼록 집합 여럿이 공통점을 가지는지를 작은 부분집합으로 판정하는 정리</li>
+    <li id="term-prune"><b>가지치기 탐색(prune-and-search)</b>: 단계마다 입력의 일정 비율을 버려 선형 시간에 푸는 기법</li>
+    <li id="term-frechet"><b>이산 프레셰 거리(discrete Fréchet distance)</b>: 점 순서가 있는 두 곡선이 얼마나 닮았는지 재는 거리</li>
+    <li id="term-cgal"><b>계산기하 알고리즘 라이브러리(Computational Geometry Algorithms Library, CGAL)</b>: 기하 알고리즘을 모아 둔 C++ 라이브러리</li>
+    <li id="term-cad"><b>컴퓨터 지원 설계(computer-aided design, CAD)</b>: 컴퓨터로 기계와 건물 같은 형상을 설계하는 방법</li>
+    <li id="term-bigo"><b>빅오 표기(big-O notation)</b>: 입력 크기 n에 따른 계산 시간의 증가 속도. O(1)은 n과 무관하고 O(n)은 n에 비례함</li>
   </ul>
 </section>
 
@@ -1101,19 +1136,30 @@ function drawView(v){
    .forEach(([a,b])=>S(a,b,muted,1,null,.45));
   // axis edges with ticks and labels
   const off=R*(o.compact?.16:.13), fs=o.compact?8.5:10, ls=o.compact?10:12;
-  const yOut=yNear>mid3[1]?1:-1, xOut=xNear>mid3[0]?1:-1;
-  S([lo[0],yNear,zFloor],[hi[0],yNear,zFloor],ink,1.3,null,.8);
-  tk[0].forEach(x=>{S([x,yNear,zFloor],[x,yNear+yOut*off*.35,zFloor],ink,1,null,.8);T([x,yNear+yOut*off,zFloor],fmtTick(x,step),muted,fs)});
-  T([mid3[0],yNear+yOut*off*2.1,zFloor],'x',ink,ls,700);
-  S([xNear,lo[1],zFloor],[xNear,hi[1],zFloor],ink,1.3,null,.8);
-  tk[1].forEach(y=>{S([xNear,y,zFloor],[xNear+xOut*off*.35,y,zFloor],ink,1,null,.8);T([xNear+xOut*off,y,zFloor],fmtTick(y,step),muted,fs)});
-  T([xNear+xOut*off*2.1,mid3[1],zFloor],'y',ink,ls,700);
   // z axis on the vertical edge that is leftmost on screen
   const corners=[[lo[0],lo[1]],[lo[0],hi[1]],[hi[0],lo[1]],[hi[0],hi[1]]].map(([x,y])=>({x,y,sx:P([x,y,zFloor]).x}));
   corners.sort((a,b)=>a.sx-b.sx); const zc=corners[0], zx=zc.x>mid3[0]?1:-1, zy=zc.y>mid3[1]?1:-1;
+  const yOut=yNear>mid3[1]?1:-1, xOut=xNear>mid3[0]?1:-1;
+  // 눈금 라벨이 겹치지 않게 한다 (figures.md §1). 화면 간격이 좁으면 눈금을 솎고, 이미 놓인 라벨과 겹치면 건너뛴다.
+  const placed=[];
+  const lab=(p,txt,col,size,weight)=>{const A=P(p),w=txt.length*size*d*.62,h=size*d*1.2;
+    if(placed.some(B=>Math.abs(A.x-B.x)<(w+B.w)/2&&Math.abs(A.y-B.y)<(h+B.h)/2))return;
+    placed.push({x:A.x,y:A.y,w,h});T(p,txt,col,size,weight)};
+  const strideOf=(i,at)=>{const t=tk[i];if(t.length<2)return 1;const A=P(at(t[0])),B=P(at(t[1])),dx=Math.abs(A.x-B.x),dy=Math.abs(A.y-B.y);
+    return [1,2,5,10,20,50].find(k=>dx*k>=fs*d*2.8||dy*k>=fs*d*1.4)||50};
+  const kx=strideOf(0,x=>[x,yNear,zFloor]),ky=strideOf(1,y=>[xNear,y,zFloor]),kz=strideOf(2,z=>[zc.x,zc.y,z]);
+  const onK=(t,k)=>Math.round(t/step)%k===0;
+  // 축 이름을 먼저 놓아 우선권을 준다.
+  lab([mid3[0],yNear+yOut*off*2.1,zFloor],'x',ink,ls,700);
+  lab([xNear+xOut*off*2.1,mid3[1],zFloor],'y',ink,ls,700);
+  S([lo[0],yNear,zFloor],[hi[0],yNear,zFloor],ink,1.3,null,.8);
+  tk[0].forEach(x=>{S([x,yNear,zFloor],[x,yNear+yOut*off*.35,zFloor],ink,1,null,.8);if(onK(x,kx))lab([x,yNear+yOut*off,zFloor],fmtTick(x,step*kx),muted,fs)});
+  S([xNear,lo[1],zFloor],[xNear,hi[1],zFloor],ink,1.3,null,.8);
+  tk[1].forEach(y=>{S([xNear,y,zFloor],[xNear+xOut*off*.35,y,zFloor],ink,1,null,.8);if(onK(y,ky))lab([xNear+xOut*off,y,zFloor],fmtTick(y,step*ky),muted,fs)});
+  // z axis on the vertical edge that is leftmost on screen
   S([zc.x,zc.y,lo[2]],[zc.x,zc.y,hi[2]],ink,1.3,null,.8);
-  tk[2].forEach(z=>{S([zc.x,zc.y,z],[zc.x+zx*off*.25,zc.y+zy*off*.25,z],ink,1,null,.8);T([zc.x+zx*off*.8,zc.y+zy*off*.8,z],fmtTick(z,step),muted,fs)});
-  T([zc.x+zx*off*1.7,zc.y+zy*off*1.7,mid3[2]],'z',ink,ls,700);
+  lab([zc.x+zx*off*1.7,zc.y+zy*off*1.7,mid3[2]],'z',ink,ls,700);
+  tk[2].forEach(z=>{S([zc.x,zc.y,z],[zc.x+zx*off*.25,zc.y+zy*off*.25,z],ink,1,null,.8);if(onK(z,kz))lab([zc.x+zx*off*.8,zc.y+zy*off*.8,z],fmtTick(z,step*kz),muted,fs)});
 
   // ---- sphere ----
   const cD=P(circ.c).depth;
@@ -1231,7 +1277,8 @@ select(PRESETS[2].items[2][1],buttons[15]);
   }
   function go(name,step){active=name;if(step!=null&&step>=0&&subs[name].length)cur[name]=step;render()}
   // 허용 해시: now, background, papers, terms, 그리고 now-2 꼴. 그 밖의 해시는 null.
-  function parse(h){const m=h.match(/^([a-z]+)(?:-(\d+))?$/);if(!m||!names.includes(m[1]))return null;
+  function parse(h){if(/^term-/.test(h)&&document.getElementById(h))return {name:'terms',step:null,term:h};
+    const m=h.match(/^([a-z]+)(?:-(\d+))?$/);if(!m||!names.includes(m[1]))return null;
     if(m[2]===undefined)return {name:m[1],step:null};
     const s=+m[2]-1;return s>=0&&s<subs[m[1]].length?{name:m[1],step:s}:null}
   function openStep(id){const el=document.getElementById(id),p=el&&el.closest('.tabpanel');if(!p)return;
@@ -1255,9 +1302,11 @@ select(PRESETS[2].items[2][1],buttons[15]);
     b.addEventListener('click',()=>manual(n,i));
     b.addEventListener('keydown',e=>arrows(subs[n],i,e,j=>manual(n,j,subs[n][j])));
   }));
-  const apply=h=>{const r=parse(h);if(r)go(r.name,r.step)};
+  function showTerm(id){const t=document.getElementById(id);document.querySelectorAll('.termlist li.hl').forEach(x=>x.classList.remove('hl'));
+    t.classList.add('hl');setTimeout(()=>t.classList.remove('hl'),1500);t.scrollIntoView({block:'center'})}
+  const apply=h=>{const r=parse(h);if(r){go(r.name,r.step);if(r.term)showTerm(r.term)}};
   render();apply(location.hash.slice(1));
-  window.addEventListener('hashchange',()=>{const r=parse(location.hash.slice(1));if(r){from=null;back.hidden=true;go(r.name,r.step)}});
+  window.addEventListener('hashchange',()=>{const r=parse(location.hash.slice(1));if(r){from=null;back.hidden=true;go(r.name,r.step);if(r.term)showTerm(r.term)}});
   // 문서 안 링크: 용어 링크는 용어 탭으로, 단계 상자 id 링크는 그 단계로 간다.
   document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;
     const id=a.getAttribute('href').slice(1),t=document.getElementById(id);if(!t)return;
@@ -1272,11 +1321,11 @@ select(PRESETS[2].items[2][1],buttons[15]);
   const D={
 b1:[`아폴로니우스 접원 (BC 200)`,`점, 직선, 원 세 대상에 접하는 원을 작도한다`,`원전은 소실됐다. 1600년 비에트(Viète)가 재구성했다`,`세 대상에 동시에 닿는 원을 그리려고 했다`,`수직선 특수 케이스가 평면의 아폴로니우스 점-직선-직선 문제(Apollonius point-line-line problem, PLL)로 바뀐다`,`"세 대상에 닿는 원"이 최소 반지름 문제로 이어진다 (Sylvester)`],
 b2:[`Sylvester 1857`,`평면 점들을 모두 감싸는 가장 작은 원을 묻는다`,`최소 포함원(minimum enclosing circle, MEC) 문제가 생겼다. 1885년 Chrystal이 알고리즘을 냈다`,`점 집합을 덮는 가장 작은 원을 찾으려고 했다`,`3 평행선 케이스의 답이 단면 삼각형의 최소 포함원(minimum enclosing circle, MEC)이다`,`Megiddo가 선형 시간으로 푼다`],
-b3:[`Megiddo 1983`,`최소 포함원(minimum enclosing circle, MEC)을 결정적 O(n) 시간에 푼다`,`prune-and-search 기법을 만들었다`,`더 빠른 정확 알고리즘이 필요했다`,`최소 반지름 문제를 알고리즘 문제로 다룬 출발점이다`,`Welzl의 랜덤 알고리즘과 LP형 문제(LP-type problem) 틀로 이어진다`],
-b4:[`Welzl 1991 · Sharir-Welzl 1992`,`기대 O(n) 랜덤 증분 알고리즘을 낸다. LP형 문제(LP-type problem)를 정의한다`,`CGAL 같은 라이브러리에 구현됐다. 이론의 표준 틀이 됐다`,`단순한 알고리즘과 일반 틀이 필요했다`,`최소 교차 구가 LP형 문제(LP-type problem)면 기저 연산(basis computation)이 곧 우리 닫힌 형태(closed form) 해다`,`대상이 점에서 직선과 초평면으로 넓어진다 (Bhattacharya 외)`],
-b5:[`Bhattacharya 외 1994`,`초평면, 선분과 모두 만나는 최소 구와 원을 구한다`,`최적 시간 알고리즘을 냈다. 초평면 경우는 (d+1)차원 선형 계획으로 바꿨다`,`대상이 점이 아닌 도형인 경우를 풀려고 했다`,`이 문제의 가장 직접적인 선행 연구다`,`고차원 flat으로 넓어진다 (Gao 외)`],
-b6:[`Gao 외 2008`,`직선과 flat 집합의 교차 반지름(intersection radius)을 다룬다`,`Δ+2개 부분집합이 전체 반지름의 절반 이상을 보장한다. 직선이면 O(nd·poly(1/ε)) 근사를 낸다`,`좌표가 빠진 데이터 점은 flat이 된다`,`직선들과 만나는 최소 구의 근사 알고리즘이다`,`이동 궤적으로 넓어진다 (Phillips-Schou)`],
-b7:[`Phillips-Schou 2025`,`선분 궤적 모두와 만나는 최소 접촉 구(minimum touching ball)를 구한다`,`선분 하나짜리 궤적은 LP형 문제(LP-type problem)이고 조합 차원(combinatorial dimension)은 d+1이다. 그래서 선형 시간에 풀린다. 선분이 4개 이상인 궤적은 조합 차원이 무한해지는 구성이 있다. 2차원 정확 알고리즘과 근사 알고리즘도 냈다`,`원인을 모르는 공간 사건의 위치를 찾으려고 했다. 예: 감염된 WiFi 공유기를 지난 휴대폰들, 같은 물웅덩이를 지난 동물들`,`이 문제와 같은 계열의 가장 최근 연구다. 작은 기저(basis)의 닫힌 형태(closed form) 해는 주지 않는다. 그 빈칸을 이 문제가 채울 수 있다`,`이 문제`],
+b3:[`Megiddo 1983`,`최소 포함원(minimum enclosing circle, MEC)을 빅오 표기(big-O notation)로 결정적 O(n) 시간에 푼다`,`가지치기 탐색(prune-and-search) 기법을 만들었다`,`더 빠른 정확 알고리즘이 필요했다`,`최소 반지름 문제를 알고리즘 문제로 다룬 출발점이다`,`Welzl의 랜덤 알고리즘과 선형 계획법형 문제(linear programming-type problem, LP-type problem) 틀로 이어진다`],
+b4:[`Welzl 1991 · Sharir-Welzl 1992`,`기대 시간이 빅오 표기(big-O notation)로 O(n)인 랜덤 증분 알고리즘을 낸다. 선형 계획법형 문제(linear programming-type problem, LP-type problem)를 정의한다`,`계산기하 알고리즘 라이브러리(Computational Geometry Algorithms Library, CGAL) 등에 구현됐다. 이론의 표준 틀이 됐다`,`단순한 알고리즘과 일반 틀이 필요했다`,`최소 교차 구가 선형 계획법형 문제(linear programming-type problem, LP-type problem)면 기저 연산(basis computation)이 곧 우리 닫힌 형태(closed form) 해다`,`대상이 점에서 직선과 초평면으로 넓어진다 (Bhattacharya 외)`],
+b5:[`Bhattacharya 외 1994`,`초평면, 선분과 모두 만나는 최소 구와 원을 구한다`,`최적 시간 알고리즘을 냈다. 초평면 경우는 (d+1)차원 선형 계획으로 바꿨다`,`대상이 점이 아닌 도형인 경우를 풀려고 했다`,`이 문제의 가장 직접적인 선행 연구다`,`고차원 플랫(flat)으로 넓어진다 (Gao 외)`],
+b6:[`Gao 외 2008`,`직선과 플랫(flat) 집합의 교차 반지름(intersection radius)을 다룬다`,`Δ+2개 부분집합이 전체 반지름의 절반 이상을 보장한다. 직선이면 빅오 표기(big-O notation)로 O(nd·poly(1/ε)) 시간의 근사를 낸다`,`좌표가 빠진 데이터 점은 플랫(flat)이 된다`,`직선들과 만나는 최소 구의 근사 알고리즘이다`,`이동 궤적으로 넓어진다 (Phillips-Schou)`],
+b7:[`Phillips-Schou 2025`,`선분 궤적 모두와 만나는 최소 접촉 구(minimum touching ball)를 구한다`,`선분 하나짜리 궤적은 선형 계획법형 문제(linear programming-type problem, LP-type problem)이고 조합 차원(combinatorial dimension)은 d+1이다. 그래서 선형 시간에 풀린다. 선분이 4개 이상인 궤적은 조합 차원이 무한해지는 구성이 있다. 2차원 정확 알고리즘과 근사 알고리즘도 냈다`,`원인을 모르는 공간 사건의 위치를 찾으려고 했다. 예: 감염된 WiFi 공유기를 지난 휴대폰들, 같은 물웅덩이를 지난 동물들`,`이 문제와 같은 계열의 가장 최근 연구다. 작은 기저(basis)의 닫힌 형태(closed form) 해는 주지 않는다. 그 빈칸을 이 문제가 채울 수 있다`,`이 문제`],
 b8:[`Plücker 1868`,`직선을 6개 동차좌표로 나타낸다`,`3차원 직선 기하의 대수적 언어가 생겼다`,`3차원 직선을 좌표로 계산하려고 했다`,`입력 형식의 후보다. 직선 관계 판정에 쓴다`,`Schubert의 계수 기하로 이어진다`],
 b9:[`Schubert 1879`,`조건을 만족하는 기하 대상의 개수를 센다`,`일반 위치의 네 직선과 만나는 직선은 2개다`,`해의 개수를 미리 알려고 했다`,`해의 개수는 닫힌 형태(closed form) 해가 있는지 판단하는 도구다`,`직선과 구의 공통 접선 개수로 이어진다`],
 b10:[`Macdonald-Pach-Theobald 2001`,`단위 구 4개의 공통 접선 개수를 센다`,`최대 12개다. 이 값은 실제로 달성된다`,`Larman의 질문에 답하려고 했다`,`직선과 구의 접촉 문제가 대수적으로 복잡함을 보인다. 꼬인 위치(skew lines) 케이스 분석의 본보기다`,`n차원으로 일반화된다`],
@@ -1302,6 +1351,10 @@ b20:[`향후 연구 (계획)`,`2025 논문의 빈칸 6개에서 이어지는 연
     b.addEventListener('click',()=>select(b.dataset.box));
     b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(b.dataset.box)}});
   });
+  // 계보도는 가로로 넓어서 '이 문제' 상자가 처음 화면 밖에 있다. 버튼으로 그 상자 쪽으로 스크롤한다.
+  const lw=document.getElementById('lineagewrap');
+  document.getElementById('lineJumpTarget').addEventListener('click',()=>{const t=document.getElementById('b15').getBoundingClientRect(),w=lw.getBoundingClientRect();lw.scrollBy({left:t.left-w.left-24,behavior:'smooth'})});
+  document.getElementById('lineJumpStart').addEventListener('click',()=>lw.scrollTo({left:0,behavior:'smooth'}));
   select('b15');
 })();
 
