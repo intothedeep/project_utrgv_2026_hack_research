@@ -1,0 +1,63 @@
+=== run v1_n1000 job 150311 host gpu011 dir /home/taeklim01/smallest_circle/runs/150311_v1_n1000 start 2026-11-08T01:09:09-06:00 ===
+code_commit 8a80e7a053409eed007ca6146e29b9d4324037d3
+python 3.12.12 numpy 2.2.6 cvxpy 1.6.0 clarabel 0.10.0
+case triangle: 1001 instances
+case concurrent: 1001 instances
+case two_meet_one_cross: 1002 instances
+case one_meet_over: 1001 instances
+case one_meet_overunder: 1001 instances
+case all_skew: 1002 instances
+case par_meet_both: 1001 instances
+case par_meet_one: 1001 instances
+case par_over: 1002 instances
+case par_overunder: 1001 instances
+case par3_coplanar: 1001 instances
+case par3_acute: 1001 instances
+case par3_obtuse: 1001 instances
+case one_meet_perp: 1001 instances
+case skew_perp: 1001 instances
+case par_perp_between: 1001 instances
+case par_perp_outside: 1001 instances
+case coincident: 1000 instances
+overall FAIL
+/home/taeklim01/smallest_circle/runs/150311_v1_n1000:
+total 20
+drwxrwxr-x 4 taeklim01 taeklim01  192 Nov  8 01:09 .
+drwxrwxr-x 3 taeklim01 taeklim01   37 Nov  8 01:09 ..
+-rw-r--r-- 1 taeklim01 taeklim01   41 Nov  8 01:09 CODE_COMMIT
+-rw-rw-r-- 1 taeklim01 taeklim01 1250 Nov  8 01:09 code.sha256
+drwxr-xr-x 3 taeklim01 taeklim01   37 Nov  8 01:09 code_snapshot
+-rw-rw-r-- 1 taeklim01 taeklim01 1270 Nov  8 01:09 manifest.json
+-rw-rw-r-- 1 taeklim01 taeklim01 1270 Nov  8 01:09 manifest_150311_v1_n1000.json
+-rw-r--r-- 1 taeklim01 taeklim01  679 Nov  8 01:09 pyproject.toml
+drwxrwxr-x 2 taeklim01 taeklim01  130 Nov  8 01:09 results
+
+/home/taeklim01/smallest_circle/runs/150311_v1_n1000/code_snapshot:
+total 0
+drwxr-xr-x 3 taeklim01 taeklim01  37 Nov  8 01:09 .
+drwxrwxr-x 4 taeklim01 taeklim01 192 Nov  8 01:09 ..
+drwxr-xr-x 2 taeklim01 taeklim01 311 Nov  8 01:09 smallest_circle
+
+/home/taeklim01/smallest_circle/runs/150311_v1_n1000/code_snapshot/smallest_circle:
+total 64
+drwxr-xr-x 2 taeklim01 taeklim01  311 Nov  8 01:09 .
+drwxr-xr-x 3 taeklim01 taeklim01   37 Nov  8 01:09 ..
+-rw-r--r-- 1 taeklim01 taeklim01   87 Nov  8 01:09 __init__.py
+-rw-r--r-- 1 taeklim01 taeklim01 4964 Nov  8 01:09 active3.py
+-rw-r--r-- 1 taeklim01 taeklim01  890 Nov  8 01:09 check_touch.py
+-rw-r--r-- 1 taeklim01 taeklim01 1686 Nov  8 01:09 circle.py
+-rw-r--r-- 1 taeklim01 taeklim01 3233 Nov  8 01:09 classify.py
+-rw-r--r-- 1 taeklim01 taeklim01 2557 Nov  8 01:09 closed_form.py
+-rw-r--r-- 1 taeklim01 taeklim01 3050 Nov  8 01:09 evaluate.py
+-rw-r--r-- 1 taeklim01 taeklim01 2289 Nov  8 01:09 geometry.py
+-rw-r--r-- 1 taeklim01 taeklim01 4860 Nov  8 01:09 instances.py
+-rw-r--r-- 1 taeklim01 taeklim01 2973 Nov  8 01:09 presets.py
+-rw-r--r-- 1 taeklim01 taeklim01 4113 Nov  8 01:09 run.py
+-rw-r--r-- 1 taeklim01 taeklim01 2150 Nov  8 01:09 summarize.py
+-rw-r--r-- 1 taeklim01 taeklim01 1821 Nov  8 01:09 verify_socp.py
+
+/home/taeklim01/smallest_circle/runs/150311_v1_n1000/results:
+total 22912
+drwxrwxr-x 2 taeklim01 taeklim01      130 Nov  8 01:09 .
+drwxrwxr-x 4 taeklim01 taeklim01      192 Nov  8 01:09 ..
+=== done 2026-11-08T01:09:57-06:00 ===

@@ -1,7 +1,10 @@
-"""Numeric optimum: min r s.t. ||P_i (c - a_i)|| <= r (SOCP, cvxpy + Clarabel).
+"""Numeric optimum: min r s.t. ||P_i (c - a_i)|| <= r (SOCP, cvxpy).
 
 Run on the cluster only. The problem is built once with Parameters (DPP) and re-solved
 per instance, so 20k instances do not recompile 20k times.
+
+Solver stages (v2): the first stage that returns status "optimal" is accepted. Every stage is
+at least 100 times tighter than the 1e-6 pass line. "optimal_inaccurate" is never accepted.
 """
 from __future__ import annotations
 
@@ -14,14 +17,21 @@ from .geometry import Line, Vec, projector
 
 __all__ = ["SocpSolver", "SocpResult"]
 
-_TOL = 1e-10
+# (name, solver, cvxpy solve kwargs). Stage 0 is the v1 setting.
+_STAGES = (
+    ("clarabel_1e-10", cp.CLARABEL, dict(tol_gap_abs=1e-10, tol_gap_rel=1e-10, tol_feas=1e-10)),
+    ("clarabel_1e-8", cp.CLARABEL, dict(tol_gap_abs=1e-8, tol_gap_rel=1e-8, tol_feas=1e-8,
+                                        max_iter=500)),
+    ("scs_1e-9", cp.SCS, dict(eps_abs=1e-9, eps_rel=1e-9, max_iters=200000)),
+)
 
 
 @dataclass(frozen=True)
 class SocpResult:
     c: Vec
     r: float
-    status: str   # cvxpy status; only "optimal" is used for pass/fail
+    status: str   # cvxpy status; "<status>[<stage>]" when a later stage ran
+    ok: bool      # True only for status "optimal" from some stage
 
 
 class SocpSolver:
@@ -40,12 +50,21 @@ class SocpSolver:
             proj = projector(line)
             P.value = proj
             b.value = proj @ line.a
-        try:
-            self._prob.solve(solver=cp.CLARABEL, tol_gap_abs=_TOL, tol_gap_rel=_TOL,
-                             tol_feas=_TOL)
-        except cp.error.SolverError as err:
-            return SocpResult(np.full(3, np.nan), float("nan"), f"solver_error: {err}")
-        if self._c.value is None:
-            return SocpResult(np.full(3, np.nan), float("nan"), str(self._prob.status))
-        return SocpResult(np.asarray(self._c.value, dtype=float), float(self._r.value),
-                          str(self._prob.status))
+        last = SocpResult(np.full(3, np.nan), float("nan"), "no_stage", False)
+        for k, (name, solver, kwargs) in enumerate(_STAGES):
+            tag = "" if k == 0 else f"[{name}]"
+            try:
+                self._prob.solve(solver=solver, **kwargs)
+            except cp.error.SolverError as err:
+                last = SocpResult(np.full(3, np.nan), float("nan"),
+                                  f"solver_error{tag}: {err}", False)
+                continue
+            status = str(self._prob.status)
+            if self._c.value is None:
+                last = SocpResult(np.full(3, np.nan), float("nan"), f"{status}{tag}", False)
+                continue
+            last = SocpResult(np.asarray(self._c.value, dtype=float), float(self._r.value),
+                              f"{status}{tag}", status == "optimal")
+            if last.ok:
+                return last
+        return last   # all stages failed: the row ends socp_failed, the value is for the record

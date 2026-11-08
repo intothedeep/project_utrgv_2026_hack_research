@@ -40,7 +40,7 @@ def evaluate(lines: list[Line], case: str, iid: str, source: str, solver: SocpSo
     row["r_known"] = "" if r_known is None else r_known
     socp = solver.solve(lines)
     row["r_socp"], row["socp_status"] = socp.r, socp.status
-    if socp.status != "optimal":
+    if not socp.ok:
         row["status"] = "socp_failed"
         return row
     try:

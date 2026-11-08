@@ -1,0 +1,50 @@
+{
+  "code_version": "v1",
+  "code_sha": "94f148ac3e5e",
+  "code_commit": "8a80e7a053409eed007ca6146e29b9d4324037d3",
+  "params": {
+    "n_per_case": 1000,
+    "seed": 20261107,
+    "tol_r": 1e-06,
+    "tol_touch": 1e-06,
+    "tol_center_gap": 1e-06,
+    "run": "v1_n1000",
+    "job": "150311"
+  },
+  "env": {
+    "host": "gpu011",
+    "python": "3.12.12",
+    "platform": "Linux-4.18.0-372.9.1.el8.x86_64-x86_64-with-glibc2.28",
+    "numpy": "2.2.6",
+    "cvxpy": "1.6.0",
+    "clarabel": "0.10.0",
+    "scipy": "1.14.1",
+    "SLURM_JOB_ID": "150311",
+    "SLURM_JOB_NODELIST": "gpu011",
+    "SLURM_CPUS_ON_NODE": "1",
+    "SLURM_JOB_PARTITION": "gpul40q"
+  },
+  "metrics": {
+    "overall": "FAIL",
+    "verdicts": {
+      "triangle": "PASS",
+      "concurrent": "PASS",
+      "two_meet_one_cross": "PASS",
+      "one_meet_over": "FAIL",
+      "one_meet_overunder": "FAIL",
+      "all_skew": "FAIL",
+      "par_meet_both": "PASS",
+      "par_meet_one": "FAIL",
+      "par_over": "PASS",
+      "par_overunder": "PASS",
+      "par3_coplanar": "PASS",
+      "par3_acute": "PASS",
+      "par3_obtuse": "FAIL",
+      "one_meet_perp": "PASS",
+      "skew_perp": "PASS",
+      "par_perp_between": "PASS",
+      "par_perp_outside": "PASS",
+      "coincident": "FAIL"
+    }
+  }
+}

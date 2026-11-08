@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .geometry import Line, Vec, any_perp, foot, unit
+from .geometry import Line, Vec, any_perp, foot, line_line, unit
 
 __all__ = ["Solution", "Circle", "build_circle"]
 
@@ -36,8 +36,15 @@ def _normal_three(c: Vec, q: list[Vec]) -> Vec:
 
 def _normal_two(lines: list[Line], sol: Solution) -> Vec:
     c, r = sol.c, sol.r
-    u = foot(lines[sol.active[0]], c) - c
+    la = lines[sol.active[0]]
+    u = foot(la, c) - c
     lk = lines[sol.k]
+    if any(line_line(lines[i], lk).kind == "coincident" for i in sol.active):
+        # L_k is tangent to the sphere at p or q by structure, so the circle already meets it.
+        # Any n perpendicular to u works. The tangent intersection below would build n from
+        # rounding noise (v1 finding 1). e1 is perpendicular to u and d; u x e1 is parallel to d.
+        e1 = unit(np.cross(u, la.d))
+        return unit(e1 + unit(np.cross(u, e1)))
     w = lk.a - c
     wd = float(w @ lk.d)
     disc = max(0.0, wd * wd - float(w @ w) + r * r)

@@ -26,7 +26,7 @@ from .presets import PRESETS, R_KNOWN
 from .summarize import summarize
 from .verify_socp import SocpSolver
 
-CODE_VERSION = "v1"
+CODE_VERSION = "v2"
 SEED = 20261107
 SRC = Path(__file__).resolve().parent
 
