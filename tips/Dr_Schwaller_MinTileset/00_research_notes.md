@@ -102,27 +102,41 @@ Coordinates: columns 1..n, rows 0 (bottom) and 1 (top). The 2×n shape is a k×N
 - **F1. DERIVED-BY-HAND: 2×1 needs exactly 2 tile types.**
   - Why 1 type fails: the seed type t also fills the second cell, so t.N = t.S with strength ≥ τ. Then t can attach above again, and the column grows forever.
   - 2 types suffice: seed A with N glue a of strength τ, and B with S glue a. All other sides are null.
-- **F2. DERIVED-BY-HAND: any 2×n with n ≥ 1 needs ≥ 2 types.** Same argument: a seed alone covers 1 cell.
-- **F3. DERIVED-BY-HAND: upper bound n + 1 (comb), any τ, corner seed.**
+- **F2. DERIVED-BY-HAND: any 2×n with n ≥ 1 needs ≥ 2 types.**
+  - Why: the first tile placed next to the seed binds by one side only, so that glue has strength ≥ τ.
+  - With one type, the same tile then repeats in that direction forever (vertical: t.N = t.S. Horizontal: t.E = t.W). [review_02 §1.3]
+- **F3. DERIVED-BY-HAND: upper bound n + 1 (comb), any τ, seed at the corner or at any bottom-row cell.** A top-row seed needs the vertically mirrored comb (below). So n + 1 holds for every seed cell. [review_02 §2]
   - Bottom row: B_1 (seed, bottom-left corner), B_2, ..., B_n. B_i has E glue e_i of strength τ, and B_{i+1} has W glue e_i.
   - Every B_i has N glue u of strength τ. One top type T has S glue u. All other sides of T are null.
   - Check: each bottom cell has exactly one possible tile. Each top cell admits only T. T's null E/W sides stop growth past column n. B_n has a null E side. So the system is directed, and its terminal shape is 2×n.
   - Count: n + 1. This matches the "N + k − 1" comb for k = 2 [S-MTS-5].
+  - Seed at any bottom cell B_s: east, only B_{s+1} has W = e_s. West, only B_{s−1} has E = e_{s−1}. Induction both ways. Tops as before. [review_02 §2.3]
+  - Top-row seed with this tile set FAILS: the seed is T, and below it all n bottom types B_1..B_n offer N = u. They compete under the shared T, so it is not directed for n ≥ 2. [review_02 §2.4]
+  - Mirrored comb for a top-row seed: chain T_1..T_n on the top row (T_i: E = e_i, W = e_{i−1}, S = u). One shared bottom type B with N = u. Seed T_s anywhere on the top row. Same proof, n + 1 types. [review_02 §2.4]
+  - The comb (and its mirror) is mismatch-free: every abutting pair is equal (e_i/e_i, u/u, null/null). [review_02 §4a]
 - **F4. PROVEN: lower bound √n / 2, seed anywhere** ([S-MTS-2] Thm 3.1 proof, k = 2: (n / (2·2!))^{1/2}).
+  - Small caveat in that route: if the seed column is one of the 3 copies, the other 2 may sit on opposite sides. Excluding the seed column costs at most +1 or +2 in N. No effect on √n / 2 asymptotically. [review_02 §3b]
 - **Intuition, DERIVED-BY-HAND from [S-MTS-2]'s proof idea:**
-  - A vertical cut of the strip crosses only 2 tiles. So all information passed west ↔ east is one pair (top type, bottom type) plus an attachment order (top first or bottom first).
+  - One column holds only 2 tiles. So the state of a column is one pair (top type, bottom type) plus an attachment order (top first or bottom first).
   - With t types there are at most 2·t² such "states".
-  - If a state repeats on the same side of the seed, the stretch between the copies can be pumped, and the shape becomes infinite.
-  - So each side of the seed has fewer than about 2t² distinct columns, which gives n ≲ 4t². The exact count of repeats needed is in [S-MTS-2].
+  - Remove the seed column. One side of the seed holds ≥ (n − 1)/2 columns. If (n − 1)/2 > 2t², a state repeats on that side.
+  - Matching glues alone do not allow copying the stretch between the two copies. At τ = 2 a tile in that stretch may have attached cooperatively with help from a neighbour that, in the pumped assembly, is a different copy placed later.
+  - So the attachment-order condition is needed: the copies must share types and order, and the pumped assembly must be producible (window-movie-lemma style argument). This producibility step is the non-trivial part. [review_02 §3d]
+  - With that step, n ≤ 4t² + 1, so t ≥ √((n − 1)/4) ≈ √n / 2.
+  - Which part is which: the constant 1/2 is the source's [S-MTS-2] Thm 3.1. The intuition alone, made rigorous by the Window Movie Lemma (Meunier, Patitz, Summers, Theyssier, Winslow, Woods, SODA 2014), gives only Θ(√n), with a worse constant (about √n / 4). [review_02 §3d]
 
 ### 4.2 τ = 1
 
 - PROVEN-conditional ([S-MTS-6], snippet only, partial):
   - Under the "no binding-domain mismatches" assumption, a τ = 1 directed system needs at least (Manhattan diameter + 1) types.
   - The Manhattan diameter of 2×n is (n − 1) + 1 = n (arithmetic).
-  - So, under that assumption, the answer is **exactly n + 1**. F3 gives the matching upper bound, for any seed position.
+  - So, under that assumption, the answer is **exactly n + 1**. F3 gives the matching upper bound for every seed cell (top-row seed: the vertically mirrored comb). The comb is mismatch-free, so it lies inside the restricted class.
+  - Consistency check: n×n gives 2(n − 1) + 1 = 2n − 1, which matches the "2N − 1 for squares" snippet of [S-MTS-6]. This supports the reading of "diameter". [review_02 §4a]
   - Check before citing: is "Manhattan diameter" defined as I used it? The full text was not read.
-- Without the no-mismatch assumption, the best known 2D τ = 1 bounds for k×N are Ω(N^{1/k}) and N + k − 1 [S-MTS-5]. For k = 2 this gives Ω(√n) ≤ t ≤ n + 1. **The exact τ = 1 value is open as far as found.**
+- Without the no-mismatch assumption, the best known 2D τ = 1 bounds for k×N are Ω(N^{1/k}) and N + k − 1 [S-MTS-5]. For k = 2 this gives Ω(√n) ≤ t ≤ n + 1.
+  - The τ = 1 lower bound adds nothing beyond F4 at the Θ level, since F4 holds at every τ. [review_02 §4b]
+- **Open (as far as found): the exact τ = 1 value without the no-mismatch assumption.**
+- So two cells of the overview are open, not one: (1) the exact corner-seed τ = 2 value (the setter's "equation", §4.3 CONJECTURE), and (2) the exact τ = 1 value without the no-mismatch assumption.
 - Answer to the prompt's intuition ("in τ = 1, a 2×n can't reuse a tile type along a row without pumping"):
   - This is believed, and it is proven only under the no-mismatch assumption above.
   - In general it is not proven in 2D [S-MTS-5] (the gap is stated there).
@@ -133,24 +147,31 @@ Coordinates: columns 1..n, rows 0 (bottom) and 1 (top). The 2×n shape is a k×N
   - Aggarwal et al.'s k-digit base-m counter at k = 2 builds 2×m² with 4m + 2 types, corner seed [S-MTS-2] Thm 3.2. PROVEN.
   - A binary counter needs log n rows to store the bits. The F4 bound (√n / 2) rules out O(log n) types for height 2. PROVEN through F4.
 - **DERIVED-BY-HAND (unchecked by simulation): a leaner 2-row counter with about m + 3D + 2 types for n = 1 + m·D.**
+  - Status: hand-traced for m = 3, D = 2 and m = 12, D = 4 (review_02 §5.2–§5.3), not simulated. review_02 §5.2 also gives a general directedness argument for all m ≥ 2, D ≥ 1.
   - Seed at the bottom-right corner. Growth runs west in blocks of m columns. The bottom row counts the position in the block. The top row holds a digit d that counts blocks down from D − 1 to 0.
   - Bottom chain P_1..P_m (m types): P_j has W glue p_j of strength 2 for j < m. P_m has W glue q of strength 1. P_1 has E glue q (1) and N glue s (1). P_2..P_{m−1} have N glue g (1). P_m has N glue b (1).
-  - Start tiles S_d (D types): E glue r_d (2), W glue d (1), S glue s (1).
-  - Middle tiles M_d (D types): E glue d (1), S glue g (1), W glue d (1).
-  - Decrement tiles X_d (D types): E glue d (1), S glue b (1). W glue r_{d−1} (2) when d ≥ 1. W glue null when d = 0.
+  - P_{j+1} has E glue p_j of strength 2, for 1 ≤ j ≤ m − 1 (so P_2..P_m each have an E glue). [review_02 §5.4]
+  - Why strength 2: with strength 1, P_{j+1} would need M above it, and M needs P below it (deadlock).
+  - Digit glues: each digit value d has its own label δ_d. The δ_d are distinct per d and distinct from r_d, s, g, b, q, z, p_j.
+  - Why distinct: with one shared label "d", X_1 and X_0 (and M_1 and M_0) would both fit the same cell, and the system would not be directed. [review_02 §5.4]
+  - Start tiles S_d (D types): E glue r_d (2), W glue δ_d (1), S glue s (1).
+  - Middle tiles M_d (D types): E glue δ_d (1), S glue g (1), W glue δ_d (1).
+  - Decrement tiles X_d (D types): E glue δ_d (1), S glue b (1). W glue r_{d−1} (2) when d ≥ 1. W glue null when d = 0.
   - Seed Z: W glue q (1), N glue z (2). Top seed-column tile Y: S glue z (2), W glue r_{D−1} (2). Count: 2.
+  - Null sides: N of S_d, M_d, X_d and Y. S of all P_j and of Z. E of Z and of Y. [review_02 §5.4]
   - Block cycle:
     1. S_d attaches on r_d (strength 2, alone).
     2. P_1 attaches below it on q + s = 1 + 1. This is cooperation.
     3. P_2..P_m follow on strength-2 chain glues.
-    4. M_d fills the top on d + g.
-    5. X_d attaches above P_m on d + b and emits r_{d−1}.
+    4. M_d fills the top on δ_d + g.
+    5. X_d attaches above P_m on δ_d + b and emits r_{d−1}.
     6. After X_0, no S tile can attach. P_1 then has only q (1), so growth stops.
   - Total: m + 3D + 2 types, n = 1 + m·D columns.
   - Choose m ≈ 3D. Then about 2√(3n) ≈ 3.46√n types, versus 4√n + 2 in [S-MTS-2].
   - Examples (arithmetic): D = 4, m = 12 gives n = 49 with 26 types (comb: 50). D = 58, m = 173 gives n = 10,035 with 349 types.
   - Limits: it needs m ≥ 2 and handles only n = 1 + m·D exactly. Other lengths need a partial first block (as in [S-MTS-2] p.8). That is not worked out here.
-  - **Needs a run**: simulate this tile set on the cluster (light: one aTAM simulation, no search) to confirm directedness and the terminal shape.
+  - For m = 2 the M_d types are unused, so the count is m + 2D + 2 there. [review_02 §5.4]
+  - **Optional run** (R2): the hand traces settle directedness and shape for these instances. A cluster simulation would still be a good independent check (light: one aTAM simulation, no search). [review_02 §5.5]
 - **CONJECTURE**: the corner-seed optimum at τ = 2 is c·√n + O(1) for some constant c between 1/2 and 2√3 ≈ 3.46. The setter's "equation" is probably an exact formula of this kind. Its form was not found in any source.
 
 ### 4.4 Small n table (n = 1..6)
@@ -184,15 +205,15 @@ Ranked directions for a 2-page paper in 24 h:
 
 | Rank | Direction | Claim it could support | Risk |
 | --- | --- | --- | --- |
-| 1 | **Non-hardness by sparseness.** With the shape given as a list of cells, the decision instances (2×n, k) have size Θ(n). There are only poly(L) instances of length L, so the language is sparse. Mahaney: a sparse NP-complete set implies P = NP [S-MTS-7]. | "Min tile set for 2×n is not NP-complete unless P = NP" (any seed rule). A short, rigorous theorem. | Low. State the encoding. With n in binary the set is not sparse, and the argument fails. |
-| 2 | **Subexponential algorithm.** At fixed τ = 2, enumerate all systems with ≤ 4⌈√n⌉ + 2 types. That is 2^{O(√n log n)} candidates, each checked in polynomial time [S-MTS-1]. | "Solvable in 2^{O(√n log n)} time". Pairs well with rank 1. | Low. Must fix τ, or cite [S-MTS-4] for bounding strengths. |
+| 1 | **Non-hardness by sparseness.** Holds for n in unary or a canonical sorted cell list (Θ(n log n) bits). Then each input length has O(n) values of k and O(n) seed cells s, so the language is sparse. Mahaney: a sparse NP-hard set under ≤_m^p implies P = NP [S-MTS-7]. Normalization note: a cell list in arbitrary order has (2n)! encodings of one shape, so the raw language is not sparse. Add the poly-time reduction "any encoding ↦ canonical ⟨1^n, s, k⟩" (non-rectangles map to a fixed no-instance). If the raw problem were NP-hard, the sparse canonical set would be too. [review_02 §7a] | "Min tile set for 2×n is not NP-complete unless P = NP" (any seed rule). A short, rigorous theorem. | Low. State the encoding. Fails for n in binary: the set is not sparse, and NP membership is unclear. NP membership needs τ fixed or strengths bounded. |
+| 2 | **Subexponential algorithm.** At fixed τ = 2, enumerate all systems with ≤ 4⌈√n⌉ + 2 types. That is 2^{O(√n log n)} candidates, each checked in polynomial time [S-MTS-1]. | "Solvable in 2^{O(√n log n)} time", only for fixed τ = 2 and unary or cell-list input. In binary, input length ℓ = log n, so this is not subexponential in ℓ. At τ = 1 the only upper bound is n + 1, so the same enumeration is 2^{O(n log n)}. [review_02 §7c] Pairs well with rank 1. | Low. Must fix τ, or cite [S-MTS-4] for bounding strengths. |
 | 3 | **WLOG-corner lemma (exchange argument).** Show that any optimal interior-seed system converts to a corner-seed system with no more types. Then the general case equals the corner formula, which is polynomial. | Resolves the open case. | High. It may be false if the arms can share tiles. |
 | 4 | **Seed-position decomposition.** Write OPT = min over s of f(s − 1, n − s), where f is the cost of two arms with sharing. If f has a closed form, this is an O(n)-time algorithm. | Polynomial algorithm, conditional on f. | Medium–high. |
-| 5 | **Constant-factor approximation.** A corner construction (~3.46√n, §4.3) against the √n / 2 lower bound gives an O(1)-approximation for any seed position. | "7-approximation in polynomial time" (about 3.46 / 0.5, before tightening). | Low. The §4.3 construction must be verified first. |
+| 5 | **Constant-factor approximation.** Seed free (part of the solution): output the corner construction of [S-MTS-2] (4⌈√n⌉ + 2, proven) against the √n / 2 lower bound. Ratio → about 8 (≤ about 11 for small n). The "7×" (3.46 / 0.5) uses the §4.3 counter, is asymptotic only, and covers only n = 1 + mD. Seed cell fixed by the input: two arms (lengths s − 1 and n − s), one counter growing west and its horizontal mirror growing east, sharing the seed column, disjoint glue labels. Types ≤ 4√2·√n + O(1), ratio → about 8√2 ≈ 11.3. [review_02 §7b] | "About 8-approximation (seed free) by [S-MTS-2], 7 for n = 1 + mD by §4.3. About 8√2 for a fixed seed cell." | Low. The fixed-seed case relies on [S-MTS-2]'s counter handling any arm length 1..m² (paper claim, §3, not re-checked). |
 | 6 | **Small-n exact table via a cluster run (§4.4).** Compare the corner optimum with the interior optimum for n ≤ 8. | Evidence for or against rank 3. | Needs a cluster run and the owner's OK. |
 | 7 | **Hardness.** NP-hardness of 2×n is blocked by rank 1 under unary encoding. | Not recommended. | Very high. |
 
-Realistic 24 h paper (inference): ranks 1 + 2 as theorems, rank 5 as a theorem if §4.3 checks out, rank 3 as a conjecture backed by rank 6 data.
+Realistic 24 h paper (inference): ranks 1 + 2 as theorems, rank 5 as a theorem (the 8× form needs only [S-MTS-2], the 7× form needs §4.3), rank 3 as a conjecture backed by rank 6 data.
 
 ## 6. Computation note
 
@@ -200,7 +221,7 @@ Realistic 24 h paper (inference): ranks 1 + 2 as theorems, rank 5 as a theorem i
 - No code, simulation or search over tile sets was run for these notes. Only reading and web search were done.
 - Runs needed (main session submits, cluster only):
   - R1: exhaustive minimum tile set search for 2×n, n = 2..8, τ = 1 and τ = 2, every seed position (§4.4).
-  - R2: one aTAM simulation of the §4.3 counter for a few (m, D), to check directedness and the terminal shape.
+  - R2 (optional, independent check): one aTAM simulation of the §4.3 counter for a few (m, D), to check directedness and the terminal shape. Hand traces exist (review_02 §5).
 
 ## 7. Sources
 
@@ -245,5 +266,6 @@ open_questions:
 - S-MTS-8, S-MTS-9 authors and bounds. UNVERIFIED.
 - S-MTS-11, S-MTS-12 exact titles. UNVERIFIED.
 - Furcy–Micka–Summers 3D squares paper: not searched. UNVERIFIED.
-- §4.3 counter construction: hand-derived, needs simulation run R2.
+- §4.3 counter construction: hand-traced for (m, D) = (3, 2) and (12, 4) in review_02, not simulated. R2 is optional.
+- Exact τ = 1 value without the no-mismatch assumption: open as far as found (§4.2).
 - Exact small-n values (n = 2..6) and the corner-seed "equation": needs run R1. Not found in literature.

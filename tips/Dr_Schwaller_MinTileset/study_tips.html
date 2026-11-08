@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>2×n 최소 타일 집합 학습 팁</title>
+<title>HACK · 2×n 최소 타일 집합 학습 팁</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500&display=swap">
 <style>
 /* html-theme: the one theme for HTML output (rules/answering.md §3).
@@ -221,6 +221,8 @@ ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 }
 /* 이 페이지 전용 추가 */
 .st.dead{background:var(--signal-dead-fill);color:var(--signal-dead-ink);border-color:var(--border)}
+.st.part{background:var(--muted);color:var(--foreground);border:2px solid var(--foreground)}
+.vz.neutral .g1,.vz.neutral .g2{fill:var(--muted-foreground)}
 .lineage.lin2{min-width:900px}
 .asm svg text.nm{fill:var(--foreground);font-size:15px;font-weight:700}
 .asm svg text.gl{fill:var(--foreground);font-size:10px}
@@ -244,32 +246,549 @@ td ul,td ol{padding-left:16px;gap:3px}
 .sm{font-size:12px;color:var(--muted-foreground)}
 .legendrow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:12px;color:var(--muted-foreground)}
 .usedrow{background:var(--signal-flag-fill)}
+/* 탭 0 그림으로 이해하기 전용 */
+.vz{width:100%;height:auto;display:block;background:var(--card);border:1px solid var(--border)}
+.vz text{fill:var(--foreground);font-size:12px}
+.vz text.s{fill:var(--muted-foreground);font-size:11px}
+.vz text.b{font-weight:700}
+.vz text.bad{fill:var(--destructive);font-weight:700}
+.vz .bx{fill:var(--card);stroke:var(--border);stroke-width:1.3}
+.vz .bx.done{fill:var(--muted);stroke:var(--foreground);stroke-width:2}
+.vz .bx.wait{stroke-dasharray:5 3}
+.vz .hi{fill:var(--signal-flag-fill);stroke:var(--signal-flag-line);stroke-width:3;stroke-dasharray:6 4}
+.vz .ar{stroke:var(--muted-foreground);stroke-width:1.5;fill:none}
+.vz .tl{fill:var(--muted);stroke:var(--foreground);stroke-width:1.5}
+.vz .tn{fill:none;stroke:var(--foreground);stroke-width:1.2;stroke-dasharray:5 3}
+.vz .tnew{fill:var(--signal-flag-fill);stroke:var(--foreground);stroke-width:1.5}
+.vz .g1{fill:var(--series-l1)}
+.vz .g2{fill:var(--series-l2)}
+.vz .fade{opacity:.35}
+.vzbar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+.vzbar .cnt{font-weight:700}
+.vzmsg{min-height:44px}
+.sw2{display:inline-block;width:12px;height:12px;vertical-align:middle;margin-right:5px;border:1px solid var(--foreground)}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header class="lede">
-  <span class="eyebrow">UTRGV Research Hackathon 2026 · 출제: Dr. Schwaller</span>
+  <span class="eyebrow">리오그란데밸리 텍사스대학교(University of Texas Rio Grande Valley, UTRGV) 연구 해커톤 2026 · 출제: Dr. Schwaller</span>
   <h1>2×n 직사각형의 최소 타일 집합: 학습 팁</h1>
   <p>초보자를 위한 학습 지도입니다. 무엇을 알아야 하고 왜 그런지 단계별로 배웁니다. 각 탭은 번호 붙은 단계 상자로 이어집니다.</p>
   <p>문제는 이렇습니다. 모양 하나가 주어집니다. 그 모양을 유일하게 조립하는 타일 종류의 최소 개수를 구합니다. 이 페이지는 모양이 2×n 직사각형인 경우를 다룹니다.</p>
-  <div class="meta"><span>마감 <b>11/8(일) 09:00</b></span><span>제출물 <b>2쪽 논문</b></span><span>자료 기준일 <b>2026-11-07</b></span><span>출제자 <b>Dr. Schwaller</b> (UTRGV의 Robert Schweller로 추정, 미확인)</span></div>
+  <div class="meta"><span>마감 <b>11/8(일) 09:00</b></span><span>제출물 <b>2쪽 논문</b></span><span>자료 기준일 <b>2026-11-07</b></span><span>출제자 <b>Dr. Schwaller</b> (Robert Schweller로 추정, 미확인)</span></div>
   <div class="legendrow"><span>상태 라벨:</span>
     <span><span class="st ok">PROVEN</span> 증명됨, 출처 있음</span>
     <span><span class="st q">DERIVED-BY-HAND</span> 손으로 유도, 실행 미확인</span>
+    <span><span class="st part">부분 확인</span> 출처를 일부만 읽음. <a class="t" href="#term-cond">조건부 증명(PROVEN-conditional)</a>도 이 색</span>
     <span><span class="st open">CONJECTURE</span> 추측</span>
     <span><span class="st dead">UNVERIFIED</span> 확인하지 못함</span></div>
 </header>
 
 <nav class="tabs" role="tablist" aria-label="페이지 구역">
+  <button type="button" role="tab" id="tb-viz" aria-controls="tab-viz" data-tab="viz">0. 그림으로 이해하기</button>
   <button type="button" role="tab" id="tb-now" aria-controls="tab-now" data-tab="now">1. 현재 버전 · 학습 지도</button>
   <button type="button" role="tab" id="tb-background" aria-controls="tab-background" data-tab="background">2. 배경과 역사</button>
   <button type="button" role="tab" id="tb-papers" aria-controls="tab-papers" data-tab="papers">3. 핵심 논문 계보</button>
   <button type="button" role="tab" id="tb-terms" aria-controls="tab-terms" data-tab="terms">4. 용어 부록</button>
 </nav>
 
-<div class="tabpanel" id="tab-now" role="tabpanel" aria-labelledby="tb-now">
+<div class="tabpanel" id="tab-viz" role="tabpanel" aria-labelledby="tb-viz">
+
+<div class="subtabs" role="tablist" aria-label="탭 0 단계">
+  <button type="button" role="tab" id="st-s0-1" aria-controls="s0-1">Step 1 큰 그림 흐름도</button>
+  <button type="button" role="tab" id="st-s0-2" aria-controls="s0-2">Step 2 타일이 붙는 규칙</button>
+  <button type="button" role="tab" id="st-s0-3" aria-controls="s0-3">Step 3 왜 1종류로는 안 되나</button>
+  <button type="button" role="tab" id="st-s0-4" aria-controls="s0-4">Step 4 빗(comb) 구성</button>
+  <button type="button" role="tab" id="st-s0-5" aria-controls="s0-5">Step 5 하한 √n / 2 의 직관</button>
+  <button type="button" role="tab" id="st-s0-6" aria-controls="s0-6">Step 6 τ = 2 카운터 한 사이클</button>
+  <button type="button" role="tab" id="st-s0-7" aria-controls="s0-7">Step 7 타일 수 비교 막대</button>
+  <button type="button" role="tab" id="st-s0-8" aria-controls="s0-8">Step 8 우리 작업 흐름도</button>
+</div>
+
+<section class="stepbox" id="s0-1" role="tabpanel" aria-labelledby="st-s0-1">
+  <span class="stepno">Step 1 of 8</span>
+  <h2>큰 그림: 어느 경우에 무엇을 아는가</h2>
+  <p class="why"><b>결론.</b> 열린 곳은 둘입니다. 하나는 <a class="t" href="#term-tau">온도(temperature) τ</a> = 2이고 <a class="t" href="#term-seed">시드(seed)</a>가 안쪽 칸인 경우입니다. 이 경우가 해커톤 질문입니다. 다른 하나는 τ = 1의 정확한 값입니다. 글루 불일치가 없다는 가정을 빼면 모릅니다. τ = 2 모서리 시드는 출제자가 식이 있다고 합니다. 우리는 그 식을 찾지 못했습니다.</p>
+  <div class="legendrow"><span class="st ok">PROVEN</span> 증명됨 <span class="st part">조건부 증명(PROVEN-conditional), 부분 확인</span> <span class="st q">DERIVED-BY-HAND</span> 손 유도 <span class="st open">CONJECTURE</span> 추측 <span class="st dead">UNVERIFIED</span> 미확인</div>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 360" role="img" aria-label="입력에서 세 갈래로 나뉘는 흐름도">
+      <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#777"/></marker></defs>
+      <rect class="bx" x="14" y="145" width="130" height="70"/>
+      <text class="b" x="79" y="172" text-anchor="middle">입력</text>
+      <text x="79" y="192" text-anchor="middle">2×n 직사각형</text>
+      <rect class="bx" x="184" y="145" width="150" height="70"/>
+      <text class="b" x="259" y="168" text-anchor="middle">모델 정하기</text>
+      <text class="s" x="259" y="186" text-anchor="middle">온도 τ = 1 또는 2</text>
+      <text class="s" x="259" y="202" text-anchor="middle">결정적 조립(directed)</text>
+      <path class="ar" marker-end="url(#a1)" d="M144 180H182"/>
+      <!-- 가지 -->
+      <path class="ar" marker-end="url(#a1)" d="M334 180H360V55H392"/>
+      <path class="ar" marker-end="url(#a1)" d="M334 180H392"/>
+      <path class="ar" marker-end="url(#a1)" d="M334 180H360V305H392"/>
+      <rect class="bx" x="394" y="25" width="170" height="60"/>
+      <text class="b" x="479" y="50" text-anchor="middle">τ = 1</text>
+      <text class="s" x="479" y="68" text-anchor="middle">시드 위치 무관</text>
+      <rect class="bx" x="394" y="150" width="170" height="60"/>
+      <text class="b" x="479" y="175" text-anchor="middle">τ = 2, 시드 모서리</text>
+      <text class="s" x="479" y="193" text-anchor="middle">시드가 구석 칸</text>
+      <rect class="bx" x="394" y="275" width="170" height="60"/>
+      <text class="b" x="479" y="300" text-anchor="middle">τ = 2, 시드 안쪽</text>
+      <text class="s" x="479" y="318" text-anchor="middle">시드가 가운데 칸</text>
+      <path class="ar" marker-end="url(#a1)" d="M564 55H596"/>
+      <path class="ar" marker-end="url(#a1)" d="M564 180H596"/>
+      <path class="ar" marker-end="url(#a1)" d="M564 305H596"/>
+      <rect class="bx" x="598" y="15" width="350" height="80"/>
+      <rect class="hi" x="594" y="11" width="358" height="88"/>
+      <text class="b" x="613" y="37">Ω(√n) ≤ t ≤ n + 1</text>
+      <text class="s" x="613" y="56">불일치 없음 가정이면 정확히 n + 1</text>
+      <text class="s" x="613" y="73">열림 (OPEN): 가정 없는 정확한 값</text>
+      <rect class="bx" x="598" y="140" width="350" height="80"/>
+      <text class="b" x="613" y="162">√n / 2 ≤ t ≤ 4⌈√n⌉ + 2</text>
+      <text class="s" x="613" y="181">출제자: 식이 있다고 함. 우리는 못 찾음</text>
+      <text class="s" x="613" y="198">Θ(√n)까지만 앎</text>
+      <rect class="hi" x="594" y="262" width="358" height="86"/>
+      <text class="b" x="613" y="292">열림 (OPEN): 해커톤 질문</text>
+      <text class="s" x="613" y="311">하한 √n / 2 는 시드 위치와 무관하게 성립</text>
+      <text class="s" x="613" y="328">상한과 정확한 값은 모름</text>
+    </svg>
+    <figcaption><b class="n">그림 1.</b> 입력에서 시드 위치로 갈라지는 세 갈래와 갈래마다 아는 답입니다(노랑 점선 상자 둘이 열린 경우). 왜: 어디까지 알려졌고 어디서부터 우리가 풀어야 하는지 한눈에 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3–§4</figcaption>
+  </figure>
+  <div class="vzbar"><span class="st ok">PROVEN</span><span class="note">하한과 상한 (S-MTS-2)</span><span class="st q">DERIVED-BY-HAND</span><span class="note">n + 1 상한 (빗)</span><span class="st part">조건부 증명(PROVEN-conditional), 부분 확인</span><span class="note">τ = 1, 불일치 없음 가정 아래 정확히 n + 1 (S-MTS-6, 정의 확인 필요)</span></div>
+</section>
+
+<section class="stepbox" id="s0-2" role="tabpanel" aria-labelledby="st-s0-2" hidden>
+  <span class="stepno">Step 2 of 8</span>
+  <h2>타일이 붙는 규칙: 글루 강도의 합이 온도 이상이면 붙는다</h2>
+  <p class="why"><b>결론.</b> τ = 1은 글루 하나면 됩니다. τ = 2는 강도 2 글루 하나, 또는 강도 1 글루 둘이 함께 있어야 합니다.</p>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--series-l1)"></span>글루 강도 1</span><span><span class="sw2" style="background:var(--series-l2)"></span>글루 강도 2</span><span><span class="sw2" style="background:var(--muted)"></span>이미 놓인 타일</span><span><span class="sw2" style="border-style:dashed"></span>붙을지 보는 칸</span><span class="st ok">PROVEN</span></div>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 300" role="img" aria-label="온도에 따라 타일이 붙는 네 경우">
+      <rect x="0" y="0" width="240" height="30" fill="var(--primary)"/>
+      <text x="120" y="20" text-anchor="middle" style="fill:var(--primary-foreground);font-weight:700">τ = 1</text>
+      <rect x="240" y="0" width="720" height="30" fill="var(--primary)"/>
+      <text x="600" y="20" text-anchor="middle" style="fill:var(--primary-foreground);font-weight:700">τ = 2</text>
+      <path d="M240 30V300M480 30V300M720 30V300" stroke="var(--rule)"/>
+      <!-- a: tau1, one glue 1 -->
+      <rect class="tl" x="50" y="90" width="56" height="56"/>
+      <rect class="tn" x="106" y="90" width="56" height="56"/>
+      <rect class="g1" x="101" y="106" width="10" height="24"/>
+      <text class="s" x="106" y="84" text-anchor="middle">1</text>
+      <text x="120" y="200" text-anchor="middle">글루 1개, 강도 1</text>
+      <text class="s" x="120" y="220" text-anchor="middle">합 1 ≥ τ 1</text>
+      <text class="b" x="120" y="248" text-anchor="middle">붙음 ✓</text>
+      <!-- b: tau2, one glue 2 -->
+      <rect class="tl" x="290" y="90" width="56" height="56"/>
+      <rect class="tn" x="346" y="90" width="56" height="56"/>
+      <rect class="g2" x="339" y="106" width="14" height="24"/>
+      <text class="s" x="346" y="84" text-anchor="middle">2</text>
+      <text x="360" y="200" text-anchor="middle">글루 1개, 강도 2</text>
+      <text class="s" x="360" y="220" text-anchor="middle">합 2 ≥ τ 2</text>
+      <text class="b" x="360" y="248" text-anchor="middle">붙음 ✓</text>
+      <!-- c: tau2, two glues 1+1 (cooperative) -->
+      <rect class="tl" x="530" y="90" width="56" height="56"/>
+      <rect class="tn" x="586" y="90" width="56" height="56"/>
+      <rect class="tl" x="586" y="146" width="56" height="56"/>
+      <rect class="g1" x="602" y="141" width="24" height="10"/><text class="s" x="652" y="150">1</text>
+      <rect class="g1" x="581" y="106" width="10" height="24"/>
+      <text class="s" x="586" y="84" text-anchor="middle">1</text>
+      <text x="600" y="224" text-anchor="middle">글루 2개, 강도 1 + 1</text>
+      <text class="s" x="600" y="244" text-anchor="middle">합 2 ≥ τ 2, 협력 결합</text>
+      <text class="b" x="600" y="270" text-anchor="middle">붙음 ✓</text>
+      <!-- d: tau2, one glue 1 -->
+      <rect class="tl" x="770" y="90" width="56" height="56"/>
+      <rect class="tn" x="826" y="90" width="56" height="56"/>
+      <rect class="g1" x="821" y="106" width="10" height="24"/>
+      <text class="s" x="826" y="84" text-anchor="middle">1</text>
+      <text x="840" y="200" text-anchor="middle">글루 1개, 강도 1</text>
+      <text class="s" x="840" y="220" text-anchor="middle">합 1 &lt; τ 2</text>
+      <text class="bad" x="840" y="248" text-anchor="middle">안 붙음 ✗</text>
+    </svg>
+    <figcaption><b class="n">그림 2.</b> 같은 글루 하나가 τ = 1에서는 붙고 τ = 2에서는 안 붙습니다. 왜: <a class="t" href="#term-cooperation">협력 결합(cooperative binding)</a>이 있어야 τ = 2에서 카운터(counter) 같은 정교한 설계가 가능해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §1</figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s0-3" role="tabpanel" aria-labelledby="st-s0-3" hidden>
+  <span class="stepno">Step 3 of 8</span>
+  <h2>왜 1종류로는 안 되나: 2×1도 2종류가 필요하다</h2>
+  <p class="why"><b>결론.</b> 타일 종류 t 하나로는 2×1조차 못 만듭니다. 시드가 위 칸도 채우면 같은 글루가 계속 맞아 열이 끝없이 자랍니다.</p>
+  <div class="vzbar"><span class="st q">DERIVED-BY-HAND</span><span class="note">노트 F1. 사람이 손으로 낸 논증이고 실행으로 확인하지 않았습니다.</span></div>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--muted-foreground)"></span>글루 a (강도는 온도 τ 이상)</span><span><span class="sw2" style="background:var(--muted)"></span>놓인 타일</span><span><span class="sw2" style="background:var(--signal-flag-fill)"></span>새로 붙는 타일</span></div>
+  <figure class="box fig vzstep" data-n="6">
+    <svg class="vz neutral" viewBox="0 0 960 330" role="img" aria-label="타일 한 종류가 위로 끝없이 쌓이는 그림과 두 종류로 고친 그림">
+      <text class="b" x="30" y="24">타일 1종류 t</text>
+      <text class="b" x="560" y="24">타일 2종류 A, B</text>
+      <path d="M520 40V320" stroke="var(--rule)"/>
+      <g data-from="3"><rect class="tl" x="118" y="114" width="44" height="44"/><text class="b" x="140" y="141" text-anchor="middle">t</text><rect class="g1" x="130" y="153" width="20" height="10"/><text class="s" x="170" y="160">a</text></g>
+      <g data-from="2"><rect class="tl" x="118" y="158" width="44" height="44"/><text class="b" x="140" y="185" text-anchor="middle">t</text><rect class="g1" x="130" y="197" width="20" height="10"/><text class="s" x="170" y="204">a</text></g>
+      <g data-from="1"><rect class="tl" x="118" y="202" width="44" height="44"/><text class="b" x="140" y="229" text-anchor="middle">t</text><rect class="g1" x="130" y="241" width="20" height="10"/><text class="s" x="170" y="248">a</text></g>
+      <g data-from="0"><rect class="tl" x="118" y="246" width="44" height="44"/><text class="b" x="140" y="273" text-anchor="middle">t</text><text class="s" x="200" y="273">시드</text></g>
+      <g data-from="4"><text class="b" x="140" y="96" text-anchor="middle">⋮</text><text class="bad" x="140" y="66" text-anchor="middle">∞</text><path class="ar" marker-end="url(#a3)" d="M230 200V70"/></g>
+      <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#777"/></marker></defs>
+      <g data-from="5"><rect class="tnew" x="650" y="202" width="44" height="44"/><text class="b" x="672" y="229" text-anchor="middle">B</text><rect class="tl" x="650" y="246" width="44" height="44"/><text class="b" x="672" y="273" text-anchor="middle">A</text><rect class="g1" x="662" y="241" width="20" height="10"/><text class="s" x="702" y="248">a</text><text class="s" x="702" y="273">시드</text><text class="b" x="650" y="180">2×1 완성 ✓</text><text class="s" x="760" y="229">B 위쪽은 널(null)이라 멈춤</text></g>
+    </svg>
+    <div class="vzbar"><button type="button" class="prev">이전</button><button type="button" class="next">다음</button><button type="button" class="rst">처음으로</button><span>쓴 타일 종류 수: <span class="cnt">1</span></span></div>
+    <ol class="vzm" hidden>
+      <li data-c="1">시드 t를 놓습니다. t의 북 글루와 남 글루가 둘 다 a입니다.</li>
+      <li data-c="1">위 칸에 t가 또 붙습니다. t의 남 a가 아래 타일의 북 a와 맞기 때문입니다.</li>
+      <li data-c="1">같은 이유로 세 번째도 붙습니다.</li>
+      <li data-c="1">네 번째도 붙습니다.</li>
+      <li data-c="1">멈출 이유가 없어 열이 끝없이 자랍니다. 2×1이 아닙니다.</li>
+      <li data-c="2">고치기: A는 북 글루만, B는 남 글루만 a를 가집니다. B 위에는 맞는 글루가 없어 멈춥니다.</li>
+    </ol>
+    <p class="vzmsg" aria-live="polite"></p>
+    <figcaption><b class="n">그림 3.</b> 왼쪽은 1종류로 열이 끝없이 자라는 과정이고 오른쪽은 2종류로 고친 2×1입니다. 왜: 북 글루와 남 글루가 같은 타일은 스스로 붙으니 위아래를 다른 종류로 나눕니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F1</figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s0-4" role="tabpanel" aria-labelledby="st-s0-4" hidden>
+  <span class="stepno">Step 4 of 8</span>
+  <h2>빗(comb) 구성: n + 1 종류면 항상 만든다</h2>
+  <p class="why"><b>결론.</b> <a class="t" href="#term-comb">빗(comb)</a>은 아래 행은 칸마다 다른 종류 n개, 위 행은 한 종류 T입니다. 합쳐서 n + 1종류이고 n = 5면 6종류입니다.</p>
+  <div class="vzbar"><span class="st q">DERIVED-BY-HAND</span><span class="note">노트 F3. 손으로 유도했고 시뮬레이션하지 않았습니다.</span></div>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--muted-foreground)"></span>글루 (이름은 글자: e 가로 체인, u 세로)</span><span><span class="sw2" style="background:var(--muted)"></span>타일</span><span>모든 글루 강도 = τ</span></div>
+  <figure class="box fig vzstep" data-n="10">
+    <svg class="vz neutral" viewBox="0 0 960 330" role="img" aria-label="n = 5 빗 구성을 한 타일씩 붙이는 그림">
+      <g data-from="0"><rect class="tl" x="40" y="200" width="90" height="70"/><text class="b" x="85" y="240" text-anchor="middle">B1</text><rect class="g2" x="75" y="200" width="20" height="10"/><text class="s" x="100" y="222">u</text>
+      </g>
+      <g data-from="1"><rect class="tl" x="40" y="130" width="90" height="70"/><text class="b" x="85" y="170" text-anchor="middle">T</text></g>
+      <g data-from="2"><rect class="tl" x="130" y="200" width="90" height="70"/><text class="b" x="175" y="240" text-anchor="middle">B2</text><rect class="g2" x="165" y="200" width="20" height="10"/><text class="s" x="190" y="222">u</text>
+        <rect class="g1" x="125" y="225" width="10" height="20"/><text class="s" x="130" y="290" text-anchor="middle">e1</text>
+      </g>
+      <g data-from="3"><rect class="tl" x="130" y="130" width="90" height="70"/><text class="b" x="175" y="170" text-anchor="middle">T</text></g>
+      <g data-from="4"><rect class="tl" x="220" y="200" width="90" height="70"/><text class="b" x="265" y="240" text-anchor="middle">B3</text><rect class="g2" x="255" y="200" width="20" height="10"/><text class="s" x="280" y="222">u</text>
+        <rect class="g1" x="215" y="225" width="10" height="20"/><text class="s" x="220" y="290" text-anchor="middle">e2</text>
+      </g>
+      <g data-from="5"><rect class="tl" x="220" y="130" width="90" height="70"/><text class="b" x="265" y="170" text-anchor="middle">T</text></g>
+      <g data-from="6"><rect class="tl" x="310" y="200" width="90" height="70"/><text class="b" x="355" y="240" text-anchor="middle">B4</text><rect class="g2" x="345" y="200" width="20" height="10"/><text class="s" x="370" y="222">u</text>
+        <rect class="g1" x="305" y="225" width="10" height="20"/><text class="s" x="310" y="290" text-anchor="middle">e3</text>
+      </g>
+      <g data-from="7"><rect class="tl" x="310" y="130" width="90" height="70"/><text class="b" x="355" y="170" text-anchor="middle">T</text></g>
+      <g data-from="8"><rect class="tl" x="400" y="200" width="90" height="70"/><text class="b" x="445" y="240" text-anchor="middle">B5</text><rect class="g2" x="435" y="200" width="20" height="10"/><text class="s" x="460" y="222">u</text>
+        <rect class="g1" x="395" y="225" width="10" height="20"/><text class="s" x="400" y="290" text-anchor="middle">e4</text>
+      </g>
+      <g data-from="9"><rect class="tl" x="400" y="130" width="90" height="70"/><text class="b" x="445" y="170" text-anchor="middle">T</text></g>
+      <text class="s" x="40" y="315">시드는 아래 행 첫 타일 B1 (왼쪽 아래 모서리)</text>
+      <text class="s" x="40" y="110">T의 동쪽과 서쪽 글루는 널(null): 열 5 너머로 안 자랍니다</text>
+      <text class="b" x="560" y="30">타일 종류 (쓰면 ✓)</text>
+      <rect x="560" y="46" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="60">B1  북 u, 동 e1</text><g data-from="0"><text class="b" x="900" y="60">✓</text></g>
+      <rect x="560" y="76" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="90">T   남 u</text><g data-from="1"><text class="b" x="900" y="90">✓</text></g>
+      <rect x="560" y="106" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="120">B2  서 e1, 동 e2, 북 u</text><g data-from="2"><text class="b" x="900" y="120">✓</text></g>
+      <rect x="560" y="136" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="150">B3  서 e2, 동 e3, 북 u</text><g data-from="4"><text class="b" x="900" y="150">✓</text></g>
+      <rect x="560" y="166" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="180">B4  서 e3, 동 e4, 북 u</text><g data-from="6"><text class="b" x="900" y="180">✓</text></g>
+      <rect x="560" y="196" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="210">B5  서 e4, 북 u</text><g data-from="8"><text class="b" x="900" y="210">✓</text></g>
+    </svg>
+    <div class="vzbar"><button type="button" class="prev">이전</button><button type="button" class="next">다음</button><button type="button" class="rst">처음으로</button><span>사용한 타일 종류 수: <span class="cnt">1</span> / 6</span></div>
+    <ol class="vzm" hidden>
+      <li data-c="1">시드 B1을 놓습니다. 종류 1.</li>
+      <li data-c="2">B1의 북 u에 T가 붙습니다. T는 새 종류입니다.</li>
+      <li data-c="3">B1의 동 e1에 B2가 붙습니다. 새 종류입니다.</li>
+      <li data-c="3">B2의 북 u에 T가 붙습니다. T는 이미 쓴 종류라 수가 안 늘어납니다.</li>
+      <li data-c="4">B2의 동 e2에 B3이 붙습니다. 새 종류입니다.</li>
+      <li data-c="4">B3 위에 T. 종류 수 그대로입니다.</li>
+      <li data-c="5">B4가 붙습니다. 새 종류입니다.</li>
+      <li data-c="5">B4 위에 T. 종류 수 그대로입니다.</li>
+      <li data-c="6">B5가 붙습니다. 새 종류이고 B5의 동쪽은 널(null)입니다.</li>
+      <li data-c="6">B5 위에 T. 더 붙일 칸이 없습니다. 끝: 6 = n + 1종류.</li>
+    </ol>
+    <p class="vzmsg" aria-live="polite"></p>
+    <figcaption><b class="n">그림 4.</b> n = 5 빗을 한 타일씩 붙이며 종류 수를 세는 과정입니다. 왜: 아래 행은 칸마다 후보 타일이 하나뿐이라 결과가 결정적(directed)입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F3</figcaption>
+  </figure>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 134" role="img" aria-label="시드가 아래 행 어느 칸이어도 양쪽으로 자란다">
+      <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#777"/></marker></defs>
+      <text class="b" x="30" y="20">시드가 B3이어도 같은 타일 집합</text>
+      <rect class="tl" x="300" y="40" width="70" height="44"/><text class="b" x="335" y="67" text-anchor="middle">B1</text>
+      <rect class="tl" x="370" y="40" width="70" height="44"/><text class="b" x="405" y="67" text-anchor="middle">B2</text>
+      <rect class="tl" x="440" y="40" width="70" height="44" style="fill:var(--signal-flag-fill)"/><text class="b" x="475" y="67" text-anchor="middle">B3</text>
+      <rect class="tl" x="510" y="40" width="70" height="44"/><text class="b" x="545" y="67" text-anchor="middle">B4</text>
+      <rect class="tl" x="580" y="40" width="70" height="44"/><text class="b" x="615" y="67" text-anchor="middle">B5</text>
+      <path class="ar" marker-end="url(#a4)" d="M440 98H300"/>
+      <path class="ar" marker-end="url(#a4)" d="M510 98H650"/>
+      <text class="s" x="30" y="60">B3이 시드면 서쪽과 동쪽으로 자랍니다</text>
+      <text class="s" x="30" y="78">B 종류가 모두 달라 어느 칸에서 시작해도 됩니다</text>
+      <text class="b" x="30" y="122">시드가 위 행 칸이면 이 집합은 안 됩니다. 위아래를 뒤집은 빗(위 행 n종, 아래 행 1종)을 씁니다. 역시 n + 1종입니다.</text>
+    </svg>
+    <figcaption><b class="n">그림 5.</b> 같은 6종류가 시드를 아래 행 어디에 두어도 2×5를 만듭니다. 왜: 아래 행 타일마다 이웃과 맞는 글루가 하나씩이라 한쪽 방향 성장에 매이지 않아서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F3 (손 유도)</figcaption>
+  </figure>
+  <p class="note">위 행 시드에서 이 집합이 실패하는 까닭: 시드 T 아래 칸에 B₁ ... Bₙ이 모두 맞아 서로 겹칩니다. <a class="t" href="#term-mirrorcomb">뒤집은 빗(vertically flipped comb)</a>은 위 행에 체인 T₁ ... Tₙ을, 아래 행에 타일 B 하나를 둡니다. 그래서 n + 1은 시드 칸 어디에서나 성립합니다.</p>
+</section>
+
+<section class="stepbox" id="s0-5" role="tabpanel" aria-labelledby="st-s0-5" hidden>
+  <span class="stepno">Step 5 of 8</span>
+  <h2>하한 √n / 2 의 직관: 상태가 반복되면 길이를 늘릴 수 있다</h2>
+  <p class="why"><b>결론.</b> 타일 종류 t가 작으면 열의 <a class="t" href="#term-state">상태(state)</a>가 모자라 같은 열이 반복됩니다. 상태에는 <a class="t" href="#term-attachorder">붙는 순서(attachment order)</a>도 들어갑니다. 그러면 <a class="t" href="#term-pumping">펌핑(pumping)</a>으로 모양이 끝없이 길어져 모순입니다.</p>
+  <div class="vzbar"><span class="st ok">PROVEN</span><span class="note">[S-MTS-2] 정리(Theorem) 3.1: 상수 1/2, 시드 위치와 무관</span><span class="st q">DERIVED-BY-HAND</span><span class="note">아래 직관 풀이는 증명의 아이디어를 손으로 요약한 것. 직관만으로는 Θ(√n)까지 얻습니다.</span></div>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 200" role="img" aria-label="하한 논증의 흐름도">
+      <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#777"/></marker></defs>
+      <rect class="bx" x="20" y="15" width="270" height="70"/>
+      <text class="b" x="155" y="40" text-anchor="middle">1 세로로 자르기</text>
+      <text class="s" x="155" y="60" text-anchor="middle">세로 열 하나에 타일 2개</text>
+      <rect class="bx" x="345" y="15" width="270" height="70"/>
+      <text class="b" x="480" y="40" text-anchor="middle">2 상태 정하기</text>
+      <text class="s" x="480" y="60" text-anchor="middle">(위 타일, 아래 타일, 붙은 순서)</text>
+      <rect class="bx" x="670" y="15" width="270" height="70"/>
+      <text class="b" x="805" y="40" text-anchor="middle">3 상태 수 세기</text>
+      <text class="s" x="805" y="60" text-anchor="middle">상태 수 ≤ 2 · t²</text>
+      <path class="ar" marker-end="url(#a5)" d="M290 50H343"/>
+      <path class="ar" marker-end="url(#a5)" d="M615 50H668"/>
+      <path class="ar" marker-end="url(#a5)" d="M805 85V100H155V113"/>
+      <rect class="bx" x="20" y="115" width="270" height="70"/>
+      <text class="b" x="155" y="140" text-anchor="middle">4 n이 크면 상태 반복</text>
+      <text class="s" x="155" y="160" text-anchor="middle">같은 상태가 시드 한쪽에서 두 번</text>
+      <rect class="bx" x="345" y="115" width="270" height="70"/>
+      <text class="b" x="480" y="140" text-anchor="middle">5 사이 구간 복사</text>
+      <text class="s" x="480" y="160" text-anchor="middle">펌핑(pumping), 순서도 같을 때</text>
+      <rect class="hi" x="666" y="111" width="278" height="78"/>
+      <text class="b" x="805" y="140" text-anchor="middle">6 모양이 무한 → 모순</text>
+      <text class="s" x="805" y="160" text-anchor="middle">그래서 n ≲ 4 · t²</text>
+      <path class="ar" marker-end="url(#a5)" d="M290 150H343"/>
+      <path class="ar" marker-end="url(#a5)" d="M615 150H664"/>
+    </svg>
+    <figcaption><b class="n">그림 6.</b> 하한 논증의 여섯 단계입니다. 왜: 세로 자름 한 번에 지나는 정보가 타일 2개뿐이라서 종류가 적으면 열을 되풀이할 수밖에 없기 때문입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F4</figcaption>
+  </figure>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 244" role="img" aria-label="같은 열 두 개 사이를 복사하는 2×n 띠">
+      <text class="b" x="40" y="22">2×n 띠 (시드는 왼쪽 끝 열)</text>
+      <rect class="tl" x="40" y="40" width="50" height="50"/><text x="65" y="71" text-anchor="middle">a</text><rect class="tl" x="40" y="90" width="50" height="50"/><text x="65" y="121" text-anchor="middle">p</text>
+      <rect class="tl" x="90" y="40" width="50" height="50"/><text x="115" y="71" text-anchor="middle">b</text><rect class="tl" x="90" y="90" width="50" height="50"/><text x="115" y="121" text-anchor="middle">q</text>
+      <rect class="tl" x="140" y="40" width="50" height="50"/><text x="165" y="71" text-anchor="middle">c</text><rect class="tl" x="140" y="90" width="50" height="50"/><text x="165" y="121" text-anchor="middle">r</text>
+      <rect class="tl" x="190" y="40" width="50" height="50" style="fill:var(--signal-flag-fill)"/><text x="215" y="71" text-anchor="middle">E</text><rect class="tl" x="190" y="90" width="50" height="50" style="fill:var(--signal-flag-fill)"/><text x="215" y="121" text-anchor="middle">D</text>
+      <rect class="tl" x="240" y="40" width="50" height="50"/><text x="265" y="71" text-anchor="middle">d</text><rect class="tl" x="240" y="90" width="50" height="50"/><text x="265" y="121" text-anchor="middle">s</text>
+      <rect class="tl" x="290" y="40" width="50" height="50"/><text x="315" y="71" text-anchor="middle">e</text><rect class="tl" x="290" y="90" width="50" height="50"/><text x="315" y="121" text-anchor="middle">z</text>
+      <rect class="tl" x="340" y="40" width="50" height="50"/><text x="365" y="71" text-anchor="middle">f</text><rect class="tl" x="340" y="90" width="50" height="50"/><text x="365" y="121" text-anchor="middle">u</text>
+      <rect class="tl" x="390" y="40" width="50" height="50" style="fill:var(--signal-flag-fill)"/><text x="415" y="71" text-anchor="middle">E</text><rect class="tl" x="390" y="90" width="50" height="50" style="fill:var(--signal-flag-fill)"/><text x="415" y="121" text-anchor="middle">D</text>
+      <text class="b" x="65" y="160" text-anchor="middle">시드</text>
+      <g class="fade"><rect class="tl" x="440" y="40" width="50" height="50"/><text x="465" y="71" text-anchor="middle">d</text><rect class="tl" x="440" y="90" width="50" height="50"/><text x="465" y="121" text-anchor="middle">s</text></g>
+      <g class="fade"><rect class="tl" x="490" y="40" width="50" height="50"/><text x="515" y="71" text-anchor="middle">e</text><rect class="tl" x="490" y="90" width="50" height="50"/><text x="515" y="121" text-anchor="middle">z</text></g>
+      <g class="fade"><rect class="tl" x="540" y="40" width="50" height="50"/><text x="565" y="71" text-anchor="middle">f</text><rect class="tl" x="540" y="90" width="50" height="50"/><text x="565" y="121" text-anchor="middle">u</text></g>
+      <g class="fade"><rect class="tl" x="590" y="40" width="50" height="50"/><text x="615" y="71" text-anchor="middle">E</text><rect class="tl" x="590" y="90" width="50" height="50"/><text x="615" y="121" text-anchor="middle">D</text></g>
+      <rect class="tl" x="640" y="40" width="50" height="50"/><text x="665" y="71" text-anchor="middle">g</text><rect class="tl" x="640" y="90" width="50" height="50"/><text x="665" y="121" text-anchor="middle">v</text>
+      <rect class="tl" x="690" y="40" width="50" height="50"/><text x="715" y="71" text-anchor="middle">h</text><rect class="tl" x="690" y="90" width="50" height="50"/><text x="715" y="121" text-anchor="middle">w</text>
+      <rect class="tl" x="740" y="40" width="50" height="50"/><text x="765" y="71" text-anchor="middle">i</text><rect class="tl" x="740" y="90" width="50" height="50"/><text x="765" y="121" text-anchor="middle">x</text>
+      <rect class="tl" x="790" y="40" width="50" height="50"/><text x="815" y="71" text-anchor="middle">j</text><rect class="tl" x="790" y="90" width="50" height="50"/><text x="815" y="121" text-anchor="middle">y</text>
+      <text class="s" x="215" y="160" text-anchor="middle">같은 상태 E/D</text>
+      <text class="s" x="415" y="160" text-anchor="middle">같은 상태 E/D</text>
+      <path d="M215 150H415" stroke="var(--foreground)" stroke-width="1"/>
+      <text class="s" x="540" y="160" text-anchor="middle">복사한 구간 (희미)</text>
+      <text class="s" x="740" y="160" text-anchor="middle">원래 뒤쪽 열 (밀려남)</text>
+      <text class="s" x="40" y="200">E/D 사이 구간을 한 번 더 이어 붙여도 글루가 모두 맞습니다.</text>
+      <text class="s" x="40" y="220">붙는 순서도 같아서 같은 순서로 다시 붙일 수 있습니다 (증명: [S-MTS-2] 정리 3.1).</text>
+      <text class="s" x="40" y="238">타일 글자는 설명용이고, t는 타일 종류 수에만 씁니다.</text>
+    </svg>
+    <figcaption><b class="n">그림 7.</b> 노랑 두 열의 상태가 같아서 사이 구간(열 5–8)을 한 번 더 이어 붙일 수 있습니다. 왜: 순서까지 같으면 이어 붙인 조립물도 만들어져 길이가 n으로 정해지지 않습니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F4 (설명용 예시, 글자는 임의)</figcaption>
+  </figure>
+  <div class="box col">
+    <h3>계산: 한 줄에 한 단계</h3>
+    <div class="formula">n ≲ 4 · t²</div>
+    <div class="formula">t ≳ √n / 2</div>
+    <div class="formula">n = 100 이면 √100 / 2 = 5, 그래서 t ≥ 5</div>
+    <ul class="tdl">
+      <li>τ = 2에서는 글루가 맞는 것만으로 복사할 수 없습니다.</li>
+      <li>복사한 구간의 타일이 협력 결합으로 붙었다면 도운 이웃이 다른 복사본일 수 있습니다. 그 복사본은 나중에 놓입니다.</li>
+      <li>그래서 붙는 순서가 같아야 하고, 복사한 조립물이 실제로 만들어짐을 보여야 합니다. 이 단계가 어려운 부분입니다.</li>
+      <li>상수 1/2은 [S-MTS-2]의 정리(Theorem) 3.1에서 옵니다. 위 직관만으로는 Θ(√n)까지입니다.</li>
+      <li><a class="t" href="#term-wml">창 영화 보조정리(Window Movie Lemma)</a>로 엄밀하게 하면 상수가 나빠져 약 √n / 4입니다.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="stepbox" id="s0-6" role="tabpanel" aria-labelledby="st-s0-6" hidden>
+  <span class="stepno">Step 6 of 8</span>
+  <h2>τ = 2 카운터: 블록 하나가 자라는 한 사이클</h2>
+  <p class="why"><b>결론.</b> <a class="t" href="#term-block">블록(block)</a> 하나는 위 행에서 자릿수 d를 내려 세고 아래 행에서 위치를 셉니다. 마지막 블록의 d = 0에서 성장이 멈춥니다.</p>
+  <div class="vzbar"><span class="st q">DERIVED-BY-HAND</span><span class="st dead">설명용 예시(Illustrative example)</span><span class="note">노트 §4.3. 상태: 손으로 추적함(m = 3, D = 2와 m = 12, D = 4). 시뮬레이션은 안 함. 크기 m = 3, D = 2, 길이 n = 1 + 3 · 2 = 7, 타일 3 + 3 · 2 + 2 = 11종</span></div>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--series-l1)"></span>글루 강도 1</span><span><span class="sw2" style="background:var(--series-l2)"></span>글루 강도 2</span><span><span class="sw2" style="background:var(--signal-flag-fill)"></span>이번에 붙은 타일</span><span>시드는 오른쪽 아래 모서리, 성장은 서쪽(왼쪽)</span></div>
+  <p class="note">글루 이름: P₂의 동쪽 글루가 p₁이고 P₃의 동쪽 글루가 p₂입니다. 둘 다 강도 2입니다. 자릿수마다 <a class="t" href="#term-digitglue">자릿수 글루(digit glue)</a> δ₁, δ₀를 따로 씁니다. 이름 하나를 같이 쓰면 X₁과 X₀가 같은 칸에 함께 맞아 조립이 결정적이지 않기 때문입니다.</p>
+  <figure class="box fig vzstep" data-n="6">
+    <svg class="vz" viewBox="0 0 960 290" role="img" aria-label="τ = 2 카운터의 블록 사이클 여섯 단계">
+<g data-from="0">
+<rect class="tl" x="498" y="160" width="78" height="60"/><text class="b" x="537" y="195" text-anchor="middle">Z</text>
+<rect class="tl" x="498" y="100" width="78" height="60"/><text class="b" x="537" y="135" text-anchor="middle">Y</text>
+<rect class="g2" x="525" y="153" width="24" height="14"/><text class="s" x="553" y="155">z</text>
+</g>
+<g data-from="0">
+<rect class="tl" x="420" y="100" width="78" height="60"/><text class="b" x="459" y="135" text-anchor="middle">S₁</text>
+<rect class="g2" x="491" y="118" width="14" height="24"/><text class="s" x="486" y="134" text-anchor="end">r₁</text>
+</g>
+<g data-from="1">
+<rect class="tl" x="420" y="160" width="78" height="60"/><text class="b" x="459" y="195" text-anchor="middle">P₁</text>
+<rect class="g1" x="493" y="178" width="10" height="24"/><text class="s" x="486" y="194" text-anchor="end">q</text>
+<rect class="g1" x="447" y="155" width="24" height="10"/><text class="s" x="475" y="155">s</text>
+</g>
+<g data-from="2">
+<rect class="tl" x="342" y="160" width="78" height="60"/><text class="b" x="381" y="195" text-anchor="middle">P₂</text>
+<rect class="g2" x="413" y="178" width="14" height="24"/><text class="s" x="408" y="194" text-anchor="end">p₁</text>
+<rect class="tl" x="264" y="160" width="78" height="60"/><text class="b" x="303" y="195" text-anchor="middle">P₃</text>
+<rect class="g2" x="335" y="178" width="14" height="24"/><text class="s" x="330" y="194" text-anchor="end">p₂</text>
+</g>
+<g data-from="3">
+<rect class="tl" x="342" y="100" width="78" height="60"/><text class="b" x="381" y="135" text-anchor="middle">M₁</text>
+<rect class="g1" x="415" y="118" width="10" height="24"/><text class="s" x="408" y="134" text-anchor="end">δ₁</text>
+<rect class="g1" x="369" y="155" width="24" height="10"/><text class="s" x="397" y="155">g</text>
+</g>
+<g data-from="4">
+<rect class="tl" x="264" y="100" width="78" height="60"/><text class="b" x="303" y="135" text-anchor="middle">X₁</text>
+<rect class="g1" x="337" y="118" width="10" height="24"/><text class="s" x="330" y="134" text-anchor="end">δ₁</text>
+<rect class="g1" x="291" y="155" width="24" height="10"/><text class="s" x="319" y="155">b</text>
+<rect class="g2" x="257" y="118" width="14" height="24"/><text class="s" x="274" y="116">r₀</text>
+</g>
+<g data-from="5">
+<rect class="tl" x="186" y="100" width="78" height="60"/><text class="b" x="225" y="135" text-anchor="middle">S₀</text>
+<rect class="tl" x="186" y="160" width="78" height="60"/><text class="b" x="225" y="195" text-anchor="middle">P₁</text>
+<rect class="tl" x="108" y="100" width="78" height="60"/><text class="b" x="147" y="135" text-anchor="middle">M₀</text>
+<rect class="tl" x="108" y="160" width="78" height="60"/><text class="b" x="147" y="195" text-anchor="middle">P₂</text>
+<rect class="tl" x="30" y="100" width="78" height="60"/><text class="b" x="69" y="135" text-anchor="middle">X₀</text>
+<rect class="tl" x="30" y="160" width="78" height="60"/><text class="b" x="69" y="195" text-anchor="middle">P₃</text>
+<rect class="g2" x="257" y="118" width="14" height="24"/>
+<rect class="g1" x="259" y="178" width="10" height="24"/><text class="s" x="274" y="194">q</text>
+<rect class="g1" x="213" y="155" width="24" height="10"/><text class="s" x="241" y="155">s</text>
+<rect class="g1" x="181" y="118" width="10" height="24"/><text class="s" x="174" y="134" text-anchor="end">δ₀</text>
+<rect class="g2" x="179" y="178" width="14" height="24"/><text class="s" x="174" y="194" text-anchor="end">p₁</text>
+<rect class="g1" x="135" y="155" width="24" height="10"/><text class="s" x="163" y="155">g</text>
+<rect class="g1" x="103" y="118" width="10" height="24"/><text class="s" x="96" y="134" text-anchor="end">δ₀</text>
+<rect class="g2" x="101" y="178" width="14" height="24"/><text class="s" x="96" y="194" text-anchor="end">p₂</text>
+<rect class="g1" x="57" y="155" width="24" height="10"/><text class="s" x="85" y="155">b</text>
+<text class="s" x="69" y="256" text-anchor="middle">X₀ 서쪽 = 널(null)</text></g>
+<g data-only="0">
+<rect class="tnew" x="420" y="100" width="78" height="60" fill-opacity=".55"/>
+</g>
+<g data-only="1">
+<rect class="tnew" x="420" y="160" width="78" height="60" fill-opacity=".55"/>
+</g>
+<g data-only="2">
+<rect class="tnew" x="342" y="160" width="78" height="60" fill-opacity=".55"/>
+<rect class="tnew" x="264" y="160" width="78" height="60" fill-opacity=".55"/>
+</g>
+<g data-only="3">
+<rect class="tnew" x="342" y="100" width="78" height="60" fill-opacity=".55"/>
+</g>
+<g data-only="4">
+<rect class="tnew" x="264" y="100" width="78" height="60" fill-opacity=".55"/>
+</g>
+<g data-only="5">
+<rect class="tnew" x="186" y="100" width="78" height="60" fill-opacity=".55"/>
+<rect class="tnew" x="186" y="160" width="78" height="60" fill-opacity=".55"/>
+<rect class="tnew" x="108" y="100" width="78" height="60" fill-opacity=".55"/>
+<rect class="tnew" x="108" y="160" width="78" height="60" fill-opacity=".55"/>
+<rect class="tnew" x="30" y="100" width="78" height="60" fill-opacity=".55"/>
+<rect class="tnew" x="30" y="160" width="78" height="60" fill-opacity=".55"/>
+</g>
+<text class="b" x="30" y="30">m = 3, D = 2, n = 7</text>
+<text class="s" x="30" y="50">위 행: 자릿수 d (1 → 0), 아래 행: 블록 안 위치 P₁ → P₃</text>
+<g data-only="0"><text class="b" x="612" y="110">S₁ 붙음 근거</text><text x="612" y="134">r₁ 강도 2 하나</text><text x="612" y="154">2 ≥ τ 2 ✓</text></g>
+<g data-only="1"><text class="b" x="612" y="110">P₁ 붙음 근거</text><text x="612" y="134">q 강도 1 + s 강도 1</text><text x="612" y="154">합 2 ≥ τ 2, 협력 결합 ✓</text></g>
+<g data-only="2"><text class="b" x="612" y="110">P₂, P₃ 붙음 근거</text><text x="612" y="134">p₁, p₂ 강도 2 하나씩</text><text x="612" y="154">2 ≥ τ 2 ✓</text><rect class="hi" x="606" y="170" width="336" height="64"/><text class="b" x="612" y="192">손으로 추적함, 시뮬레이션 안 함</text><text class="s" x="612" y="210">추적한 경우: m = 3, D = 2와 m = 12, D = 4</text><text class="s" x="612" y="226">P₂, P₃ 동쪽 글루: p₁, p₂ (강도 2)</text></g>
+<g data-only="3"><text class="b" x="612" y="110">M₁ 붙음 근거</text><text x="612" y="134">δ₁ 강도 1 + g 강도 1</text><text x="612" y="154">합 2 ≥ τ 2 ✓</text></g>
+<g data-only="4"><text class="b" x="612" y="110">X₁ 붙음 근거</text><text x="612" y="134">δ₁ 강도 1 + b 강도 1</text><text x="612" y="154">합 2 ≥ τ 2 ✓</text><text x="612" y="178">서쪽으로 r₀ (강도 2) 내보냄</text></g>
+<g data-only="5"><text class="b" x="612" y="110">블록 2 (d = 0)</text><text x="612" y="134">같은 사이클을 한 번 더</text><text x="612" y="158">X₀의 서쪽 글루 = 널(null)</text><text x="612" y="178">S 타일이 붙을 곳이 없음</text><text x="612" y="198">P₁은 q 하나뿐: 1 &lt; 2</text><text class="b" x="612" y="222">성장 멈춤 ✓</text></g>
+    </svg>
+    <div class="vzbar"><button type="button" class="prev">이전</button><button type="button" class="next">다음</button><button type="button" class="rst">처음으로</button><span>사이클 단계: <span class="cnt">1 / 6</span></span></div>
+    <ol class="vzm" hidden>
+      <li data-c="1 / 6">1. 시작 타일 S₁이 Y의 서쪽에 붙습니다. 강도 2 글루 하나로 충분합니다.</li>
+      <li data-c="2 / 6">2. P₁이 S₁ 아래에 붙습니다. 글루 둘(q, s)이 1 + 1로 합쳐집니다. 협력 결합입니다.</li>
+      <li data-c="3 / 6">3. P₂와 P₃이 아래 행을 따라 서쪽으로 이어집니다. 강도 2 체인 글루입니다.</li>
+      <li data-c="4 / 6">4. M₁이 P₂ 위, 위 행을 채웁니다. δ₁과 g가 1 + 1입니다.</li>
+      <li data-c="5 / 6">5. X₁이 P₃ 위에 붙고 서쪽으로 r₀를 내보냅니다. 다음 블록의 시작 신호입니다.</li>
+      <li data-c="6 / 6">6. 블록 2도 같은 사이클입니다. X₀는 서쪽 글루가 널(null)이라 S가 붙지 못하고 성장이 멈춥니다.</li>
+    </ol>
+    <p class="vzmsg" aria-live="polite"></p>
+    <figcaption><b class="n">그림 8.</b> 작은 예(m = 3, D = 2)로 따라가는 블록 사이클 6단계입니다. 왜: 두 행이 수를 나눠 세서 종류가 m + 3D + 2개, 곧 √n 꼴입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.3</figcaption>
+  </figure>
+  <div class="box col">
+    <h3>이 크기에서는 빗이 더 작다</h3>
+    <ul class="tdl">
+      <li>카운터 11종 = P₁, P₂, P₃ (3) + S₀, S₁, M₀, M₁, X₀, X₁ (6) + Z, Y (2)</li>
+      <li>n = 7의 빗(comb)은 7 + 1 = 8종이라 더 작습니다.</li>
+      <li>카운터는 n이 클 때만 이깁니다. 노트의 예: n = 10,035에서 카운터 349종 대 빗 10,036종 (m = 173, D = 58).</li>
+      <li>노트의 한계: n = 1 + m · D인 길이만 다룹니다. 시뮬레이션(R2)은 클러스터에서 아직 돌리지 않았습니다.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="stepbox" id="s0-7" role="tabpanel" aria-labelledby="st-s0-7" hidden>
+  <span class="stepno">Step 7 of 8</span>
+  <h2>타일 수 비교: 큰 n에서 카운터가 크게 이긴다</h2>
+  <p class="why"><b>결론.</b> n = 49에서 카운터(26종)는 빗(50종)의 절반쯤입니다. n = 10,035에서는 349종 대 10,036종으로 약 29배 차이입니다. <a class="t" href="#term-bound">하한(lower bound)</a>은 어느 구성도 못 넘습니다.</p>
+  <div class="vzbar"><span class="st ok">PROVEN</span><span class="note">Aggarwal 상한과 하한 (S-MTS-2)</span><span class="st q">DERIVED-BY-HAND</span><span class="note">빗과 노트의 카운터. 카운터는 시뮬레이션 미검증입니다.</span></div>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--series-circle)"></span>빗(comb) n + 1</span><span><span class="sw2" style="background:var(--series-l3)"></span>노트의 카운터 m + 3D + 2</span><span><span class="sw2" style="background:var(--series-l2)"></span>Aggarwal 상한 4⌈√n⌉ + 2</span><span><span class="sw2" style="background:var(--series-l1)"></span>하한 √n / 2</span></div>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 370" role="img" aria-label="두 길이에서 타일 종류 수를 로그 눈금 막대로 비교">
+      <text class="b" x="30" y="24">n = 49</text>
+<text x="222" y="50" text-anchor="end">빗 n + 1</text><rect x="230" y="34" width="269" height="22" fill="var(--series-circle)"/><text class="b" x="507" y="50">50</text>
+<text x="222" y="80" text-anchor="end">노트의 카운터 (D = 4, m = 12)</text><rect x="230" y="64" width="224" height="22" fill="var(--series-l3)"/><text class="b" x="462" y="80">26</text>
+<text x="222" y="110" text-anchor="end">Aggarwal 상한</text><rect x="230" y="94" width="234" height="22" fill="var(--series-l2)"/><text class="b" x="472" y="110">30</text>
+<text x="222" y="140" text-anchor="end">하한 √n / 2</text><rect x="230" y="124" width="86" height="22" fill="var(--series-l1)"/><text class="b" x="324" y="140">3.5</text>
+<text class="b" x="30" y="184">n = 10,035</text>
+<text x="222" y="210" text-anchor="end">빗 n + 1</text><rect x="230" y="194" width="633" height="22" fill="var(--series-circle)"/><text class="b" x="871" y="210">10,036</text>
+<text x="222" y="240" text-anchor="end">노트의 카운터 (D = 58, m = 173)</text><rect x="230" y="224" width="402" height="22" fill="var(--series-l3)"/><text class="b" x="640" y="240">349</text>
+<text x="222" y="270" text-anchor="end">Aggarwal 상한</text><rect x="230" y="254" width="412" height="22" fill="var(--series-l2)"/><text class="b" x="650" y="270">406</text>
+<text x="222" y="300" text-anchor="end">하한 √n / 2</text><rect x="230" y="284" width="269" height="22" fill="var(--series-l1)"/><text class="b" x="507" y="300">50.1</text>
+<path class="axis" d="M230 318H940" stroke="var(--border)"/>
+<path d="M230 30V318" stroke="var(--rule)"/><text class="s" x="230" y="335" text-anchor="middle">1</text>
+<path d="M388 30V318" stroke="var(--rule)"/><text class="s" x="388" y="335" text-anchor="middle">10</text>
+<path d="M546 30V318" stroke="var(--rule)"/><text class="s" x="546" y="335" text-anchor="middle">100</text>
+<path d="M704 30V318" stroke="var(--rule)"/><text class="s" x="704" y="335" text-anchor="middle">1000</text>
+<path d="M862 30V318" stroke="var(--rule)"/><text class="s" x="862" y="335" text-anchor="middle">10000</text>
+      <text class="s" x="585" y="358" text-anchor="middle">타일 종류 수 t (로그 눈금: 눈금 하나가 10배)</text>
+    </svg>
+    <figcaption><b class="n">그림 9.</b> 두 길이에서 네 값을 같은 로그 눈금 막대로 비교합니다. 왜: 로그 눈금(<a class="t" href="#term-logscale">logarithmic scale</a>)에서는 빗이 n에, 카운터가 √n에 비례해 격차가 벌어집니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3, §4.3 (n = 49의 Aggarwal 상한과 하한은 식으로 계산)</figcaption>
+  </figure>
+  <p class="note">n = 49에서 카운터 26종은 Aggarwal 상한 30보다 작지만, 카운터가 시뮬레이션되지 않았으므로 확정이 아닙니다.</p>
+</section>
+
+<section class="stepbox" id="s0-8" role="tabpanel" aria-labelledby="st-s0-8" hidden>
+  <span class="stepno">Step 8 of 8</span>
+  <h2>우리 작업 흐름: 무엇이 끝났고 무엇이 기다리나</h2>
+  <p class="why"><b>결론.</b> 손 증명만 끝났습니다. 나머지는 출제자의 답과 클러스터 실행을 기다립니다.</p>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--muted);border-width:2px"></span>끝</span><span><span class="sw2" style="border-style:dashed"></span>대기</span><span class="st q">DERIVED-BY-HAND</span></div>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 300" role="img" aria-label="출제자 질문에서 2쪽 논문까지의 작업 흐름">
+      <defs><marker id="a8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#777"/></marker></defs>
+      <rect class="bx wait" x="14" y="110" width="160" height="80"/>
+      <text class="b" x="94" y="134" text-anchor="middle">출제자 질문</text>
+      <text class="s" x="94" y="152" text-anchor="middle">τ, directed 또는 strict</text>
+      <text class="s" x="94" y="168" text-anchor="middle">입력 형식</text>
+      <text class="s" x="94" y="184" text-anchor="middle">대기: 답 없음</text>
+      <rect class="bx done" x="214" y="104" width="160" height="92"/>
+      <text class="b" x="294" y="124" text-anchor="middle">손 증명</text>
+      <text class="s" x="294" y="142" text-anchor="middle">빗: 시드 칸마다 n + 1종</text>
+      <text class="s" x="294" y="157" text-anchor="middle">(위 행 시드는 뒤집은 빗)</text>
+      <text class="s" x="294" y="172" text-anchor="middle">1종류 불가 (F1)</text>
+      <text class="b" x="294" y="188" text-anchor="middle">끝 ✓</text>
+      <rect class="bx wait" x="414" y="30" width="200" height="80"/>
+      <text class="b" x="514" y="54" text-anchor="middle">R1 전수 탐색</text>
+      <text class="s" x="514" y="72" text-anchor="middle">n ≤ 8, 시드 위치마다</text>
+      <text class="s" x="514" y="88" text-anchor="middle">클러스터에서 실행</text>
+      <text class="s" x="514" y="104" text-anchor="middle">대기: 아직 안 돌림</text>
+      <rect class="bx wait" x="414" y="190" width="200" height="80"/>
+      <text class="b" x="514" y="214" text-anchor="middle">R2 카운터 시뮬레이션</text>
+      <text class="s" x="514" y="232" text-anchor="middle">몇 개의 (m, D)</text>
+      <text class="s" x="514" y="248" text-anchor="middle">클러스터에서 실행</text>
+      <text class="s" x="514" y="264" text-anchor="middle">대기: 아직 안 돌림</text>
+      <rect class="bx wait" x="654" y="110" width="130" height="80"/>
+      <text class="b" x="719" y="144" text-anchor="middle">결과 표</text>
+      <text class="s" x="719" y="164" text-anchor="middle">n, 시드, 최소 t</text>
+      <text class="s" x="719" y="180" text-anchor="middle">대기</text>
+      <rect class="bx wait" x="824" y="110" width="124" height="80"/>
+      <text class="b" x="886" y="144" text-anchor="middle">2쪽 논문</text>
+      <text class="s" x="886" y="170" text-anchor="middle">대기</text>
+      <path class="ar" marker-end="url(#a8)" d="M174 150H212"/>
+      <path class="ar" marker-end="url(#a8)" d="M374 150H394V70H412"/>
+      <path class="ar" marker-end="url(#a8)" d="M374 150H394V230H412"/>
+      <path class="ar" marker-end="url(#a8)" d="M614 70H634V150H652"/>
+      <path class="ar" marker-end="url(#a8)" d="M614 230H634V150H652"/>
+      <path class="ar" marker-end="url(#a8)" d="M784 150H822"/>
+    </svg>
+    <figcaption><b class="n">그림 10.</b> 질문에서 논문까지의 흐름과 단계별 상태입니다. 왜: 막힌 곳이 출제자의 답과 클러스터 실행 두 가지뿐임을 한눈에 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.4, §6, §7</figcaption>
+  </figure>
+</section>
+
+</div><!-- /tab-viz -->
+
+<div class="tabpanel" id="tab-now" role="tabpanel" aria-labelledby="tb-now" hidden>
 
 <div class="subtabs" role="tablist" aria-label="탭 1 단계">
   <button type="button" role="tab" id="st-s1-1" aria-controls="s1-1">Step 1 문제와 핵심 아이디어</button>
@@ -298,30 +817,31 @@ td ul,td ol{padding-left:16px;gap:3px}
           <tr><td><a class="t" href="#term-tile">타일 종류(tile type)</a></td><td>정사각형 하나. 북, 동, 남, 서 네 변마다 글루 라벨이 붙습니다. 같은 종류의 복사본은 무한히 쓸 수 있습니다.</td></tr>
           <tr><td><a class="t" href="#term-glue">글루(glue)</a>와 강도</td><td>마주 닿은 두 변은 라벨이 같고 강도가 0보다 클 때만 붙습니다.</td></tr>
           <tr><td><a class="t" href="#term-tau">온도(temperature) τ</a></td><td>붙는 문턱값입니다. 맞닿은 변들의 강도 합이 τ 이상이어야 타일이 붙습니다.</td></tr>
-          <tr><td><a class="t" href="#term-cooperation">협동 결합(cooperation)</a></td><td>τ = 2에서 강도 2 글루 하나, 또는 강도 1 글루 둘이 함께 붙는 경우입니다.</td></tr>
+          <tr><td><a class="t" href="#term-cooperation">협력 결합(cooperative binding)</a></td><td>τ = 2에서 강도 2 글루 하나, 또는 강도 1 글루 둘이 함께 붙는 경우입니다.</td></tr>
           <tr><td><a class="t" href="#term-seed">시드(seed)</a></td><td>정해진 자리에 놓인 처음 타일 하나입니다. 성장은 여기서 시작합니다.</td></tr>
-          <tr><td><a class="t" href="#term-directed">유일 조립(uniquely self-assemble, directed)</a></td><td>끝(terminal) 조립물이 단 하나이고 그 모양이 목표입니다. 어느 실행에서도 같은 자리에 같은 타일이 놓입니다.</td></tr>
+          <tr><td><a class="t" href="#term-directed">결정적 조립(directed self-assembly)</a></td><td>끝(terminal) <a class="t" href="#term-assembly">조립물(assembly)</a>이 단 하나이고 그 모양이 목표입니다. 어느 실행에서도 같은 자리에 같은 타일이 놓입니다.</td></tr>
         </tbody>
       </table>
       </div>
-      <p class="note">타일은 회전하지 않고 이동만 합니다. 이 규칙은 정의에서 읽은 추론이며 부분 확인입니다. 출제문의 "uniquely self-assemble"은 표준 뜻으로 읽어 유일 조립(directed)으로 봅니다(추론). Step 6에서 출제자에게 확인합니다.</p>
+      <p class="note">타일은 회전하지 않고 이동만 합니다. 이 규칙은 정의에서 읽은 추론이며 부분 확인입니다. 출제문의 "uniquely self-assemble"은 표준 뜻으로 읽어 결정적 조립(directed self-assembly)으로 봅니다(추론). Step 6에서 출제자에게 확인합니다.</p>
     </div>
     <figure class="box fig">
+      <div class="legendrow"><span><span class="sw2" style="background:var(--series-l1)"></span>글루 강도 1</span><span><span class="sw2" style="background:var(--series-l2)"></span>글루 강도 2</span><span><span class="sw2" style="background:var(--muted)"></span>놓인 타일</span><span><span class="sw2" style="border-style:dashed"></span>붙을지 보는 칸</span></div>
       <svg class="figA" viewBox="0 0 640 190" role="img" aria-label="타일이 붙는 세 경우" style="width:100%;height:auto">
         <text class="ax" x="8" y="16">온도 τ = 2 일 때 새 타일(점선 칸)이 붙는가</text>
         <!-- A: 강도 2 글루 하나 -->
         <rect x="20" y="50" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
         <rect x="80" y="50" width="50" height="50" fill="none" stroke="var(--foreground)" stroke-dasharray="5 3"/>
-        <line x1="70" y1="52" x2="70" y2="98" stroke="var(--series-l1)" stroke-width="5"/>
+        <line x1="70" y1="52" x2="70" y2="98" stroke="var(--series-l2)" stroke-width="5"/>
         <text class="ax" x="75" y="46">a (강도 2)</text>
         <text class="ax" x="20" y="130">글루 하나, 강도 2</text>
         <text class="ax" x="20" y="146">2 ≥ 2: 붙음</text>
-        <!-- B: 협동 -->
+        <!-- B: 협력 결합 -->
         <rect x="240" y="50" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
         <rect x="300" y="50" width="50" height="50" fill="none" stroke="var(--foreground)" stroke-dasharray="5 3"/>
         <rect x="300" y="110" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
-        <line x1="290" y1="52" x2="290" y2="98" stroke="var(--series-l2)" stroke-width="3"/>
-        <line x1="302" y1="100" x2="348" y2="100" stroke="var(--series-l2)" stroke-width="3"/>
+        <line x1="290" y1="52" x2="290" y2="98" stroke="var(--series-l1)" stroke-width="3"/>
+        <line x1="302" y1="100" x2="348" y2="100" stroke="var(--series-l1)" stroke-width="3"/>
         <text class="ax" x="240" y="44">1</text>
         <text class="ax" x="362" y="108">1</text>
         <text class="ax" x="226" y="176">강도 1 둘</text>
@@ -329,7 +849,7 @@ td ul,td ol{padding-left:16px;gap:3px}
         <!-- C: 강도 1 하나 -->
         <rect x="470" y="50" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
         <rect x="530" y="50" width="50" height="50" fill="none" stroke="var(--foreground)" stroke-dasharray="5 3"/>
-        <line x1="520" y1="52" x2="520" y2="98" stroke="var(--series-circle)" stroke-width="3"/>
+        <line x1="520" y1="52" x2="520" y2="98" stroke="var(--series-l1)" stroke-width="3"/>
         <text class="ax" x="500" y="44">b (강도 1)</text>
         <text class="ax" x="470" y="130">글루 하나, 강도 1</text>
         <text class="ax" x="470" y="146">1 &lt; 2: 안 붙음</text>
@@ -369,15 +889,16 @@ td ul,td ol{padding-left:16px;gap:3px}
       </div>
       <p id="asmMsg" aria-live="polite"></p>
       <p class="sm" id="asmStat"></p>
-      <figcaption style="font-size:12.5px;color:var(--muted-foreground)"><b class="n">그림 2.</b> 모서리 시드 B₁에서 시작해 한 번 누를 때마다 타일 하나가 붙는 2×n 빗(comb)입니다. 노랑 칸이 방금 붙은 타일이고 표시 없는 변은 강도 0인 널(null) 글루입니다. 왜: 아래 행의 B₁ ... B<sub>n</sub>은 모두 다른 종류이고 위 행은 T 하나로 채워져 합계 n + 1종이 됨을 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F3</figcaption>
+      <figcaption style="font-size:12.5px;color:var(--muted-foreground)"><b class="n">그림 2.</b> 모서리 시드인 아래 행 첫 타일 B₁에서 시작해 한 번 누를 때마다 타일 하나가 붙는 2×n 빗(comb)입니다. 노랑 칸이 방금 붙은 타일이고 표시 없는 변은 강도 0인 <a class="t" href="#term-null">널(null) 글루</a>입니다. 왜: 아래 행의 B₁ ... B<sub>n</sub>은 모두 다른 종류이고 위 행은 T 하나로 채워져 합계 n + 1종이 됨을 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F3</figcaption>
     </div>
     <div class="box col">
       <h3>이 타일 집합의 규칙</h3>
       <div class="tablewrap" id="asmTypes"></div>
       <ul class="tdl">
         <li>모든 글루 강도는 τ입니다. 그래서 글루 하나로 충분합니다.</li>
-        <li>아래 칸마다 올 수 있는 타일이 하나뿐이어서 조립이 유일(directed)합니다.</li>
-        <li>T의 동쪽과 서쪽은 널(null)이라 열 n 너머로 자라지 않습니다.</li>
+        <li>아래 칸마다 올 수 있는 타일이 하나뿐이어서 조립이 결정적(directed)입니다.</li>
+        <li>T의 동쪽과 서쪽은 <a class="t" href="#term-null">널(null)</a>이라 열 n 너머로 자라지 않습니다.</li>
+        <li>시드가 위 행 칸이면 이 집합은 안 됩니다. 뒤집은 빗을 씁니다(Step 4 탭 0).</li>
         <li>종류 수는 n + 1입니다. 노트의 F3 상한이고 Furcy 외 2019의 N + k − 1 빗과 같습니다(k = 2).</li>
         <li>n = 1이면 B₁과 T 두 종류입니다. 노트의 F1이 보이는 대로 1종류로는 안 됩니다. 시드 종류가 위 칸도 채우면 같은 글루가 반복해서 붙어 열이 끝없이 자라기 때문입니다.</li>
       </ul>
@@ -398,7 +919,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     <svg id="chart" viewBox="0 0 760 380" role="img" aria-label="n에 따른 하한과 상한" style="width:100%;height:auto;max-width:760px"></svg>
     <div class="ctrl"><label>n <input class="rng" type="range" id="chN" min="1" max="100" value="100" style="max-width:260px"></label></div>
     <dl class="kv" id="chRead"></dl>
-    <figcaption><b class="n">그림 3.</b> n = 1 ... 100에서 타일 종류 수 t의 하한과 두 상한입니다(세로축은 로그 눈금이고 값은 브라우저에서 식으로 계산했습니다). 왜: 하한과 상한의 간격이 상수배(약 8)로 유지되어 τ = 2에서 답이 Θ(√n)임을 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3</figcaption>
+    <figcaption><b class="n">그림 3.</b> n = 1 ... 100에서 타일 종류 수 t의 하한과 두 상한입니다(세로축은 로그 눈금이고 값은 브라우저에서 식으로 계산했습니다). 왜: 간격이 상수배(약 8, 추정)로 유지되어 τ = 2에서 답이 Θ(√n)임을 보입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3</figcaption>
   </div>
   <div class="tablewrap">
     <table>
@@ -406,7 +927,7 @@ td ul,td ol{padding-left:16px;gap:3px}
       <tbody id="chTab"></tbody>
     </table>
   </div>
-  <p class="note">표 1. 노트의 예시 n = 100 (5 ≤ t ≤ 42)과 n = 10,000 (50 ≤ t ≤ 402)을 같은 식으로 다시 계산했습니다. 상수 간격은 약 8이며 추론입니다. 설명: Aggarwal 외 Thm 3.1의 증명에서 k = 2를 넣으면 t ≥ (n / 4)<sup>1/2</sup>이고 Thm 3.2의 구성에서 m = ⌈√n⌉, 타일 종류 4m + 2입니다.</p>
+  <p class="note">표 1. 노트의 예시 n = 100 (5 ≤ t ≤ 42)과 n = 10,000 (50 ≤ t ≤ 402)을 같은 식으로 다시 계산했습니다. 상수 간격 약 8은 추정입니다. 하한은 Aggarwal 외 정리(Theorem) 3.1의 증명에 k = 2를 넣은 t ≥ (n / 4)<sup>1/2</sup>입니다. 상한은 정리(Theorem) 3.2의 구성에서 m = ⌈√n⌉, 타일 종류 4m + 2입니다.</p>
 </section>
 
 <section class="stepbox" id="s1-4" role="tabpanel" aria-labelledby="st-s1-4" hidden>
@@ -419,10 +940,10 @@ td ul,td ol{padding-left:16px;gap:3px}
     <thead><tr><th></th><th><a class="t" href="#term-corner">모서리 시드(corner seed)</a></th><th>안쪽 시드(interior seed)</th></tr></thead>
     <tbody>
       <tr><td><b>τ = 1</b></td>
-        <td><span class="st q">조건부 n + 1</span><br><span class="sm">글루 불일치가 없다는 가정 아래</span></td>
-        <td><span class="st q">조건부 n + 1</span><br><span class="sm">같은 가정 아래</span></td></tr>
+        <td><span class="st part">조건부 증명(PROVEN-conditional), 부분 확인</span><br><span class="sm">n + 1, 글루 불일치가 없다는 가정 아래</span><br><span class="st open">가정 없는 정확한 값 열림</span></td>
+        <td><span class="st part">조건부 증명(PROVEN-conditional), 부분 확인</span><br><span class="sm">n + 1, 같은 가정 아래</span><br><span class="st open">가정 없는 정확한 값 열림</span></td></tr>
       <tr><td><b>τ = 2</b></td>
-        <td><span class="st ok">Θ(√n)</span> <span class="st open">정확한 식 CONJECTURE</span></td>
+        <td><span class="st ok">Θ(√n)</span> <span class="st open">정확한 식 CONJECTURE</span><br><span class="sm">출제자는 식이 있다고 하나 우리는 못 찾음</span></td>
         <td><span class="st ok">하한 √n / 2</span> <span class="st open">상한과 정확한 값 열림</span></td></tr>
     </tbody>
   </table>
@@ -436,25 +957,25 @@ td ul,td ol{padding-left:16px;gap:3px}
     <thead><tr><th>칸</th><th>하한</th><th>상한</th><th>정확한 값</th><th>상태</th></tr></thead>
     <tbody>
       <tr><td>τ = 1, 모서리 시드</td>
-        <td><ul><li>√n / 2 (모든 τ, Aggarwal 외 Thm 3.1)</li><li>Ω(√n) (Furcy 외, S-MTS-5)</li><li>n + 1 (<a class="t" href="#term-mismatch">글루 불일치(glue mismatch)</a>가 없다는 가정 아래, S-MTS-6)</li></ul></td>
+        <td><ul><li>√n / 2 (모든 τ, Aggarwal 외 정리(Theorem) 3.1)</li><li>Ω(√n) (Furcy 외, S-MTS-5)</li><li>n + 1 (<a class="t" href="#term-mismatch">글루 불일치(glue mismatch)</a>가 없다는 가정 아래, S-MTS-6)</li></ul></td>
         <td><ul><li>n + 1 빗 (F3)</li><li>Furcy 외가 아는 가장 좋은 상한 N + k − 1과 같음</li></ul></td>
         <td>가정 아래 정확히 n + 1. 가정 없이는 열림. <a class="t" href="#term-manhattan">맨해튼 지름(Manhattan diameter)</a>의 정의가 같은지 원문 확인 필요</td>
-        <td><span class="st q">PROVEN-conditional</span><br><span class="sm">S-MTS-6은 검색 요약만 읽음</span></td></tr>
+        <td><span class="st part">조건부 증명(PROVEN-conditional), 부분 확인</span><br><span class="sm">S-MTS-6은 검색 요약만 읽음</span></td></tr>
       <tr><td>τ = 1, 안쪽 시드</td>
         <td>같음. 하한 √n / 2는 시드 위치와 무관</td>
-        <td>n + 1. 노트 §4.2는 "시드 위치와 무관"이라 적었고 F3 본문은 모서리 시드로 적었습니다. 두 문장이 어긋나므로 확인 필요</td>
-        <td>가정 아래 n + 1</td>
-        <td><span class="st q">PROVEN-conditional</span> <span class="st dead">UNVERIFIED (시드 위치 부분)</span></td></tr>
+        <td>n + 1. 모서리 시드와 아래 행 시드는 빗, 위 행 시드는 뒤집은 빗입니다. 시드 칸 어디에서나 성립합니다.</td>
+        <td>가정 아래 n + 1. 가정 없이는 열림</td>
+        <td><span class="st part">조건부 증명(PROVEN-conditional), 부분 확인</span><br><span class="sm">시드 위치는 손 유도로 확인</span></td></tr>
       <tr><td>τ = 2, 모서리 시드</td>
-        <td>√n / 2 (Aggarwal 외 Thm 3.1)</td>
-        <td><ul><li>4⌈√n⌉ + 2 (Aggarwal 외 Thm 3.2, 시드 열이 동쪽 끝)</li><li>m + 3D + 2, n = 1 + m·D (손 유도, 아래 상자)</li></ul></td>
-        <td>정확한 식은 어느 출처에서도 찾지 못했습니다. 출제문은 식이 있어 보인다고 말합니다.</td>
+        <td>√n / 2 (Aggarwal 외 정리(Theorem) 3.1)</td>
+        <td><ul><li>4⌈√n⌉ + 2 (Aggarwal 외 정리(Theorem) 3.2, 시드 열이 동쪽 끝)</li><li>m + 3D + 2, n = 1 + m·D (손 유도, 아래 상자)</li></ul></td>
+        <td>출제자는 식이 있다고 합니다. 우리는 어느 출처에서도 그 식을 찾지 못했습니다.</td>
         <td><span class="st ok">PROVEN (Θ(√n))</span> <span class="st q">DERIVED-BY-HAND</span> <span class="st open">CONJECTURE: 정확한 식은 c·√n + O(1), 1/2 ≤ c ≤ 2√3 ≈ 3.46</span></td></tr>
       <tr><td>τ = 2, 안쪽 시드</td>
-        <td>√n / 2. Thm 3.1의 증명은 시드가 어디에 있든 성립합니다.</td>
+        <td>√n / 2. 정리(Theorem) 3.1의 증명은 시드가 어디에 있든 성립합니다.</td>
         <td>이 노트에서 안쪽 시드용 구성을 찾지 못했습니다.</td>
-        <td>출제자: 열려 있음. 두 팔(arm)이 타일 종류를 공유할 수 있는지가 핵심입니다.</td>
-        <td><span class="st ok">PROVEN (하한)</span> <span class="st open">열림</span></td></tr>
+        <td>해커톤 질문이고 열려 있습니다. 두 팔(arm)이 타일 종류를 공유할 수 있는지가 핵심입니다.</td>
+        <td><span class="st ok">PROVEN (하한)</span> <span class="st open">열림: 해커톤 질문</span></td></tr>
     </tbody>
   </table>
   </div>
@@ -481,7 +1002,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     </div>
     <div class="box col">
       <h3>손으로 유도한 2행 카운터 <span class="st q">DERIVED-BY-HAND</span></h3>
-      <p class="note">시뮬레이션으로 확인하지 않았습니다(R2 필요). 시드는 오른쪽 아래 모서리이고 성장은 서쪽으로 갑니다. 길이는 n = 1 + m·D로 m ≥ 2에서만 맞습니다.</p>
+      <p class="note">손으로 추적했고 시뮬레이션은 하지 않았습니다(R2는 선택). 시드는 오른쪽 아래 모서리이고 성장은 서쪽으로 갑니다. 길이는 n = 1 + m·D로 m ≥ 2에서만 맞습니다.</p>
       <div class="tablewrap">
       <table>
         <thead><tr><th>타일 묶음</th><th>종류 수</th><th>하는 일</th></tr></thead>
@@ -500,6 +1021,8 @@ td ul,td ol{padding-left:16px;gap:3px}
         <li>D = 4, m = 12이면 n = 49에 26종입니다(빗은 50종).</li>
         <li>D = 58, m = 173이면 n = 10,035에 349종입니다.</li>
         <li>다른 길이는 첫 블록을 일부만 쓰는 방식이 필요하며 아직 풀지 않았습니다.</li>
+        <li>P₂의 동쪽 글루는 p₁, P₃의 동쪽 글루는 p₂이고 강도는 2입니다. <a class="t" href="#term-digitglue">자릿수 글루(digit glue)</a>는 숫자마다 이름이 달라 δ₁, δ₀입니다.</li>
+        <li>상태: 손으로 추적함(m = 3, D = 2와 m = 12, D = 4). 시뮬레이션은 안 함.</li>
       </ul>
     </div>
   </div>
@@ -513,7 +1036,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     <h3>핵심 갈림길</h3>
     <ul>
       <li>시드가 s열(1 &lt; s &lt; n)에 있으면 성장이 서쪽과 동쪽 두 팔(arm)로 갑니다. 길이는 s − 1과 n − s입니다.</li>
-      <li>하한 √n / 2는 그대로 성립합니다. Thm 3.1이 시드 위치와 무관하기 때문입니다.</li>
+      <li>하한 √n / 2는 그대로 성립합니다. 정리(Theorem) 3.1이 시드 위치와 무관하기 때문입니다.</li>
       <li>두 팔에 카운터를 따로 쓰면 c√a + c√b (a + b = n − 1)로 모서리 시드의 c√n보다 큽니다(추론).</li>
       <li>안쪽 시드가 이기려면 두 팔이 타일 종류를 공유해야 합니다. 타일은 회전하지 않아서 서쪽 성장용 글루와 동쪽 성장용 글루가 한 종류에 같이 맞아야 합니다.</li>
     </ul>
@@ -523,11 +1046,11 @@ td ul,td ol{padding-left:16px;gap:3px}
   <table>
     <thead><tr><th>순위</th><th>방향</th><th>뒷받침할 수 있는 주장</th><th>위험</th></tr></thead>
     <tbody>
-      <tr><td>1</td><td><b>희소성에 의한 비-어려움.</b> 모양을 칸 목록으로 주면 결정 문제 (2×n, k)의 크기가 Θ(n)입니다. 길이 L의 입력은 L에 대해 다항식 개뿐이라 언어가 <a class="t" href="#term-sparse">희소 집합(sparse set)</a>입니다. <a class="t" href="#term-mahaney">Mahaney 정리(Mahaney's theorem)</a>: 희소한 NP-완전 집합이 있으면 P = NP.</td><td>"2×n의 최소 타일 집합은 P ≠ NP이면 NP-완전이 아니다"(시드 규칙과 무관). 짧고 엄밀한 정리입니다.</td><td>낮음. 인코딩을 명시해야 합니다. n을 이진수로 주면 희소하지 않아 논증이 깨집니다.</td></tr>
-      <tr><td>2</td><td><b><a class="t" href="#term-subexp">부분지수 시간(subexponential time)</a> 알고리즘.</b> τ = 2로 고정하고 타일 종류가 4⌈√n⌉ + 2 이하인 시스템을 모두 나열합니다. 후보는 2<sup>O(√n log n)</sup>개이고 각각 다항 시간에 검사합니다(S-MTS-1).</td><td>"2<sup>O(√n log n)</sup> 시간에 풀린다". 1순위와 짝이 좋습니다.</td><td>낮음. τ를 고정하거나 강도 상한을 S-MTS-4로 인용해야 합니다.</td></tr>
-      <tr><td>3</td><td><b>모서리로 옮기기 보조정리(WLOG-corner lemma).</b> 교환 논증으로, 안쪽 시드의 최적 시스템이 타일 종류를 더 쓰지 않고 모서리 시드 시스템으로 바뀜을 보입니다.</td><td>열린 경우를 풀고 일반 답이 모서리 식과 같아집니다.</td><td>높음. 두 팔이 타일을 공유하면 거짓일 수 있습니다.</td></tr>
-      <tr><td>4</td><td><b>시드 위치 분해.</b> OPT = min<sub>s</sub> f(s − 1, n − s), f는 팔 두 개의 비용(공유 포함). f의 닫힌 식이 있으면 O(n) 시간 알고리즘입니다.</td><td>f에 조건을 단 다항 시간 알고리즘.</td><td>중간 이상.</td></tr>
-      <tr><td>5</td><td><b>상수 근사(constant-factor approximation).</b> 모서리 구성 약 3.46√n(손 유도)과 하한 √n / 2를 맞대어 어느 시드 위치에서나 O(1) 근사를 얻습니다.</td><td>"다항 시간 7-근사"(조이기 전, 약 3.46 / 0.5).</td><td>낮음. 단 손 유도 구성을 먼저 검증해야 합니다.</td></tr>
+      <tr><td>1</td><td><b>희소성에 의한 비-어려움.</b> 입력이 <a class="t" href="#term-unary">단항(unary) n</a> 또는 정렬된 칸 목록일 때 성립합니다. 길이 L의 입력은 L에 대해 다항식 개뿐이라 언어가 <a class="t" href="#term-sparse">희소 집합(sparse set)</a>입니다. <a class="t" href="#term-mahaney">Mahaney 정리(Mahaney's theorem)</a>: 희소한 NP-완전 집합이 있으면 P = NP. 정렬 안 된 칸 목록은 한 모양에 인코딩이 (2n)!개라 그대로는 희소하지 않습니다. <a class="t" href="#term-normred">정규화 환원(normalization reduction)</a>이 필요합니다. 어떤 인코딩이든 표준형 ⟨1<sup>n</sup>, s, k⟩로 바꾸고, 직사각형이 아니면 고정된 아니오 입력으로 보냅니다.</td><td>"2×n의 최소 타일 집합은 P ≠ NP이면 NP-완전이 아니다"(시드 규칙과 무관). 짧고 엄밀한 정리입니다.</td><td>낮음. 인코딩을 명시해야 합니다. n을 이진수로 주면 희소하지 않아 논증이 깨지고 NP 소속도 불분명합니다. NP 소속에는 τ 고정이나 강도 상한이 필요합니다.</td></tr>
+      <tr><td>2</td><td><b><a class="t" href="#term-subexp">부분지수 시간(subexponential time)</a> 알고리즘.</b> τ = 2로 고정하고 타일 종류가 4⌈√n⌉ + 2 이하인 시스템을 모두 나열합니다. 후보는 2<sup>O(√n log n)</sup>개이고 각각 다항 시간에 검사합니다(S-MTS-1).</td><td>"2<sup>O(√n log n)</sup> 시간에 풀린다". τ = 2 고정이고 입력이 단항 n 또는 칸 목록일 때만입니다. 1순위와 짝이 좋습니다.</td><td>낮음. 이진수 n이면 입력 길이가 log n이라 준지수가 아닙니다. τ = 1은 상한이 n + 1뿐이라 같은 나열이 2<sup>O(n log n)</sup>입니다. τ를 고정하거나 강도 상한을 S-MTS-4로 인용해야 합니다.</td></tr>
+      <tr><td>3</td><td><b>모서리로 옮기기 보조정리(without-loss-of-generality corner lemma).</b> 교환 논증으로, 안쪽 시드의 최적 시스템이 타일 종류를 더 쓰지 않고 모서리 시드 시스템으로 바뀜을 보입니다.</td><td>열린 경우를 풀고 일반 답이 모서리 식과 같아집니다.</td><td>높음. 두 팔이 타일을 공유하면 거짓일 수 있습니다.</td></tr>
+      <tr><td>4</td><td><b>시드 위치 분해.</b> 최적값(optimum, OPT) = min<sub>s</sub> f(s − 1, n − s), f는 팔 두 개의 비용(공유 포함). f의 닫힌 식이 있으면 O(n) 시간 알고리즘입니다.</td><td>f에 조건을 단 다항 시간 알고리즘.</td><td>중간 이상.</td></tr>
+      <tr><td>5</td><td><b>상수 근사(constant-factor approximation).</b> 시드가 자유(해의 일부)이면 모서리 구성 4⌈√n⌉ + 2(증명됨)와 하한 √n / 2를 맞댑니다. 비율은 약 8배입니다(작은 n은 약 11배 이하). 시드 칸이 입력으로 고정이면 팔 둘을 씁니다. 카운터 하나는 서쪽으로, 좌우 뒤집은 카운터 하나는 동쪽으로 자라며 시드 열을 나눠 쓰고 글루 이름은 서로 다릅니다. 비율은 약 8√2 ≈ 11.3배입니다.</td><td>"약 8-근사(시드 자유)": [S-MTS-2]만으로 정리입니다. "7-근사"는 §4.3 카운터를 쓰고 n = 1 + m·D일 때만 점근적으로 성립합니다. 고정 시드는 약 8√2배입니다.</td><td>낮음. 고정 시드는 [S-MTS-2]의 카운터가 팔 길이 1 ... m²를 다룬다는 논문 주장에 기댑니다(다시 확인하지 않음).</td></tr>
       <tr><td>6</td><td><b>작은 n의 정확한 표.</b> 클러스터에서 n ≤ 8의 모서리 최적과 안쪽 최적을 비교합니다(R1).</td><td>3순위에 대한 증거.</td><td>클러스터 실행과 소유자 승인이 필요합니다.</td></tr>
       <tr><td>7</td><td><b>NP-어려움 증명.</b> 단항 인코딩에서는 1순위가 막습니다.</td><td>권하지 않음.</td><td>매우 높음.</td></tr>
     </tbody>
@@ -539,7 +1062,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     <h3>현실적인 24시간 논문 (노트의 추론)</h3>
     <ol>
       <li>1순위와 2순위를 정리로 씁니다.</li>
-      <li>5순위는 손 유도 구성이 검증되면 정리로 씁니다.</li>
+      <li>5순위의 8배 형태는 [S-MTS-2]만으로 정리로 씁니다. 7배 형태는 손 유도 카운터가 검증되면 씁니다.</li>
       <li>3순위는 추측으로 쓰고 6순위 자료가 있으면 근거로 붙입니다.</li>
     </ol>
   </div>
@@ -553,13 +1076,13 @@ td ul,td ol{padding-left:16px;gap:3px}
     <div class="box col">
       <h3>먼저 익힐 기초</h3>
       <ol class="steps">
-        <li><a class="t" href="#term-tile">타일 종류(tile type)</a>, <a class="t" href="#term-glue">글루(glue)</a>, <a class="t" href="#term-tau">온도(temperature) τ</a>, <a class="t" href="#term-cooperation">협동 결합(cooperation)</a>의 규칙</li>
+        <li><a class="t" href="#term-tile">타일 종류(tile type)</a>, <a class="t" href="#term-glue">글루(glue)</a>, <a class="t" href="#term-tau">온도(temperature) τ</a>, <a class="t" href="#term-cooperation">협력 결합(cooperative binding)</a>의 규칙</li>
         <li><a class="t" href="#term-producible">생성 가능(producible)</a>과 <a class="t" href="#term-terminal">끝 조립물(terminal assembly)</a></li>
-        <li><a class="t" href="#term-directed">유일 조립(directed)</a>과 <a class="t" href="#term-strict">엄격 조립(strict)</a>의 차이</li>
+        <li><a class="t" href="#term-directed">결정적 조립(directed self-assembly)</a>과 <a class="t" href="#term-strict">엄격 조립(strict self-assembly)</a>의 차이</li>
         <li>2×1에 타일 한 종류로는 안 되는 이유(F1)를 손으로 쓰기</li>
         <li>빗(comb) 상한 n + 1을 직접 확인하기(F3)</li>
-        <li>하한 논증: 세로로 자르면 타일 2개만 지나가므로 상태가 최대 2t²개이고, 같은 상태가 반복되면 <a class="t" href="#term-pumping">펌핑(pumping)</a>이 가능합니다(DERIVED-BY-HAND)</li>
-        <li>Aggarwal 외의 <a class="t" href="#term-counter">카운터(counter)</a> 구성(Fig 3.1, Thm 3.2) 읽기</li>
+        <li>하한 논증: 열 하나에 타일 2개뿐이라 상태가 최대 2t²개입니다. 같은 상태가 붙는 순서까지 같게 반복되면 <a class="t" href="#term-pumping">펌핑(pumping)</a>이 가능합니다(DERIVED-BY-HAND)</li>
+        <li>Aggarwal 외의 <a class="t" href="#term-counter">카운터(counter)</a> 구성(그림(Figure) 3.1, 정리(Theorem) 3.2) 읽기</li>
         <li><a class="t" href="#term-bigo">O, Ω, Θ 표기(big-O, Omega, Theta notation)</a>와 <a class="t" href="#term-sparse">희소 집합(sparse set)</a></li>
       </ol>
     </div>
@@ -569,7 +1092,7 @@ td ul,td ol{padding-left:16px;gap:3px}
         <li>출제문과 <a class="t" href="#term-atam">추상 타일 조립 모델(abstract Tile Assembly Model, aTAM)</a> 정의를 한 쪽으로 요약하기</li>
         <li>Step 2 화면에서 n = 1 ... 8을 눌러 보고 같은 조립을 손으로 따라 하기</li>
         <li>F1과 F3을 각각 5줄로 증명하기</li>
-        <li>Aggarwal 외 Thm 3.1에서 k = 2를 대입해 √n / 2 얻기</li>
+        <li>Aggarwal 외 정리(Theorem) 3.1에서 k = 2를 대입해 √n / 2 얻기</li>
         <li>Step 4 지도에서 비어 있는 칸 고르기</li>
         <li>Step 5의 1순위와 2순위 증명 초안 쓰기. 인코딩 가정을 먼저 적기</li>
         <li>R1과 R2 결과가 없어도 논문 뼈대 완성하기</li>
@@ -578,9 +1101,9 @@ td ul,td ol{padding-left:16px;gap:3px}
     <div class="box col">
       <h3>함정</h3>
       <ul>
-        <li><b>정의 혼동.</b> 유일 조립(directed)과 엄격 조립(strict)은 다릅니다. Adleman 외는 앞의 것, Bryans 외는 뒤의 것을 다룹니다.</li>
+        <li><b>정의 혼동.</b> 결정적 조립(directed self-assembly)과 엄격 조립(strict self-assembly)은 다릅니다. Adleman 외는 앞의 것, Bryans 외는 뒤의 것을 다룹니다.</li>
         <li><b>온도.</b> τ = 1과 τ = 2는 답이 다릅니다. 고정된 τ인지 풀이자가 고르는 τ인지 확인하세요.</li>
-        <li><b>인코딩.</b> 1순위는 모양을 칸 목록으로 줄 때만 맞습니다. n을 이진수로 주면 깨집니다.</li>
+        <li><b>인코딩.</b> 1순위는 단항 n 또는 정렬된 칸 목록일 때만 맞습니다. n을 이진수로 주면 깨집니다.</li>
         <li><b>미확인 출처.</b> S-MTS-8, 9, 11, 12는 인용하기 전에 원문을 확인하세요.</li>
         <li><b>손 유도 카운터.</b> 시뮬레이션 전에는 정리로 쓰지 말고 후보로 쓰세요.</li>
         <li><b>τ = 1의 n + 1.</b> 글루 불일치가 없다는 가정 아래에서만 증명되었습니다.</li>
@@ -595,7 +1118,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     <thead><tr><th>실행</th><th>무엇을</th><th>얻는 것</th><th>어디서</th><th>상태</th></tr></thead>
     <tbody>
       <tr><td>R1</td><td>2×n, n = 2 ... 8, τ = 1과 τ = 2, 모든 시드 위치에서 최소 타일 집합 전수 탐색. 후보 검사는 S-MTS-1의 다항 시간 유일성 검사를 씁니다.</td><td>n, 시드 위치, 최소 타일 종류 수, 증거 타일 집합 하나의 표</td><td><b>클러스터에서 실행</b></td><td><span class="st open">미실행</span></td></tr>
-      <tr><td>R2</td><td>손 유도 카운터를 몇 개의 (m, D)로 aTAM 시뮬레이션 한 번씩.</td><td>유일 조립인지와 끝 모양 확인</td><td><b>클러스터에서 실행</b></td><td><span class="st open">미실행</span></td></tr>
+      <tr><td>R2</td><td>손 유도 카운터를 몇 개의 (m, D)로 추상 타일 조립 모델(abstract Tile Assembly Model, aTAM) 시뮬레이션 한 번씩.</td><td>결정적 조립인지와 끝 모양 확인</td><td><b>클러스터에서 실행</b></td><td><span class="st open">미실행</span></td></tr>
     </tbody>
   </table>
   </div>
@@ -608,7 +1131,7 @@ td ul,td ol{padding-left:16px;gap:3px}
       <h3>Dr. Schwaller에게 먼저 물어볼 것</h3>
       <ol>
         <li>온도는 τ = 2로 고정인가요, τ = 1인가요, 풀이자가 고르나요?</li>
-        <li>유일 조립(directed)인가요, 엄격 조립(strict)인가요?</li>
+        <li>결정적 조립(directed self-assembly)인가요, 엄격 조립(strict self-assembly)인가요?</li>
         <li>모양은 칸 목록(단항 n)으로 주나요, n을 이진수로 주나요?</li>
         <li>타일 회전은 허용하지 않는 것이 맞나요?</li>
         <li>모서리 시드의 "식"은 어떤 꼴을 생각하셨나요?</li>
@@ -617,11 +1140,11 @@ td ul,td ol{padding-left:16px;gap:3px}
     <div class="box col">
       <h3>2쪽 논문 구성 계획 (노트의 추론에서)</h3>
       <ol>
-        <li>모델 선택 명시: τ, 유일 조립, 인코딩</li>
+        <li>모델 선택 명시: τ, 결정적 조립, 인코딩</li>
         <li>알려진 경계 표: √n / 2, 4⌈√n⌉ + 2, n + 1</li>
-        <li>정리: 희소성으로 NP-완전이 아님 (1순위)</li>
-        <li>정리: 2<sup>O(√n log n)</sup> 알고리즘 (2순위)</li>
-        <li>검증되면: 상수 근사 (5순위)</li>
+        <li>정리: 희소성으로 NP-완전이 아님 (1순위, 단항 또는 목록 입력, 정규화 환원 포함)</li>
+        <li>정리: 2<sup>O(√n log n)</sup> 알고리즘 (2순위, τ = 2 고정, 단항 또는 목록 입력)</li>
+        <li>정리: 약 8배 근사 (5순위). 7배 형태는 카운터가 검증되면</li>
         <li>추측: 모서리로 옮기기 (3순위), 있으면 작은 n 자료 (6순위)</li>
       </ol>
     </div>
@@ -670,7 +1193,7 @@ td ul,td ol{padding-left:16px;gap:3px}
   </div>
   <figcaption><b class="n">표 6.</b> 정사각형과 2×n의 비교입니다. 왜: 정사각형의 다항 시간 알고리즘이 "후보가 다항식 개"라는 이유로 성립하는데 2×n에서는 그 이유가 깨짐을 보이기 위해서입니다. 출처: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2</figcaption>
   </figure>
-  <p class="note">정사각형 알고리즘은 타일 종류가 O(log n / log log n) 이하인 τ = 2 시스템을 모두 시험하는 전수 탐색입니다. 입력 크기는 칸 목록이라 약 n²입니다.</p>
+  <p class="note">정사각형 알고리즘은 전수 탐색입니다. 타일 종류가 O(log n / log log n) 이하인 τ = 2 시스템을 모두 시험합니다. 입력은 칸 목록이라 크기가 약 n²입니다.</p>
 </section>
 
 <section class="stepbox" id="s2-2" role="tabpanel" aria-labelledby="st-s2-2" hidden>
@@ -685,7 +1208,7 @@ td ul,td ol{padding-left:16px;gap:3px}
     <li><span class="yr">2002</span><div><b>Adleman 외 (STOC 2002): 조합 최적화 문제</b><p class="note">최소 타일 집합이 일반적으로 NP-완전이고 트리와 정사각형에서는 다항 시간입니다. 주어진 시스템이 모양을 유일하게 만드는지의 확인도 다항 시간입니다. 초록만 읽었습니다.</p></div></li>
     <li><span class="yr">2004 / 2005</span><div><b>Aggarwal 외 (Schweller 공저): 일반화 모델의 복잡도</b><p class="note">얇은 직사각형 k×N의 하한 Ω(N<sup>1/k</sup>/k)와 상한 O(N<sup>1/k</sup> + k)를 냈습니다. 이 문제의 가장 직접적인 선행 연구입니다. SODA 2004 예비판, SIAM J. Comput. 2005.</p></div></li>
     <li><span class="yr">2010</span><div><b>Maňuch–Stacho–Stoll: τ = 1의 두 하한</b><p class="note">글루 불일치가 없다는 가정 아래 τ = 1 시스템은 (맨해튼 지름 + 1)종 이상이 필요합니다. 검색 요약만 읽었습니다.</p></div></li>
-    <li><span class="yr">2010 / 2011</span><div><b>Bryans 외: 비결정성의 힘</b><p class="note">엄격 모델의 최소 타일 집합은 <a class="t" href="#term-sigma2">Σ₂ᴾ-완전(Σ₂ᴾ-complete)</a>입니다. 유일 조립(directed)과 엄격 조립(strict) 정의를 구분해 줍니다. SODA 2011, arXiv 1006.2897.</p></div></li>
+    <li><span class="yr">2010 / 2011</span><div><b>Bryans 외: 비결정성의 힘</b><p class="note">엄격 모델의 최소 타일 집합은 <a class="t" href="#term-sigma2">Σ₂ᴾ-완전(Σ₂ᴾ-complete)</a>입니다. 결정적 조립(directed self-assembly)과 엄격 조립(strict self-assembly) 정의를 구분해 줍니다. SODA 2011, arXiv 1006.2897.</p></div></li>
     <li><span class="yr">2011</span><div><b>Chen–Doty–Seki: 프로그램 크기와 온도</b><p class="note">정사각형 알고리즘이 τ = 2 가정을 갖던 것을 빼고 모든 온도에서 다항 시간임을 보였습니다. arXiv 1011.3493.</p></div></li>
     <li><span class="yr">2018 / 2019</span><div><b>Furcy–Summers–Wendlandt: τ = 1 얇은 직사각형</b><p class="note">하한 Ω(N<sup>1/k</sup>)와 아는 가장 좋은 상한 N + k − 1(빗)을 정리했습니다. arXiv 1808.04358.</p></div></li>
     <li><span class="yr">2020</span><div><b>3D 얇은 직사각형 (arXiv 2007.11093)</b><p class="note">저자와 경계는 미확인입니다(검색 요약만).</p></div></li>
@@ -705,10 +1228,10 @@ td ul,td ol{padding-left:16px;gap:3px}
   <table>
     <thead><tr><th>분야</th><th>연결 방식</th><th>근거</th></tr></thead>
     <tbody>
-      <tr><td><a class="t" href="#term-dna">DNA(디옥시리보핵산, deoxyribonucleic acid) 타일 자기조립(DNA tile self-assembly)</a></td><td>실험에서는 타일 종류마다 DNA 가닥을 설계합니다. 그러므로 타일 종류 수는 설계해야 할 가닥 종류 수에 해당합니다.</td><td><span class="st dead">UNVERIFIED</span><br><span class="sm">일반 배경이며 노트에서 확인하지 못함</span></td></tr>
-      <tr><td>정사각형의 최소 타일 수 연구</td><td>같은 모델에서 모양 하나를 가장 작은 설계로 만드는 연구의 선례입니다.</td><td><span class="st q">부분 확인</span><br><span class="sm">S-MTS-11, S-MTS-12를 S-MTS-2~4가 인용함</span></td></tr>
+      <tr><td><a class="t" href="#term-dna">디옥시리보핵산(deoxyribonucleic acid, DNA) 타일 자기조립(DNA tile self-assembly)</a></td><td>실험에서는 타일 종류마다 DNA 가닥을 설계합니다. 그러므로 타일 종류 수는 설계해야 할 가닥 종류 수에 해당합니다.</td><td><span class="st dead">UNVERIFIED</span><br><span class="sm">일반 배경이며 노트에서 확인하지 못함</span></td></tr>
+      <tr><td>정사각형의 최소 타일 수 연구</td><td>같은 모델에서 모양 하나를 가장 작은 설계로 만드는 연구의 선례입니다.</td><td><span class="st part">부분 확인</span><br><span class="sm">S-MTS-11, S-MTS-12를 S-MTS-2~4가 인용함</span></td></tr>
       <tr><td>카운터를 이용한 길이 제어</td><td>종류 수를 Θ(√n)으로 줄이는 설계 기법입니다. 길이 1 ... m<sup>k</sup>를 모두 만들 수 있습니다.</td><td><span class="st ok">확인</span><br><span class="sm">S-MTS-2 p.8</span></td></tr>
-      <tr><td>복잡도 이론의 희소 집합 논증</td><td>입력 크기가 n에 비례하는 문제가 NP-완전이 될 수 없음을 보이는 도구입니다.</td><td><span class="st q">부분 확인</span><br><span class="sm">S-MTS-7</span></td></tr>
+      <tr><td>복잡도 이론의 희소 집합 논증</td><td>입력 크기가 n에 비례하는 문제가 NP-완전이 될 수 없음을 보이는 도구입니다.</td><td><span class="st part">부분 확인</span><br><span class="sm">S-MTS-7</span></td></tr>
     </tbody>
   </table>
   </div>
@@ -768,18 +1291,18 @@ td ul,td ol{padding-left:16px;gap:3px}
   <table class="papers">
     <thead><tr><th>연도</th><th>논문</th><th>무엇을 했나</th><th>이 문제와의 연결</th><th>확인 상태</th></tr></thead>
     <tbody>
-      <tr><td class="num">1982</td><td>Mahaney, "Sparse complete sets for NP: solution of a conjecture of Berman and Hartmanis", JCSS (S-MTS-7)</td><td>희소한 NP-완전 집합이 있으면 P = NP</td><td>연구 방향 1순위(희소성)의 근거</td><td><span class="st q">부분 확인</span></td></tr>
-      <tr><td class="num">2000</td><td>Rothemund, Winfree, STOC 2000 (S-MTS-11)</td><td>N×N 정사각형 하한 Ω(log N / log log N)</td><td>정사각형과 2×n의 대비</td><td><span class="st q">부분 확인</span><br><span class="sm">제목은 기억에 의존해 미확인</span></td></tr>
-      <tr><td class="num">2001</td><td>Adleman, Cheng, Goel, Huang, STOC 2001 (S-MTS-12)</td><td>맞는 상한 O(log N / log log N)</td><td>정사각형과 2×n의 대비</td><td><span class="st q">부분 확인</span><br><span class="sm">제목은 기억에 의존해 미확인</span></td></tr>
-      <tr><td class="num">2002</td><td>Adleman, Cheng, Goel, Huang, Kempe, Moisset de Espanés, Rothemund, "Combinatorial optimization problems in self-assembly", STOC 2002, pp. 23–32 (S-MTS-1)</td><td>일반 NP-완전, 트리와 정사각형 다항 시간, 검증 다항 시간</td><td>이 문제의 정의가 나온 곳이고 R1의 후보 검사를 줍니다.</td><td><span class="st q">부분 확인</span><br><span class="sm">초록만 읽음</span></td></tr>
-      <tr><td class="num">2004 / 2005</td><td>Aggarwal, Cheng, Goldwasser, Kao, Moisset de Espanés, Schweller, "Complexities for generalized models of self-assembly", SIAM J. Comput. 2005 (S-MTS-2)</td><td>Thm 3.1 하한, Thm 3.2 카운터 구성, 모서리 시드</td><td><b>가장 직접적인 선행 연구</b>. 하한 √n / 2와 상한 4⌈√n⌉ + 2의 출처</td><td><span class="st ok">확인</span><br><span class="sm">전문 pp. 1–8</span></td></tr>
-      <tr><td class="num">2010</td><td>Maňuch, Stacho, Stoll, "Two lower bounds for self-assemblies at temperature 1", J. Comput. Biol. 17(6) (S-MTS-6)</td><td>글루 불일치가 없다는 가정 아래 (맨해튼 지름 + 1)종 이상</td><td>τ = 1에서 n + 1이 정확하다는 조건부 결과</td><td><span class="st q">부분 확인</span><br><span class="sm">검색 요약만</span></td></tr>
+      <tr><td class="num">1982</td><td>Mahaney, "Sparse complete sets for NP: solution of a conjecture of Berman and Hartmanis", JCSS (S-MTS-7)</td><td>희소한 NP-완전 집합이 있으면 P = NP</td><td>연구 방향 1순위(희소성)의 근거</td><td><span class="st part">부분 확인</span></td></tr>
+      <tr><td class="num">2000</td><td>Rothemund, Winfree, STOC 2000 (S-MTS-11)</td><td>N×N 정사각형 하한 Ω(log N / log log N)</td><td>정사각형과 2×n의 대비</td><td><span class="st part">부분 확인</span><br><span class="sm">제목은 기억에 의존해 미확인</span></td></tr>
+      <tr><td class="num">2001</td><td>Adleman, Cheng, Goel, Huang, STOC 2001 (S-MTS-12)</td><td>맞는 상한 O(log N / log log N)</td><td>정사각형과 2×n의 대비</td><td><span class="st part">부분 확인</span><br><span class="sm">제목은 기억에 의존해 미확인</span></td></tr>
+      <tr><td class="num">2002</td><td>Adleman, Cheng, Goel, Huang, Kempe, Moisset de Espanés, Rothemund, "Combinatorial optimization problems in self-assembly", STOC 2002, pp. 23–32 (S-MTS-1)</td><td>일반 NP-완전, 트리와 정사각형 다항 시간, 검증 다항 시간</td><td>이 문제의 정의가 나온 곳이고 R1의 후보 검사를 줍니다.</td><td><span class="st part">부분 확인</span><br><span class="sm">초록만 읽음</span></td></tr>
+      <tr><td class="num">2004 / 2005</td><td>Aggarwal, Cheng, Goldwasser, Kao, Moisset de Espanés, Schweller, "Complexities for generalized models of self-assembly", SIAM J. Comput. 2005 (S-MTS-2)</td><td>정리(Theorem) 3.1 하한, 정리(Theorem) 3.2 카운터 구성, 모서리 시드</td><td><b>가장 직접적인 선행 연구</b>. 하한 √n / 2와 상한 4⌈√n⌉ + 2의 출처</td><td><span class="st ok">확인</span><br><span class="sm">전문 pp. 1–8</span></td></tr>
+      <tr><td class="num">2010</td><td>Maňuch, Stacho, Stoll, "Two lower bounds for self-assemblies at temperature 1", J. Comput. Biol. 17(6) (S-MTS-6)</td><td>글루 불일치가 없다는 가정 아래 (맨해튼 지름 + 1)종 이상</td><td>τ = 1에서 n + 1이 정확하다는 조건부 결과</td><td><span class="st part">부분 확인</span><br><span class="sm">검색 요약만</span></td></tr>
       <tr><td class="num">2011</td><td>Bryans, Chiniforooshan, Doty, Kari, Seki, "The power of nondeterminism in self-assembly", SODA 2011 (S-MTS-3)</td><td>엄격 모델 Σ₂ᴾ-완전, 두 정의의 구분</td><td>"유일 조립"이 어느 정의인지 판단하는 기준</td><td><span class="st ok">확인</span><br><span class="sm">pp. 1–5</span></td></tr>
       <tr><td class="num">2011</td><td>Chen, Doty, Seki, "Program size and temperature in self-assembly", arXiv 1011.3493 (S-MTS-4)</td><td>정사각형은 모든 온도에서 다항 시간</td><td>정사각형 알고리즘의 τ 가정을 걷어 냄</td><td><span class="st ok">확인</span><br><span class="sm">pp. 1–3, 학술지 정보는 부분 확인</span></td></tr>
       <tr><td class="num">2018 / 2019</td><td>Furcy, Summers, Wendlandt, "New bounds on the tile complexity of thin rectangles at temperature-1", arXiv 1808.04358 (S-MTS-5)</td><td>τ = 1 하한 Ω(N<sup>1/k</sup>), 상한 N + k − 1</td><td>τ = 1의 현재 최선 경계. 정확한 값은 열림</td><td><span class="st ok">확인</span></td></tr>
       <tr><td class="num">2020</td><td>"Improved lower and upper bounds on the tile complexity of uniquely self-assembling a thin rectangle non-cooperatively in 3D", arXiv 2007.11093 (S-MTS-8)</td><td>3D τ = 1 얇은 직사각형</td><td>저자와 경계를 읽지 못했습니다.</td><td><span class="st dead">미확인</span></td></tr>
       <tr><td class="num">미확인</td><td>"Proving new directed tile complexity lower bounds at temperature 1 by folding between 2D and just-barely 3D self-assembly", ResearchGate 379409972 (S-MTS-9)</td><td>2D τ = 1 유일 조립 하한을 조일 수 있음</td><td>시간이 있으면 가장 먼저 확인할 논문</td><td><span class="st dead">미확인</span><br><span class="sm">페이지가 403</span></td></tr>
-      <tr><td class="num">미확인</td><td>Chalk, Luchsinger, Schweller, Wylie (UTRGV 논문), core.ac.uk/download/160477919.pdf (S-MTS-10)</td><td>Schweller의 UTRGV 소속 근거</td><td>출제자 이름 추정의 근거</td><td><span class="st q">부분 확인</span><br><span class="sm">검색 요약만</span></td></tr>
+      <tr><td class="num">미확인</td><td>Chalk, Luchsinger, Schweller, Wylie (UTRGV 논문), core.ac.uk/download/160477919.pdf (S-MTS-10)</td><td>Schweller의 UTRGV 소속 근거</td><td>출제자 이름 추정의 근거</td><td><span class="st part">부분 확인</span><br><span class="sm">검색 요약만</span></td></tr>
     </tbody>
   </table>
   </div>
@@ -831,17 +1354,17 @@ td ul,td ol{padding-left:16px;gap:3px}
   <table>
     <thead><tr><th>ID</th><th>링크</th><th>종류와 읽은 범위</th><th>확인 상태</th></tr></thead>
     <tbody>
-      <tr><td>S-MTS-1</td><td><a href="https://authors.library.caltech.edu/3141">Combinatorial optimization problems in self-assembly</a> (doi 10.1145/509907.509913)</td><td>논문, 초록만</td><td><span class="st q">부분 확인</span></td></tr>
+      <tr><td>S-MTS-1</td><td><a href="https://authors.library.caltech.edu/3141">Combinatorial optimization problems in self-assembly</a> (doi 10.1145/509907.509913)</td><td>논문, 초록만</td><td><span class="st part">부분 확인</span></td></tr>
       <tr><td>S-MTS-2</td><td><a href="https://users.cs.northwestern.edu/~schwellerr/papers/CGM_siam.pdf">Complexities for generalized models of self-assembly</a></td><td>논문, 전문 pp. 1–8</td><td><span class="st ok">확인</span></td></tr>
       <tr><td>S-MTS-3</td><td><a href="https://arxiv.org/abs/1006.2897">The power of nondeterminism in self-assembly</a></td><td>논문, pp. 1–5</td><td><span class="st ok">확인</span></td></tr>
       <tr><td>S-MTS-4</td><td><a href="https://arxiv.org/abs/1011.3493">Program size and temperature in self-assembly</a></td><td>논문, pp. 1–3</td><td><span class="st ok">확인</span></td></tr>
       <tr><td>S-MTS-5</td><td><a href="https://arxiv.org/abs/1808.04358">New bounds on the tile complexity of thin rectangles at temperature-1</a></td><td>논문, ar5iv 본문</td><td><span class="st ok">확인</span></td></tr>
-      <tr><td>S-MTS-6</td><td><a href="https://journals.sagepub.com/doi/pdf/10.1089/cmb.2009.0067">Two lower bounds for self-assemblies at temperature 1</a></td><td>논문, 검색 요약만</td><td><span class="st q">부분 확인</span></td></tr>
-      <tr><td>S-MTS-7</td><td><a href="https://en.wikipedia.org/wiki/Mahaney%27s_theorem">Mahaney's theorem</a></td><td>모음 사이트, 요약만</td><td><span class="st q">부분 확인</span></td></tr>
+      <tr><td>S-MTS-6</td><td><a href="https://journals.sagepub.com/doi/pdf/10.1089/cmb.2009.0067">Two lower bounds for self-assemblies at temperature 1</a></td><td>논문, 검색 요약만</td><td><span class="st part">부분 확인</span></td></tr>
+      <tr><td>S-MTS-7</td><td><a href="https://en.wikipedia.org/wiki/Mahaney%27s_theorem">Mahaney's theorem</a></td><td>모음 사이트, 요약만</td><td><span class="st part">부분 확인</span></td></tr>
       <tr><td>S-MTS-8</td><td><a href="https://arxiv.org/abs/2007.11093">Improved bounds, thin rectangle, 3D</a></td><td>논문, 검색 요약만</td><td><span class="st dead">미확인</span></td></tr>
       <tr><td>S-MTS-9</td><td><a href="https://www.researchgate.net/publication/379409972">Folding between 2D and just-barely 3D</a></td><td>논문, 403으로 못 읽음</td><td><span class="st dead">미확인</span></td></tr>
-      <tr><td>S-MTS-10</td><td><a href="https://core.ac.uk/download/160477919.pdf">UTRGV Schweller paper</a></td><td>논문, 검색 요약만</td><td><span class="st q">부분 확인</span></td></tr>
-      <tr><td>S-MTS-11, S-MTS-12</td><td>링크 없음</td><td>S-MTS-2, 3, 4가 인용한 것을 옮김. 제목은 기억에 의존</td><td><span class="st dead">미확인</span></td></tr>
+      <tr><td>S-MTS-10</td><td><a href="https://core.ac.uk/download/160477919.pdf">UTRGV Schweller paper</a></td><td>논문, 검색 요약만</td><td><span class="st part">부분 확인</span></td></tr>
+      <tr><td>S-MTS-11, S-MTS-12</td><td>링크 없음</td><td>S-MTS-2, 3, 4가 인용한 것을 옮김. 제목은 기억에 의존</td><td><span class="st part">부분 확인</span><br><span class="sm">제목은 미확인</span></td></tr>
     </tbody>
   </table>
   </div>
@@ -864,13 +1387,13 @@ td ul,td ol{padding-left:16px;gap:3px}
     <li id="term-tile"><b>타일 종류(tile type)</b>: 네 변(북, 동, 남, 서)에 글루 라벨이 붙은 정사각형 설계. 복사본은 무한히 쓸 수 있고 회전하지 않음</li>
     <li id="term-glue"><b>글루(glue)</b>: 타일 변의 라벨과 강도. 라벨이 같고 강도가 양수인 마주 본 변끼리 붙음</li>
     <li id="term-tau"><b>온도(temperature) τ</b>: 타일이 붙기 위해 맞닿은 변들의 강도 합이 넘어야 하는 문턱값</li>
-    <li id="term-cooperation"><b>협동 결합(cooperation)</b>: τ = 2에서 강도 1 글루 둘이 합쳐 타일을 붙이는 방식</li>
+    <li id="term-cooperation"><b>협력 결합(cooperative binding)</b>: τ = 2에서 타일이 붙는 방식. 강도 2 글루 하나, 또는 강도 1 글루 둘의 합</li>
     <li id="term-seed"><b>시드(seed)</b>: 정해진 자리에 놓인 처음 타일. 성장이 여기서 시작함</li>
     <li id="term-corner"><b>모서리 시드(corner seed)</b>: 모양의 모서리 칸에 놓인 시드. Aggarwal 외의 카운터 구성이 이 경우</li>
     <li id="term-assembly"><b>조립물(assembly)</b>: 격자 Z² 위에 연결되게 놓인 타일들</li>
     <li id="term-producible"><b>생성 가능(producible)</b>: 시드에서 시작해 강도 합이 τ 이상으로 한 타일씩 붙여 얻을 수 있는 조립물</li>
     <li id="term-terminal"><b>끝 조립물(terminal assembly)</b>: 더 이상 타일이 붙을 수 없는 생성 가능 조립물</li>
-    <li id="term-directed"><b>유일 조립(uniquely self-assemble, directed)</b>: 끝 조립물이 단 하나이고 모양이 목표인 경우. 어느 실행에서도 같은 자리에 같은 타일이 놓임</li>
+    <li id="term-directed"><b>결정적 조립(directed self-assembly)</b>: 끝 조립물이 단 하나이고 모양이 목표인 경우. 어느 실행에서도 같은 자리에 같은 타일이 놓임</li>
     <li id="term-strict"><b>엄격 조립(strictly self-assemble)</b>: 모든 끝 조립물의 모양이 목표인 경우. 실행마다 같은 자리에 다른 타일이 놓일 수 있음</li>
     <li id="term-tilecomplexity"><b>타일 복잡도(tile complexity)</b>: 모양을 유일하게 조립하는 데 필요한 최소 타일 종류 수</li>
     <li id="term-mts"><b>최소 타일 집합 문제(Minimum Tileset Problem)</b>: 모양을 입력받아 그것을 유일하게 조립하는 최소 타일 종류 수를 출력하는 문제</li>
@@ -879,6 +1402,13 @@ td ul,td ol{padding-left:16px;gap:3px}
     <li id="term-counter"><b>카운터(counter)</b>: 열을 따라 자릿수 값을 올리거나 내려 길이를 센 뒤 멈추는 타일 설계. 높이 k면 k자리, 밑 m = ⌈N<sup>1/k</sup>⌉</li>
     <li id="term-pumping"><b>펌핑(pumping)</b>: 같은 상태가 두 번 나온 사이의 구간을 되풀이해 끝없이 긴 조립물을 만드는 논증</li>
     <li id="term-comb"><b>빗(comb)</b>: 아래 행에 n종, 위 행에 1종을 쓰는 n + 1종 구성</li>
+    <li id="term-mirrorcomb"><b>뒤집은 빗(vertically flipped comb)</b>: 위 행에 체인 n종, 아래 행에 1종을 쓰는 n + 1종 구성. 시드가 위 행 칸일 때 씀</li>
+    <li id="term-attachorder"><b>붙는 순서(attachment order)</b>: 한 열의 위 타일과 아래 타일 중 어느 쪽이 먼저 붙었는가. τ = 2에서는 협력 결합이 이웃의 선후에 달려 있어 복사 조건에 들어감</li>
+    <li id="term-wml"><b>창 영화 보조정리(Window Movie Lemma)</b>: 조립 과정을 창 하나가 지켜본 글루 결합의 기록으로 다루는 엄밀한 도구. Meunier, Patitz, Summers, Theyssier, Winslow, Woods, SODA 2014. 이 노트는 원문을 읽지 않았음</li>
+    <li id="term-digitglue"><b>자릿수 글루(digit glue)</b>: 카운터에서 자릿수 값 d마다 이름이 다른 글루 δ_d. 한 이름을 같이 쓰면 두 타일이 같은 칸에 맞아 결정적이지 않게 됨</li>
+    <li id="term-cond"><b>조건부 증명(PROVEN-conditional)</b>: 가정 아래에서 증명된 결과. 여기서는 글루 불일치가 없다는 가정 아래 τ = 1의 정확히 n + 1</li>
+    <li id="term-unary"><b>단항(unary) 인코딩</b>: 수 n을 1이 n개인 문자열로 쓰는 방식. 입력 길이가 n에 비례함</li>
+    <li id="term-normred"><b>정규화 환원(normalization reduction)</b>: 같은 모양의 여러 인코딩을 하나의 표준형으로 바꾸는 다항 시간 변환</li>
     <li id="term-sparse"><b>희소 집합(sparse set)</b>: 길이 L인 원소의 수가 L의 다항식 이하인 집합</li>
     <li id="term-mahaney"><b>Mahaney 정리(Mahaney's theorem)</b>: 희소한 NP-완전 집합이 있으면 P = NP라는 정리</li>
     <li id="term-bigo"><b>O, Ω, Θ 표기(big-O, Omega, Theta notation)</b>: 위에서 막음(상한), 아래서 막음(하한), 양쪽에서 막는 증가율의 표기</li>
@@ -887,7 +1417,12 @@ td ul,td ol{padding-left:16px;gap:3px}
     <li id="term-manhattan"><b>맨해튼 지름(Manhattan diameter)</b>: 모양 안 두 칸 사이 가로와 세로 이동 거리의 최댓값. 정의가 같은지는 원문 확인 필요(S-MTS-6)</li>
     <li id="term-mismatch"><b>글루 불일치(glue mismatch)</b>: 맞닿은 두 변의 글루 라벨이 서로 다른 상태</li>
     <li id="term-sigma2"><b>Σ₂ᴾ-완전(Σ₂ᴾ-complete)</b>: NP보다 한 층 위인 다항 계층(polynomial hierarchy)의 완전 문제</li>
-    <li id="term-dna"><b>DNA(디옥시리보핵산, deoxyribonucleic acid) 타일 자기조립(DNA tile self-assembly)</b>: DNA 가닥으로 만든 타일이 스스로 붙어 구조를 이루는 실험 분야</li>
+    <li id="term-dna"><b>디옥시리보핵산(deoxyribonucleic acid, DNA) 타일 자기조립(DNA tile self-assembly)</b>: DNA 가닥으로 만든 타일이 스스로 붙어 구조를 이루는 실험 분야</li>
+    <li id="term-state"><b>상태(state)</b>: 세로로 자른 선이 지나는 위 타일, 아래 타일, 붙은 순서의 묶음. 상태가 같은 두 열은 서로 바꿔 끼울 수 있음</li>
+    <li id="term-block"><b>블록(block)</b>: 카운터에서 m개 열의 묶음. 위 행의 자릿수 d가 블록마다 하나씩 줄어듦</li>
+    <li id="term-bound"><b>상한과 하한(upper bound, lower bound)</b>: 필요한 타일 종류 수가 이 값 이하로 만들 수 있다(상한), 이 값 아래로는 불가능하다(하한)는 값</li>
+    <li id="term-null"><b>널 글루(null glue)</b>: 강도 0인 글루. 아무것도 붙지 않는 변</li>
+    <li id="term-logscale"><b>로그 눈금(logarithmic scale)</b>: 눈금 하나가 10배를 뜻하는 축. 아주 다른 크기를 한 그림에 보임</li>
   </ul>
 </section>
 
@@ -996,11 +1531,31 @@ $('chTab').innerHTML=rows;
 </script>
 <script>
 (function(){
+  // 탭 0 단계 그림: 손으로 그린 상태를 한 칸씩 보인다. 시뮬레이터가 아니다.
+  document.querySelectorAll('.vzstep').forEach(f=>{
+    const N=+f.dataset.n, msgs=[...f.querySelectorAll('.vzm li')], out=f.querySelector('.vzmsg'), cnt=f.querySelector('.cnt');
+    const prev=f.querySelector('.prev'), next=f.querySelector('.next'), rst=f.querySelector('.rst');
+    let k=0;
+    function draw(){
+      f.querySelectorAll('[data-from]').forEach(g=>{g.style.display=(+g.dataset.from<=k)?'':'none'});
+      f.querySelectorAll('[data-only]').forEach(g=>{g.style.display=(+g.dataset.only===k)?'':'none'});
+      out.textContent=msgs[k].textContent; cnt.textContent=msgs[k].dataset.c;
+      prev.disabled=k===0; next.disabled=k===N-1;
+    }
+    prev.addEventListener('click',()=>{if(k>0){k--;draw()}});
+    next.addEventListener('click',()=>{if(k<N-1){k++;draw()}});
+    rst.addEventListener('click',()=>{k=0;draw()});
+    draw();
+  });
+})();
+</script>
+<script>
+(function(){
   // 상위 탭 4개와 탭마다 하위 단계 탭. 탭마다 고른 단계를 기억한다.
   const tabs=[...document.querySelectorAll('.tabs [role=tab]')], names=tabs.map(t=>t.dataset.tab);
   const subs={}, cur={}, back=document.getElementById('termsBack');
   names.forEach(n=>{subs[n]=[...document.getElementById('tab-'+n).querySelectorAll('.subtabs [role=tab]')];cur[n]=0});
-  let active='now', from=null;
+  let active='viz', from=null;
   const hashOf=()=>'#'+(subs[active].length?active+'-'+(cur[active]+1):active);
   function render(){
     tabs.forEach(t=>{const on=t.dataset.tab===active;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;
