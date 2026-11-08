@@ -1,0 +1,20 @@
+[project]
+name = "smallest-circle-verify"
+version = "0.1.0"
+description = "Closed-form vs SOCP check for the smallest circle touching 3 lines in 3D"
+requires-python = ">=3.12,<3.13"
+# Exact pins. numpy/scipy/cvxpy/clarabel versions are from memory and not yet resolved:
+# the first `uv sync` on the cluster is the check (README step 2).
+dependencies = [
+    "numpy==2.2.6",
+    "scipy==1.14.1",
+    "cvxpy==1.6.0",
+    "clarabel==0.10.0",
+]
+
+[tool.uv]
+python-downloads = "never"   # Python comes from pyenv locally; on Cradle from `uv python install` (README)
+package = false              # scripts run with PYTHONPATH=src, no build backend needed
+
+[tool.ruff]
+line-length = 100
