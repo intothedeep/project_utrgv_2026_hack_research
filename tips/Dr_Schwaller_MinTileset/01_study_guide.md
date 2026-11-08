@@ -267,14 +267,14 @@ t < (n / (2·2!))^{1/2} 이면 2×n을 결정적 조립으로 못 만든다
    - 희소성 논증(`02_possible_solutions.md`의 방향 1)은 단항 n이나 정렬된 칸 목록에서 성립한다.
    - 정렬 안 된 칸 목록은 [정규화 환원(normalization reduction)](#term-normred)이 필요하다.
    - 정규형 ⟨1^n, s, k⟩에서 k와 s는 단항이나 고정 폭으로 쓴다.
-   - k ≥ n + 1인 입력은 모두 고정된 예 인스턴스로 보낸다. 빗 구성이 OPT ≤ n + 1을 주기 때문이다.
+   - k ≥ n + 1인 입력은 모두 고정된 예 입력(yes-instance)으로 보낸다. 빗 구성이 최적값(optimum, OPT) ≤ n + 1을 주기 때문이다.
    - 이진수 k는 [희소 집합(sparse set)](#term-sparse)이 아니다.
    - 이진수 n에서도 논증이 실패한다.
 4. **"시드가 모서리"의 뜻이 모호하다.** 네 모서리 중 어느 것도 되는지 불분명하다. 이 점을 질문으로 넘긴다.
 5. **하한 √n / 2는 시드 위치와 무관하다.** 상한 4⌈√n⌉ + 2는 모서리 시드를 쓴다. 두 값을 섞어 "시드 위치에 따른 정확한 값"이라고 쓰지 마.
 6. **손으로 만든 카운터는 시뮬레이션 전이다.** 타일 종류가 m + 3D + 2개인 구성이다. (m, D) = (3, 2)와 (12, 4)에서 손으로 추적했다. 시뮬레이션은 하지 않았다. 증명된 것처럼 쓰지 마. 논문에는 "손 유도"로 쓴다. R2 시뮬레이션은 선택이다.
 7. **정확한 모서리 시드 공식은 못 찾았다.** 출제자 진술에 식이 있다고만 나온다. 자료에서 공식을 찾지 못했다. 식을 지어내지 마.
-8. **출제자 신원은 추정이다.** "Dr. Schwaller"가 텍사스 대학교 리오그란데 밸리 캠퍼스(University of Texas Rio Grande Valley, UTRGV)의 Robert Schweller인지 확인하지 못했다. 논문에 이름을 단정해 쓰지 마.
+8. **출제자 신원은 추정이다.** "Dr. Schwaller"가 Robert Schweller인지 확인하지 못했다. 그 사람이 있다면 텍사스 대학교 리오그란데 밸리 캠퍼스(University of Texas Rio Grande Valley, UTRGV) 소속이다. 논문에 이름을 단정해 쓰지 마.
 9. **읽지 못한 자료가 있다.** [S-MTS-8], [S-MTS-9]의 저자와 결과는 미확인이다. 인용하지 마.
 
 ---
@@ -302,22 +302,22 @@ t < (n / (2·2!))^{1/2} 이면 2×n을 결정적 조립으로 못 만든다
 ## 용어 부록 (terms appendix)
 
 <a id="term-atam"></a>
-- **추상 타일 조립 모델(abstract Tile Assembly Model, aTAM)**: 사각형 타일이 격자 위에서 한 장씩 붙으며 모양을 만드는 수학 모델.
+- **추상 타일 조립 모델(abstract Tile Assembly Model, aTAM)**: 타일이 붙어 모양을 만드는 수학 모델.
 
 <a id="term-tile-type"></a>
-- **타일 종류(tile type)**: 네 변(N, E, S, W)에 접착 라벨이 하나씩 붙은 사각형 한 종류. 같은 종류의 타일은 얼마든지 쓴다.
+- **타일 종류(tile type)**: 네 변(N, E, S, W)에 결합 라벨이 하나씩 붙은 사각형 한 종류. 같은 종류의 타일은 얼마든지 쓴다.
 
 <a id="term-glue"></a>
-- **접착 라벨(glue label)**: 타일 변에 붙은 이름. 마주 본 변의 라벨이 같아야 접착이 생긴다.
+- **결합 라벨(glue label)**: 타일 변에 붙은 이름. 마주 본 변의 라벨이 같아야 결합이 생긴다.
 
 <a id="term-strength"></a>
-- **접착 세기(glue strength)**: 접착 라벨마다 정한 0, 1, 2, ... 중 하나의 수. 양수여야 붙는다.
+- **결합 세기(glue strength)**: 결합 라벨마다 정한 0, 1, 2, ... 중 하나의 수. 양수여야 붙는다.
 
 <a id="term-temperature"></a>
-- **온도(temperature, τ)**: 타일이 붙기 위해 필요한 접착 세기의 합의 문턱값.
+- **온도(temperature, τ)**: 타일이 붙기 위해 필요한 결합 세기 합의 문턱값.
 
 <a id="term-cooperation"></a>
-- **협력 결합(cooperative binding)**: 온도 2에서 세기 2 접착 하나, 또는 세기 1 접착 둘이 함께 타일을 붙이는 일.
+- **협력 결합(cooperative binding)**: 온도 2에서 일어난다. 세기 2 결합 하나나 세기 1 결합 둘이 타일을 붙인다.
 
 <a id="term-seed"></a>
 - **시드(seed)**: 정해진 자리에 놓인 첫 타일. 모든 성장이 여기서 시작한다.
@@ -335,7 +335,7 @@ t < (n / (2·2!))^{1/2} 이면 2×n을 결정적 조립으로 못 만든다
 - **엄격 조립(strict self-assembly)**: 모든 종단 조립체의 모양이 목표 모양인 경우. 실행마다 타일 종류가 달라도 된다.
 
 <a id="term-comb"></a>
-- **빗 구성(comb construction)**: 아래 줄에 서로 다른 타일 n개, 위 줄에 같은 타일 하나를 쓰는 n + 1종 구성.
+- **빗 구성(comb construction)**: n + 1종 구성이다. 아래 줄에 타일 n종, 위 줄에 타일 1종을 쓴다. 위 줄 시드는 뒤집은 빗을 쓴다.
 
 <a id="term-counter"></a>
 - **카운터(counter)**: 열을 지날 때마다 수를 세어 길이를 정하는 타일 구성.
@@ -344,25 +344,46 @@ t < (n / (2·2!))^{1/2} 이면 2×n을 결정적 조립으로 못 만든다
 - **하한(lower bound)**: 어떤 구성도 이보다 적은 타일 종류로는 안 된다는 증명된 값.
 
 <a id="term-counting"></a>
-- **세기 논증(counting argument)**: 가능한 상태의 수를 세어 한계를 보이는 증명 방법.
+- **셈 논증(counting argument)**: 가능한 상태의 수를 세어 한계를 보이는 증명 방법.
 
 <a id="term-pumping"></a>
 - **펌핑(pumping)**: 반복되는 상태 사이의 조각을 되풀이해 모양을 무한히 늘리는 논증.
 
 <a id="term-column-state"></a>
-- **열 상태(column state)**: 한 세로 절단선이 지나는 위, 아래 타일 종류와 붙은 순서의 묶음.
+- **열 상태(column state)**: 세로 열 하나의 위, 아래 타일 종류와 붙은 순서의 묶음.
 
 <a id="term-manhattan"></a>
 - **맨해튼 지름(Manhattan diameter)**: 모양 안 두 칸 사이 격자 거리의 최댓값. 이 자료에서 정의는 전문 확인 전이다.
 
 <a id="term-sigma2"></a>
-- **Σ2^P-완전(Σ2^P-complete)**: NP보다 한 층 위의 계산 복잡도 부류에서 가장 어려운 문제군.
+- **Σ2^P-완전(Σ2^P-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP)보다 한 층 위 부류의 가장 어려운 문제군.
 
 <a id="term-poly"></a>
-- **다항 시간(polynomial time)**: 입력 크기의 다항식으로 늘어나는 계산 시간.
+- **다항 시간(polynomial time, P)**: 입력 크기의 다항식으로 늘어나는 계산 시간. 그 시간에 풀리는 문제의 부류도 가리킨다.
+
+<a id="term-np"></a>
+- **비결정 다항 시간(nondeterministic polynomial time, NP)**: 답을 다항 시간에 검증할 수 있는 결정 문제의 부류.
+
+<a id="term-np-complete"></a>
+- **비결정 다항 시간 완전(NP-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP) 부류에 속한다. 그 부류의 모든 문제를 이 문제로 바꿀 수 있다.
+
+<a id="term-sparse"></a>
+- **희소 집합(sparse set)**: 길이 L인 원소의 수가 L의 다항식 이하인 집합.
+
+<a id="term-mahaney"></a>
+- **Mahaney 정리(Mahaney's theorem)**: 다음 정리다. 희소 집합이 비결정 다항 시간 완전(NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 같다.
+
+<a id="term-unary"></a>
+- **단항(unary) 인코딩**: 수 n을 1이 n개인 문자열로 쓰는 방식. 입력 길이가 n에 비례한다.
+
+<a id="term-normred"></a>
+- **정규화 환원(normalization reduction)**: 어떤 인코딩이든 표준형 ⟨1^n, s, k⟩로 바꾸는 다항 시간 변환.
+
+<a id="term-mismatch"></a>
+- **결합 불일치(binding-domain mismatch)**: [S-MTS-6]의 조건 이름이다. 정의는 요약 조각만 읽었고 전문 확인 전이다.
 
 <a id="term-window-movie"></a>
-- **창 영화 보조정리(Window Movie Lemma)**: 조립 중 창 안에서 일어나는 결합을 기록해 펌핑을 엄밀하게 만드는 도구.
+- **창 영화 보조정리(Window Movie Lemma)**: 창 안의 결합 기록으로 펌핑을 엄밀하게 하는 도구. 원문 미확인.
 
 <a id="term-brute-force"></a>
 - **전수 탐색(brute-force search)**: 가능한 후보를 모두 만들어 하나씩 검사하는 방법.

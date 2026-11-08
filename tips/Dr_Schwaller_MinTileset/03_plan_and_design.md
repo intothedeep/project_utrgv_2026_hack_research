@@ -27,16 +27,29 @@
 
 주장할 결과를 우선순위 순으로 쓴다. 각 항목에 상태를 붙인다.
 
-1. **알려진 경계 정리.** 온도(temperature, τ) = 2에서 √n / 2 ≤ t, 모서리 시드이면 t ≤ 4⌈√n⌉ + 2다.
+1. **알려진 경계 정리.** [온도(temperature, τ)](#term-temperature) = 2에서 하한은 √n / 2 ≤ t다.
+   - 모서리 시드이면 상한은 t ≤ 4⌈√n⌉ + 2다.
    - 하한은 시드 위치와 무관하다.
    - 상태는 증명됨이고 출처는 [S-MTS-2]다.
-2. **희소성 정리.** 2×n 최소 타일 집합은 P = NP가 아닌 한 NP-완전이 아니다. [희소 집합(sparse set)](#term-sparse)과 [마하니 정리(Mahaney's theorem)](#term-mahaney)를 쓴다.
-   - 성립하는 인코딩: 일진수 n 또는 정렬된 칸 목록.
-   - 정렬 안 된 칸 목록은 정규화 환원이 필요하다. 이진수 n에서는 실패한다.
+   - 안쪽 시드의 상한 O(√n)은 손 유도다.
+   - 상한은 빗 n + 1과 두 팔 카운터 4√2·√n + O(1)이다.
+   - 안쪽 시드의 정확한 값은 열려 있다.
+2. **희소성 정리.** 2×n 최소 타일 집합은 [비결정 다항 시간 완전(NP-complete)](#term-np-complete)이 아니다.
+   - 단, 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 다를 때다.
+   - 쓰는 도구: [희소 집합(sparse set)](#term-sparse)과 [Mahaney 정리(Mahaney's theorem)](#term-mahaney).
+   - 성립하는 인코딩: [단항(unary)](#term-unary) n 또는 정렬된 칸 목록.
+   - 정렬 안 된 칸 목록은 [정규화 환원(normalization reduction)](#term-normred)이 필요하다.
+   - 정규형 ⟨1^n, s, k⟩의 k와 s는 단항이나 고정 폭으로 쓴다.
+   - k ≥ n + 1인 입력은 모두 고정된 예 입력(yes-instance)으로 보낸다.
+   - 이진수 n과 이진수 k에서는 실패한다.
    - 인코딩을 논문에 명시한다. 상태는 스케치다.
-3. **준지수 시간 알고리즘.** 고정 τ = 2에서 2^{O(√n log n)} 시간이다. 입력은 일진수 n 또는 칸 목록이다. 상태는 스케치다.
+3. **[부분지수 시간(subexponential time)](#term-subexp) 알고리즘.** 고정 τ = 2에서 2^{O(√n log n)} 시간이다.
+   - 입력은 단항 n 또는 칸 목록이다.
+   - 시드 칸이 고정되면 두 팔 상한 4⌈√a⌉ + 4⌈√b⌉ + O(1)까지 찾는다.
+   - 상태는 스케치다.
 4. **(조건부) 상수 근사.** 시드를 풀이가 고르면 약 8배다 ([S-MTS-2]만 필요).
-   - 7배는 n = 1 + m·D에서 손 카운터를 쓸 때다. 손 카운터는 손으로 추적했고 시뮬레이션은 안 했다.
+   - 7배는 n = 1 + m·D에서 손 [카운터(counter)](#term-counter)를 쓸 때다.
+   - 손 카운터는 손으로 추적했고 시뮬레이션은 안 했다.
    - 시드 칸이 입력으로 고정되면 약 8√2배다.
 5. **(추측) 모서리 일반성 보조정리.** 안쪽 시드 최적이 모서리 시드 최적과 같다는 추측이다. R1 데이터를 붙인다. 상태는 열림이다.
 6. **(참고) 작은 n 표와 τ = 1 상태.** R1 결과로 채운다. 실행 전에는 n = 1만 2로 확정이다. τ = 1은 "조건부 증명(PROVEN-conditional), 부분 확인"으로 쓴다. 가정 없는 정확한 값은 열림이다.
@@ -45,9 +58,9 @@
 
 | 시간 | 단계 | 완료 기준 |
 | --- | --- | --- |
-| 18:30–19:00 | 출제자 질문 정리와 전송 (아래 목록). 모델 선택을 임시로 고정: τ = 2, 결정적 조립, 칸 목록 입력 | 질문 전송, 임시 가정 메모 |
+| 18:30–19:00 | 출제자 질문 정리와 전송 (아래 목록). 모델 선택을 임시로 고정: τ = 2, [결정적 조립(directed self-assembly)](#term-directed), 칸 목록 입력 | 질문 전송, 임시 가정 메모 |
 | 19:00–21:00 | 희소성 정리(방향 1)의 증명을 손으로 쓴다. 인코딩 명시 | 손으로 쓴 증명 1쪽 |
-| 21:00–23:00 | 준지수 알고리즘(방향 2)과 하한, 상한 표를 정리한다. 빗 구성(F3) 확인 | 정리 문장과 표 초안 |
+| 21:00–23:00 | 부분지수 알고리즘(방향 2)과 하한, 상한 표를 정리한다. 빗 구성(F3) 확인 | 정리 문장과 표 초안 |
 | 23:00–01:00 | R1의 작업 스크립트를 쓴다. R2(선택)도 쓴다. **실행은 클러스터에서**, 제출은 메인 세션 | 스크립트 한두 개 |
 | 01:00–03:00 | R1·R2 결과가 오면 표를 채우고 그림을 그린다. 결과가 없으면 "미확인"으로 둔다 | 작은 n 표, 그림 1–2개 |
 | 03:00–06:00 | 2쪽 논문 집필 | 컴파일되는 초안 |
@@ -64,13 +77,13 @@
 
 | 섹션 | 분량 | 내용 |
 | --- | --- | --- |
-| Abstract | 4줄 | 2×n의 알려진 경계 + 희소성 정리 + 준지수 알고리즘 + 열린 질문 |
-| 1 Introduction | 0.25쪽 | 문제, 모델 가정(τ, 결정적 조립, 시드, 입력 인코딩)을 명시 |
-| 2 Known Bounds | 0.5쪽 | 하한 √n / 2 (시드 무관), 상한 4⌈√n⌉ + 2 (모서리), [빗 구성(comb construction)](#term-comb) n + 1 (모든 시드 칸). 표 하나 |
-| 3 Main Results | 0.6쪽 | 희소성 정리와 증명. 준지수 알고리즘 |
+| Abstract | 4줄 | 2×n의 알려진 경계 + 희소성 정리 + 부분지수 알고리즘 + 열린 질문 |
+| 1 Introduction | 0.25쪽 | 문제와 모델 가정을 명시. 가정은 온도(temperature, τ), 결정적 조립(directed self-assembly), 시드(seed), 입력 인코딩이다 |
+| 2 Known Bounds | 0.5쪽 | 표 하나. 하한 √n / 2 (시드 무관). 상한 4⌈√n⌉ + 2 (모서리). [빗 구성(comb construction)](#term-comb) n + 1 (모든 시드 칸) |
+| 3 Main Results | 0.6쪽 | 희소성 정리와 증명. 부분지수 알고리즘 |
 | 4 Open Case | 0.3쪽 | 안쪽 시드. 모서리 일반성 추측과 R1 데이터. 미확인 구성은 "미확인"이라 표시 |
-| 5 Figures | 0.2쪽 | (a) 2×n 빗 구성과 카운터 도식 (b) 작은 n 표나 경계 그림 |
-| 6 Future Work | 0.1쪽 | 온도 1의 정확한 값, 교환 논증, 시드 위치 분해 |
+| 5 Figures | 0.2쪽 | (a) 2×n 빗 구성과 카운터(counter) 도식 (b) 작은 n 표나 경계 그림 |
+| 6 Future Work | 0.1쪽 | 온도 1의 정확한 값, [교환 논증(exchange argument)](#term-exchange), 시드 위치 분해 |
 | References | 0.05쪽 | 4–6개 |
 
 ## 구현 설계 (나중 단계용)
@@ -79,7 +92,7 @@
 
 ```
 min_tileset/
-  tiles.py         # 타일 종류, 접착 세기, 시스템 정의
+  tiles.py         # 타일 종류, 결합 세기, 시스템 정의
   uniqueness.py    # 결정적 조립 여부와 종단 모양 검사 (다항 시간 검사)
   search.py        # 2×n 전수 탐색 R1: n = 2..8, τ = 1과 2, 시드 위치마다   ← 클러스터에서 실행
   counter_sim.py   # 손 구성 시뮬레이션 R2 (선택): 몇 개의 (m, D)            ← 클러스터에서 실행
@@ -97,9 +110,9 @@ min_tileset/
 
 1. [온도(temperature, τ)](#term-temperature)는 1인가요, 2인가요? 풀이자가 고르나요?
 2. 최소 타일 수는 [결정적 조립(directed self-assembly)](#term-directed)인가요, [엄격 조립(strict self-assembly)](#term-strict)인가요? 문제의 "uniquely self-assemble"은 결정적 조립이라고 읽었습니다.
-3. 입력 모양은 일진수 n이나 정렬된 칸 목록인가요, 아니면 n을 이진수로 주나요? 희소성 정리는 이진수 n에서 성립하지 않습니다.
+3. 입력 모양은 단항(unary) n이나 정렬된 칸 목록인가요, 아니면 n을 이진수로 주나요? 희소성 정리는 이진수 n에서 성립하지 않습니다.
 4. "[시드(seed)](#term-seed)가 모서리에 있다"는 네 모서리 중 어느 것이든 된다는 뜻인가요?
-5. "Dr. Schwaller"는 텍사스 대학교 리오그란데 밸리 캠퍼스(University of Texas Rio Grande Valley, UTRGV)의 Robert Schweller 교수님인가요? (확인하지 못한 질문입니다. 사실로 단정하지 않습니다.)
+5. "Dr. Schwaller"는 Robert Schweller 교수님인가요? 그 교수님은 텍사스 대학교 리오그란데 밸리 캠퍼스(University of Texas Rio Grande Valley, UTRGV) 소속인가요? (확인하지 못한 질문입니다. 사실로 단정하지 않습니다.)
 6. 타일은 회전하지 않고 평행이동만 하나요? (정의에서 읽은 추정입니다.)
 7. 모서리 시드의 "식"은 어떤 꼴인가요? (예: c·√n + O(1) 꼴인가요?)
 
@@ -107,20 +120,44 @@ min_tileset/
 
 ## 용어 부록 (terms appendix)
 
+<a id="term-np"></a>
+- **비결정 다항 시간(nondeterministic polynomial time, NP)**: 답을 다항 시간에 검증할 수 있는 결정 문제의 부류.
+
+<a id="term-poly"></a>
+- **다항 시간(polynomial time, P)**: 입력 크기의 다항식으로 늘어나는 계산 시간. 그 시간에 풀리는 문제의 부류도 가리킨다.
+
+<a id="term-np-complete"></a>
+- **비결정 다항 시간 완전(NP-complete)**: 비결정 다항 시간(nondeterministic polynomial time, NP) 부류에 속한다. 그 부류의 모든 문제를 이 문제로 바꿀 수 있다.
+
 <a id="term-sparse"></a>
-- **희소 집합(sparse set)**: 길이 L의 원소 수가 L의 다항식 이하인 집합.
+- **희소 집합(sparse set)**: 길이 L인 원소의 수가 L의 다항식 이하인 집합.
 
 <a id="term-mahaney"></a>
-- **마하니 정리(Mahaney's theorem)**: 희소한 NP-완전 집합이 있으면 P = NP라는 정리.
+- **Mahaney 정리(Mahaney's theorem)**: 다음 정리다. 희소 집합이 비결정 다항 시간 완전(NP-complete)이면 다음이 성립한다. 다항 시간(polynomial time, P)과 비결정 다항 시간(nondeterministic polynomial time, NP)이 같다.
+
+<a id="term-unary"></a>
+- **단항(unary) 인코딩**: 수 n을 1이 n개인 문자열로 쓰는 방식. 입력 길이가 n에 비례한다.
+
+<a id="term-normred"></a>
+- **정규화 환원(normalization reduction)**: 어떤 인코딩이든 표준형 ⟨1^n, s, k⟩로 바꾸는 다항 시간 변환.
+
+<a id="term-subexp"></a>
+- **부분지수 시간(subexponential time)**: 2^n보다 작고 다항식보다 큰 계산 시간. 여기서는 2^{O(√n log n)}.
+
+<a id="term-exchange"></a>
+- **교환 논증(exchange argument)**: 최적 해의 한 부분을 바꿔도 값이 나쁘지 않음을 보이는 증명 방법.
+
+<a id="term-counter"></a>
+- **카운터(counter)**: 열을 지날 때마다 수를 세어 길이를 정하는 타일 구성.
 
 <a id="term-comb"></a>
-- **빗 구성(comb construction)**: 아래 줄에 서로 다른 타일 n개, 위 줄에 같은 타일 하나를 쓰는 n + 1종 구성. 위 줄 시드는 위아래로 뒤집어 쓴다.
+- **빗 구성(comb construction)**: n + 1종 구성이다. 아래 줄에 타일 n종, 위 줄에 타일 1종을 쓴다. 위 줄 시드는 뒤집은 빗을 쓴다.
 
 <a id="term-seed"></a>
 - **시드(seed)**: 정해진 자리에 놓인 첫 타일. 모든 성장이 여기서 시작한다.
 
 <a id="term-temperature"></a>
-- **온도(temperature, τ)**: 타일이 붙기 위해 필요한 접착 세기의 합의 문턱값.
+- **온도(temperature, τ)**: 타일이 붙기 위해 필요한 결합 세기 합의 문턱값.
 
 <a id="term-directed"></a>
 - **결정적 조립(directed self-assembly)**: 종단 조립체가 정확히 하나이고 그 모양이 목표 모양인 경우.
