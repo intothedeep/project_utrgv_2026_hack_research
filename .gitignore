@@ -65,3 +65,11 @@ scripts/migration/_dumps/
 
 # GitHub Actions build artifacts for _scripts/gcp/deploy-*.sh (kept, not soft-deleted)
 .gh-artifacts/
+
+# LaTeX build artifacts
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
+*.xdv

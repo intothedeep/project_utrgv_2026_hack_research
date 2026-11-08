@@ -1,0 +1,1552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HACK · 2×n Minimum Tileset Study Tips</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500&display=swap">
+<style>
+/* html-theme: the one theme for HTML output (rules/answering.md §3).
+   Light tokens: ported from the owner's earlier web project's globals.css
+   (shadcn neutral, achromatic, radius 0, whole-UI IBM Plex Mono).
+   Dark tokens: added 2026-10-02 in the same achromatic family; the source had no dark theme. */
+
+:root {
+    --radius: 0;
+
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.55 0 0);
+    --rule: oklch(0.9 0 0);          /* hairlines and chart grid; the source --border is too strong for grids */
+    --ring: oklch(0.45 0 0);
+
+    /* signal colours carry meaning, not decoration */
+    --signal-instruction: #d40000;   /* an instruction / something the reader must act on */
+    --signal-plan: #0432ff;          /* a plan / a pre-registered line */
+    --signal-flag-fill: #fff3a0;     /* a highlighted cell or row */
+    --signal-flag-line: #e6d24a;
+    --signal-dead-fill: #e4e4e2;     /* retired, skipped, out of scope */
+    --signal-dead-ink: oklch(0.53 0.01 260);
+
+    /* Plex Mono has no Hangul; Korean falls through to Plex Sans KR */
+    --font: "IBM Plex Mono", "IBM Plex Sans KR", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+* { box-sizing: border-box; border-radius: var(--radius); }
+body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font);
+    font-feature-settings: "cv11", "ss01";
+    font-size: 14px;
+    line-height: 1.6;
+    padding-inline: 16px;
+    padding-block: 32px 64px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1 { font-size: 24px; line-height: 1.3; font-weight: 700; margin: 0; text-wrap: balance; }
+h2 { font-size: 17px; font-weight: 500; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.muted { color: var(--muted-foreground); }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+.panel { background: var(--card); color: var(--card-foreground); border: 1px solid var(--border); padding: 16px; }
+.scroll-x { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
+th { font-weight: 500; color: var(--muted-foreground); }
+th:first-child, td:first-child { text-align: left; }
+.flag { background: var(--signal-flag-fill); box-shadow: inset 2px 0 0 var(--signal-flag-line); }
+.instruction { color: var(--signal-instruction); }
+.plan { color: var(--signal-plan); }
+.dead { background: var(--signal-dead-fill); color: var(--signal-dead-ink); }
+button { font: inherit; padding: 4px 12px; border: 1px solid var(--border); background: var(--card); color: var(--foreground); cursor: pointer; }
+button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+svg text { fill: var(--muted-foreground); font-family: var(--font); font-size: 11px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+/* Chart series colours: the page sets them. They do not clash with the signal colours (red, blue, yellow, grey fill). */
+:root{
+  --series-l1:#0e7490; --series-l2:#b45309; --series-l3:#4d7c0f;
+  --series-circle:#a21caf; --series-sphere:#6b7280;
+  --signal-open-fill:oklch(0.93 0.05 255); --signal-open-line:oklch(0.5 0.17 255);
+}
+/* Page layout */
+body{word-break:keep-all}
+section,.stepbox{display:flex;flex-direction:column;gap:16px}
+.stepbox{border-top:6px solid var(--foreground);padding-top:12px;scroll-margin-top:60px}
+.stepno{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+[hidden]{display:none!important}
+.subtabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border)}
+.subtabs button{font-size:13px;font-weight:500;background:none;color:var(--muted-foreground);border:none;border-bottom:3px solid transparent;padding:8px 12px;margin-bottom:-1px;text-align:left}
+.subtabs button:hover{color:var(--foreground)}
+.subtabs button[aria-selected="true"]{color:var(--primary-foreground);background:var(--primary);font-weight:700}
+.termlist li.hl{outline:2px solid var(--ring);outline-offset:2px}
+.back{align-self:flex-start}
+a{color:var(--foreground);text-decoration:underline}
+a.t{text-decoration:underline dotted}
+.lede{display:flex;flex-direction:column;gap:12px}
+.lede p{max-width:80ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted-foreground);font-size:13px}
+.meta b{color:var(--foreground);font-weight:700}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+code,.mono{font-size:.95em}
+h3{font-size:14px;font-weight:700;margin:0}
+p{max-width:80ch}
+.box{background:var(--card);border:1px solid var(--border);padding:16px}
+.note{font-size:13px;color:var(--muted-foreground)}
+.why{border-left:3px solid var(--foreground);padding:2px 0 2px 12px}
+.thm{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.thm .stmt{display:flex;flex-direction:column;gap:10px}
+.thm figure,figure.fig{margin:0;display:flex;flex-direction:column;gap:8px}
+figcaption{font-size:12.5px;color:var(--muted-foreground)}
+figcaption b.n{color:var(--foreground)}
+.formula{background:var(--muted);padding:8px 12px;font-size:13px;overflow-x:auto;white-space:nowrap}
+.explorer{display:grid;grid-template-columns:230px minmax(0,1fr) 300px;gap:16px;align-items:start}
+.presets{display:flex;flex-direction:column;gap:14px;max-height:640px;overflow-y:auto;padding-right:4px}
+.pgroup{display:flex;flex-direction:column;gap:5px}
+.presets button,.ctrl button{font-size:13px;text-align:left;line-height:1.35;padding:6px 9px}
+.stage{display:flex;flex-direction:column;gap:8px;min-width:0}
+.canvasbox{position:relative;background:var(--card);border:1px solid var(--border);aspect-ratio:4/3;max-width:100%;overflow:hidden;touch-action:none;cursor:grab}
+.canvasbox:active{cursor:grabbing}
+.figbox{aspect-ratio:1/1}
+canvas{display:block;width:100%;height:100%}
+.ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted-foreground)}
+.ctrl label{display:flex;gap:5px;align-items:center;cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted-foreground)}
+.sw{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
+.readout{display:flex;flex-direction:column;gap:12px;min-width:0}
+.case{font-size:15px;line-height:1.4;font-weight:500}
+.chip{display:inline-flex;font-size:12px;font-weight:700;padding:2px 9px;width:fit-content;border:1px solid var(--border)}
+.chip.a2{background:var(--muted)}
+.chip.a3{background:var(--primary);color:var(--primary-foreground)}
+.chip.a0{background:var(--card)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;font-size:13px;margin:0}
+.kv dt{color:var(--muted-foreground)}
+.kv dd{margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+th,td{text-align:left;white-space:normal;vertical-align:top;font-size:13px}
+td.num{font-variant-numeric:tabular-nums}
+.readout th,.readout td{white-space:nowrap}
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--border)}
+.st{font-size:12px;font-weight:700;padding:2px 8px;white-space:nowrap;border:1px solid var(--border);display:inline-block}
+.st.ok{background:var(--primary);color:var(--primary-foreground)}
+.st.q{background:var(--signal-flag-fill);border-color:var(--signal-flag-line);color:var(--foreground)}
+.st.open{background:var(--card);color:var(--foreground);border-style:dashed}
+.flow{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center}
+.node{background:var(--card);border:1px solid var(--border);padding:10px 14px;max-width:580px;width:100%;text-align:center;font-size:13px}
+.node.q{border-width:2px;background:var(--muted)}
+.arrow{height:26px;width:2px;background:var(--border);position:relative}
+.arrow::after{content:"";position:absolute;bottom:-1px;left:-5px;border:6px solid transparent;border-top-color:var(--border)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;width:100%;max-width:980px}
+.branch{display:flex;flex-direction:column;align-items:center}
+.branch .tag{font-size:12px;color:var(--muted-foreground);padding:6px 0}
+.leafs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;width:100%}
+.leaf{background:var(--card);border:1px solid var(--border);padding:8px 10px;font-size:12.5px}
+.leaf b{display:block}
+.node.yes{border-width:2px}
+.node.no{border-style:dashed}
+.tl{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--border);padding:16px}
+.tlrow{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;align-items:center;font-size:12.5px}
+.tltrack{position:relative;height:20px;background:var(--muted)}
+.tlbar{position:absolute;top:0;bottom:0;background:var(--series-l1)}
+.tlbar.bonus{background:var(--series-l2)}
+.tlbar.write{background:var(--series-circle)}
+.tlaxis{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;font-size:11px;color:var(--muted-foreground)}
+.ticks{position:relative;height:16px}
+.ticks span{position:absolute;transform:translateX(-50%)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.col{display:flex;flex-direction:column;gap:10px}
+ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.files li{font-size:13px}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px}
+.steps li::before{content:counter(s);font-weight:700}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--background);z-index:5;padding-top:8px}
+.tabs button{font-size:13px;font-weight:500;background:none;color:var(--muted-foreground);border:none;border-bottom:3px solid transparent;padding:10px 14px;margin-bottom:-1px}
+.tabs button:hover{color:var(--foreground)}
+.tabs button[aria-selected="true"]{color:var(--foreground);border-bottom-color:var(--foreground);font-weight:700;background:none}
+.tabpanel{display:flex;flex-direction:column;gap:40px}
+.timeline{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0;border-left:2px solid var(--border);margin-left:8px}
+.timeline li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;padding:0 0 18px 18px;position:relative}
+.timeline li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--card);border:2px solid var(--foreground)}
+.timeline li.now::before{background:var(--series-circle);border-color:var(--series-circle)}
+.timeline .yr{font-size:12.5px;padding-top:2px}
+.timeline li.now .yr{font-weight:700}
+.timeline b{display:block}
+.lineage{width:100%;min-width:2540px;height:auto;display:block}
+.lineage.flow2{min-width:780px}
+.lineage.flow2 .edges path{marker-end:url(#ah2)}
+.lineage .lane{font-size:12px;font-weight:700;fill:var(--muted-foreground)}
+.lineage rect{fill:var(--card);stroke:var(--border);stroke-width:1.2}
+.lineage text{font-size:12px;fill:var(--foreground)}
+.lineage text.y{font-size:11px;fill:var(--muted-foreground)}
+.lineage .target polygon{fill:var(--muted);stroke:var(--series-circle);stroke-width:2.5}
+.lineage .plan rect{stroke-dasharray:5 3}
+.lineage [data-box]{cursor:pointer}
+.lineage [data-box]:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.lineage [data-box][aria-pressed="true"] rect,.lineage [data-box][aria-pressed="true"] polygon{stroke:var(--primary);stroke-width:4}
+.nodeinfo h3{margin:0 0 8px}
+.nodeinfo th{text-align:left;white-space:nowrap;vertical-align:top;width:1%}
+.nodeinfo ul{margin:0;padding-left:18px}
+.lineage text.al{font-size:11px;fill:var(--foreground)}
+.lineage .edges path{fill:none;stroke:var(--muted-foreground);stroke-width:1.4;marker-end:url(#ah)}
+.lineage .edges path.hot{stroke:var(--series-circle);stroke-width:2}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.gcard{background:var(--card);border:1px solid var(--border);padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.gtitle{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.gbox{aspect-ratio:1/1}
+.ginfo{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12px}
+.ginfo button{font-size:12px;margin-left:auto;padding:4px 8px}
+.ginfo .ill{flex-basis:100%;font-size:11px;color:var(--muted-foreground)}
+.termlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px 24px;margin:0;padding:0;list-style:none}
+.termlist li{font-size:13px;scroll-margin-top:60px}
+.termlist li:target{background:var(--signal-flag-fill)}
+@media (max-width:900px){
+  .explorer{grid-template-columns:minmax(0,1fr)}
+  .presets{max-height:none;flex-direction:row;flex-wrap:wrap}
+  .pgroup{flex:1 1 200px}
+  .thm,.three{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .split,.two{grid-template-columns:minmax(0,1fr)}
+  .tlrow,.tlaxis{grid-template-columns:120px minmax(0,1fr)}
+  .timeline li{grid-template-columns:minmax(0,1fr);gap:2px}
+}
+/* Extra rules for this page only */
+.st.dead{background:var(--signal-dead-fill);color:var(--signal-dead-ink);border-color:var(--border)}
+.st.part{background:var(--muted);color:var(--foreground);border:2px solid var(--foreground)}
+.vz.neutral .g1,.vz.neutral .g2{fill:var(--muted-foreground)}
+.lineage.lin2{min-width:900px}
+.asm svg text.nm{fill:var(--foreground);font-size:15px;font-weight:700}
+.asm svg text.gl{fill:var(--foreground);font-size:10px}
+.asm svg text.ax{fill:var(--muted-foreground);font-size:11px}
+.cht svg text.ax{fill:var(--muted-foreground);font-size:11px}
+.cht svg text.vl{fill:var(--foreground);font-size:11px;font-weight:700}
+.figA text{font-size:14px}
+.sline{fill:none;stroke-width:2}
+.sl1{stroke:var(--series-l1)}
+.sl2{stroke:var(--series-l2)}
+.sl3{stroke:var(--series-circle)}
+.grid{stroke:var(--rule);stroke-width:1}
+.axis{stroke:var(--border);stroke-width:1}
+.mark{stroke:var(--foreground);stroke-width:1;stroke-dasharray:4 3}
+.rng{width:100%;max-width:420px}
+.matrix th,.matrix td{text-align:left;white-space:normal}
+.matrix td{min-width:200px}
+.callout{border:2px solid var(--foreground);padding:12px 16px;background:var(--muted)}
+.tdl li{font-size:13px}
+td ul,td ol{padding-left:16px;gap:3px}
+.sm{font-size:12px;color:var(--muted-foreground)}
+.legendrow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:12px;color:var(--muted-foreground)}
+.usedrow{background:var(--signal-flag-fill)}
+/* Tab 0 "understand by pictures" only */
+.vz{width:100%;height:auto;display:block;background:var(--card);border:1px solid var(--border)}
+.vz text{fill:var(--foreground);font-size:12px}
+.vz text.s{fill:var(--muted-foreground);font-size:11px}
+.vz text.b{font-weight:700}
+.vz text.bad{fill:var(--destructive);font-weight:700}
+.vz .bx{fill:var(--card);stroke:var(--border);stroke-width:1.3}
+.vz .bx.done{fill:var(--muted);stroke:var(--foreground);stroke-width:2}
+.vz .bx.wait{stroke-dasharray:5 3}
+.vz .hi{fill:var(--signal-flag-fill);stroke:var(--signal-flag-line);stroke-width:3;stroke-dasharray:6 4}
+.vz .ar{stroke:var(--muted-foreground);stroke-width:1.5;fill:none}
+.vz .opn{fill:var(--signal-open-fill);stroke:var(--signal-open-line);stroke-width:3;stroke-dasharray:6 4}
+.vz .hnew{fill:none;stroke:var(--signal-flag-line);stroke-width:2}
+.vz .tl{fill:var(--muted);stroke:var(--foreground);stroke-width:1.5}
+.vz .tn{fill:none;stroke:var(--foreground);stroke-width:1.2;stroke-dasharray:5 3}
+.vz .tnew{fill:var(--signal-flag-fill);stroke:var(--foreground);stroke-width:1.5}
+.vz .g1{fill:var(--series-l1)}
+.vz .g2{fill:var(--series-l2)}
+.vz .fade{opacity:.35}
+.vzbar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+.vzbar .cnt{font-weight:700}
+.vzmsg{min-height:44px}
+.sw2{display:inline-block;width:12px;height:12px;vertical-align:middle;margin-right:5px;border:1px solid var(--foreground)}
+/* Language switch, top right. Hidden inside tips/index.html, which has its own. */
+.langsw{position:absolute;top:12px;right:16px;display:flex;z-index:10}
+.langsw a,.langsw b{padding:4px 10px;border:1px solid var(--border);font-weight:500;text-decoration:none;color:var(--foreground);background:var(--background)}
+.langsw a+b,.langsw b+a{border-left:0}
+.langsw b{background:var(--primary);color:var(--primary-foreground)}
+.framed .langsw{display:none}
+</style>
+<script>if (window.self !== window.top) { document.documentElement.classList.add("framed"); }</script>
+</head>
+<body>
+<nav class="langsw" aria-label="Language"><a href="study_tips.html" lang="ko" hreflang="ko">한국어</a><b aria-current="page">English</b></nav>
+<div class="wrap">
+
+<header class="lede">
+  <span class="eyebrow">University of Texas Rio Grande Valley (UTRGV) Research Hackathon 2026 · Set by Dr. Schwaller</span>
+  <h1>Minimum Tileset for a 2×n Rectangle: Study Tips</h1>
+  <p>This is a study map for beginners. You learn what to know and why, step by step. Each tab leads through numbered step boxes.</p>
+  <p>The problem is this. You get one shape. You find the fewest tile types that assemble that shape uniquely. This page covers the case where the shape is a 2×n rectangle.</p>
+  <div class="meta"><span>Deadline <b>Sun 11/8, 09:00</b></span><span>Deliverable <b>2-page paper</b></span><span>Materials as of <b>2026-11-07</b></span><span>Set by <b>Dr. Schwaller</b> (presumed to be Robert Schweller, unverified)</span></div>
+  <div class="legendrow"><span>Status labels:</span>
+    <span><span class="st ok">PROVEN</span> proven, with a source</span>
+    <span><span class="st q">DERIVED-BY-HAND</span> derived by hand, not run</span>
+    <span><span class="st part">PARTIAL</span> source read only in part. PROVEN-conditional has this colour too</span>
+    <span><span class="st open">CONJECTURE</span> a guess</span>
+    <span><span class="st dead">UNVERIFIED</span> could not be verified</span></div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Page sections">
+  <button type="button" role="tab" id="tb-viz" aria-controls="tab-viz" data-tab="viz">0. Understand by pictures</button>
+  <button type="button" role="tab" id="tb-now" aria-controls="tab-now" data-tab="now">1. Current version · study map</button>
+  <button type="button" role="tab" id="tb-background" aria-controls="tab-background" data-tab="background">2. Background and history</button>
+  <button type="button" role="tab" id="tb-papers" aria-controls="tab-papers" data-tab="papers">3. Key paper lineage</button>
+</nav>
+
+<div class="tabpanel" id="tab-viz" role="tabpanel" aria-labelledby="tb-viz">
+
+<div class="subtabs" role="tablist" aria-label="Tab 0 steps">
+  <button type="button" role="tab" id="st-s0-1" aria-controls="s0-1">Step 1 Big-picture flowchart</button>
+  <button type="button" role="tab" id="st-s0-2" aria-controls="s0-2">Step 2 How tiles attach</button>
+  <button type="button" role="tab" id="st-s0-3" aria-controls="s0-3">Step 3 Why 1 type is not enough</button>
+  <button type="button" role="tab" id="st-s0-4" aria-controls="s0-4">Step 4 Comb construction</button>
+  <button type="button" role="tab" id="st-s0-5" aria-controls="s0-5">Step 5 Intuition for the bound √n / 2</button>
+  <button type="button" role="tab" id="st-s0-6" aria-controls="s0-6">Step 6 One cycle of the τ = 2 counter</button>
+  <button type="button" role="tab" id="st-s0-7" aria-controls="s0-7">Step 7 Tile count bars</button>
+  <button type="button" role="tab" id="st-s0-8" aria-controls="s0-8">Step 8 Our workflow</button>
+</div>
+
+<section class="stepbox" id="s0-1" role="tabpanel" aria-labelledby="st-s0-1">
+  <span class="stepno">Step 1 of 8</span>
+  <h2>Big picture: what we know in each case</h2>
+  <p class="why"><b>Result.</b> Two cases are open. One is the exact value at temperature (τ) = 2 with an interior seed. This is the hackathon question. The order is Θ(√n) and we derived the upper bound by hand. The other is the exact value for τ = 1. We do not know it without the no-glue-mismatch assumption. For the τ = 2 corner seed, the setter says a formula exists. We did not find it.</p>
+  <div class="legendrow"><span class="st ok">PROVEN</span> proven <span class="st part">PROVEN-conditional, PARTIAL</span> <span class="st q">DERIVED-BY-HAND</span> derived by hand <span class="st open">CONJECTURE</span> a guess <span class="st dead">UNVERIFIED</span> unverified <span><span class="sw2" style="background:var(--signal-open-fill);border-color:var(--signal-open-line);border-style:dashed"></span>open case in Figure 1</span></div>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 372" role="img" aria-label="Flowchart that splits the input into three branches">
+      <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#777"/></marker></defs>
+      <rect class="bx" x="14" y="145" width="130" height="70"/>
+      <text class="b" x="79" y="172" text-anchor="middle">Input</text>
+      <text x="79" y="192" text-anchor="middle">2×n rectangle</text>
+      <rect class="bx" x="184" y="145" width="150" height="70"/>
+      <text class="b" x="259" y="168" text-anchor="middle">Choose model</text>
+      <text class="s" x="259" y="186" text-anchor="middle" style="font-size:10px">temperature τ = 1 or 2</text>
+      <text class="s" x="259" y="202" text-anchor="middle">directed assembly</text>
+      <path class="ar" marker-end="url(#a1)" d="M144 180H182"/>
+      <!-- branches -->
+      <path class="ar" marker-end="url(#a1)" d="M334 180H360V55H392"/>
+      <path class="ar" marker-end="url(#a1)" d="M334 180H392"/>
+      <path class="ar" marker-end="url(#a1)" d="M334 180H360V305H392"/>
+      <rect class="bx" x="394" y="25" width="170" height="60"/>
+      <text class="b" x="479" y="50" text-anchor="middle">τ = 1</text>
+      <text class="s" x="479" y="68" text-anchor="middle">any seed position</text>
+      <rect class="bx" x="394" y="150" width="170" height="60"/>
+      <text class="b" x="479" y="175" text-anchor="middle">τ = 2, corner seed</text>
+      <text class="s" x="479" y="193" text-anchor="middle">seed in a corner cell</text>
+      <rect class="bx" x="394" y="275" width="170" height="60"/>
+      <text class="b" x="479" y="300" text-anchor="middle">τ = 2, interior seed</text>
+      <text class="s" x="479" y="318" text-anchor="middle">seed in a middle cell</text>
+      <path class="ar" marker-end="url(#a1)" d="M564 55H596"/>
+      <path class="ar" marker-end="url(#a1)" d="M564 180H596"/>
+      <path class="ar" marker-end="url(#a1)" d="M564 305H596"/>
+      <rect class="bx" x="598" y="15" width="350" height="80"/>
+      <rect class="opn" x="594" y="11" width="358" height="88"/>
+      <text class="b" x="613" y="37">Ω(√n) ≤ t ≤ n + 1</text>
+      <text class="s" x="613" y="56">exactly n + 1 if no glue mismatch</text>
+      <text class="s" x="613" y="73">OPEN: exact value, no assumption</text>
+      <rect class="bx" x="598" y="140" width="350" height="80"/>
+      <text class="b" x="613" y="162">√n / 2 ≤ t ≤ 4⌈√n⌉ + 2</text>
+      <text class="s" x="613" y="181">Setter says a formula exists. We found none</text>
+      <text class="s" x="613" y="198">We know only up to Θ(√n)</text>
+      <rect class="opn" x="594" y="262" width="358" height="100"/>
+      <text class="b" x="613" y="288">OPEN: hackathon question, exact value</text>
+      <text class="s" x="613" y="307">lower bound √n / 2 (any seed position)</text>
+      <text class="s" x="613" y="324" style="font-size:10px">upper bound n + 1 (comb), O(√n) two arms (by hand)</text>
+      <text class="s" x="613" y="341">exact value unknown</text>
+    </svg>
+    <figcaption><b class="n">Figure 1.</b> The three seed cases and what we know in each (dashed blue boxes are open). Why: it shows at a glance what is known and where our work starts. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3–§4</figcaption>
+  </figure>
+  <div class="vzbar"><span class="st ok">PROVEN</span><span class="note">lower and upper bound (S-MTS-2)</span><span class="st q">DERIVED-BY-HAND</span><span class="note">n + 1 upper bound (comb)</span><span class="st part">PROVEN-conditional, PARTIAL</span><span class="note">τ = 1, exactly n + 1 under the no-glue-mismatch assumption (S-MTS-6, definition needs checking)</span></div>
+</section>
+
+<section class="stepbox" id="s0-2" role="tabpanel" aria-labelledby="st-s0-2" hidden>
+  <span class="stepno">Step 2 of 8</span>
+  <h2>How tiles attach: glue strengths must reach the temperature</h2>
+  <p class="why"><b>Result.</b> At τ = 1, one glue is enough. At τ = 2, you need one strength-2 glue or two strength-1 glues.</p>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--series-l1)"></span>glue strength 1</span><span><span class="sw2" style="background:var(--series-l2)"></span>glue strength 2</span><span><span class="sw2" style="background:var(--muted)"></span>tile already placed</span><span><span class="sw2" style="border-style:dashed"></span>cell being tested</span><span class="st ok">PROVEN</span></div>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 300" role="img" aria-label="Four cases of tile attachment by temperature">
+      <rect x="0" y="0" width="240" height="30" fill="var(--primary)"/>
+      <text x="120" y="20" text-anchor="middle" style="fill:var(--primary-foreground);font-weight:700">τ = 1</text>
+      <rect x="240" y="0" width="720" height="30" fill="var(--primary)"/>
+      <text x="600" y="20" text-anchor="middle" style="fill:var(--primary-foreground);font-weight:700">τ = 2</text>
+      <path d="M240 30V300M480 30V300M720 30V300" stroke="var(--rule)"/>
+      <!-- a: tau1, one glue 1 -->
+      <rect class="tl" x="50" y="90" width="56" height="56"/>
+      <rect class="tn" x="106" y="90" width="56" height="56"/>
+      <rect class="g1" x="101" y="106" width="10" height="24"/>
+      <text class="s" x="106" y="84" text-anchor="middle">1</text>
+      <text x="120" y="200" text-anchor="middle">1 glue, strength 1</text>
+      <text class="s" x="120" y="220" text-anchor="middle">sum 1 ≥ τ 1</text>
+      <text class="b" x="120" y="248" text-anchor="middle">Attaches ✓</text>
+      <!-- b: tau2, one glue 2 -->
+      <rect class="tl" x="290" y="90" width="56" height="56"/>
+      <rect class="tn" x="346" y="90" width="56" height="56"/>
+      <rect class="g2" x="339" y="106" width="14" height="24"/>
+      <text class="s" x="346" y="84" text-anchor="middle">2</text>
+      <text x="360" y="200" text-anchor="middle">1 glue, strength 2</text>
+      <text class="s" x="360" y="220" text-anchor="middle">sum 2 ≥ τ 2</text>
+      <text class="b" x="360" y="248" text-anchor="middle">Attaches ✓</text>
+      <!-- c: tau2, two glues 1+1 (cooperative) -->
+      <rect class="tl" x="530" y="90" width="56" height="56"/>
+      <rect class="tn" x="586" y="90" width="56" height="56"/>
+      <rect class="tl" x="586" y="146" width="56" height="56"/>
+      <rect class="g1" x="602" y="141" width="24" height="10"/><text class="s" x="652" y="150">1</text>
+      <rect class="g1" x="581" y="106" width="10" height="24"/>
+      <text class="s" x="586" y="84" text-anchor="middle">1</text>
+      <text x="600" y="224" text-anchor="middle">2 glues, strengths 1 + 1</text>
+      <text class="s" x="600" y="244" text-anchor="middle">sum 2 ≥ τ 2, cooperative glues</text>
+      <text class="b" x="600" y="270" text-anchor="middle">Attaches ✓</text>
+      <!-- d: tau2, one glue 1 -->
+      <rect class="tl" x="770" y="90" width="56" height="56"/>
+      <rect class="tn" x="826" y="90" width="56" height="56"/>
+      <rect class="g1" x="821" y="106" width="10" height="24"/>
+      <text class="s" x="826" y="84" text-anchor="middle">1</text>
+      <text x="840" y="200" text-anchor="middle">1 glue, strength 1</text>
+      <text class="s" x="840" y="220" text-anchor="middle">sum 1 &lt; τ 2</text>
+      <text class="bad" x="840" y="248" text-anchor="middle">Does not attach ✗</text>
+    </svg>
+    <figcaption><b class="n">Figure 2.</b> One strength-1 glue attaches at τ = 1 but not at τ = 2. Why: cooperative binding is what lets τ = 2 support careful designs such as counters. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §1</figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s0-3" role="tabpanel" aria-labelledby="st-s0-3" hidden>
+  <span class="stepno">Step 3 of 8</span>
+  <h2>Why 1 type is not enough: even 2×1 needs 2 types</h2>
+  <p class="why"><b>Result.</b> One tile type t cannot even build 2×1. The seed t also fits the cell above. The same glue matches again, so the column grows forever.</p>
+  <div class="vzbar"><span class="st q">DERIVED-BY-HAND</span><span class="note">Note F1. A hand argument, not checked by a run.</span></div>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--muted-foreground)"></span>glue a (strength at least the temperature τ)</span><span><span class="sw2" style="background:var(--muted)"></span>placed tile</span><span><span class="sw2" style="background:var(--signal-flag-fill)"></span>newly attached tile</span></div>
+  <figure class="box fig vzstep" data-n="6">
+    <svg class="vz neutral" viewBox="0 0 960 330" role="img" aria-label="One tile type stacking upward forever, and the fix with two tile types">
+      <text class="b" x="30" y="24">One tile type t</text>
+      <text class="b" x="560" y="24">Two tile types A, B</text>
+      <path d="M520 40V320" stroke="var(--rule)"/>
+      <g data-from="3"><rect class="tl" x="118" y="114" width="44" height="44"/><text class="b" x="140" y="141" text-anchor="middle">t</text><rect class="g1" x="130" y="153" width="20" height="10"/><text class="s" x="170" y="160">a</text></g>
+      <g data-from="2"><rect class="tl" x="118" y="158" width="44" height="44"/><text class="b" x="140" y="185" text-anchor="middle">t</text><rect class="g1" x="130" y="197" width="20" height="10"/><text class="s" x="170" y="204">a</text></g>
+      <g data-from="1"><rect class="tl" x="118" y="202" width="44" height="44"/><text class="b" x="140" y="229" text-anchor="middle">t</text><rect class="g1" x="130" y="241" width="20" height="10"/><text class="s" x="170" y="248">a</text></g>
+      <g data-from="0"><rect class="tl" x="118" y="246" width="44" height="44"/><text class="b" x="140" y="273" text-anchor="middle">t</text><text class="s" x="200" y="273">seed</text></g>
+      <g data-from="4"><text class="b" x="140" y="96" text-anchor="middle">⋮</text><text class="bad" x="140" y="66" text-anchor="middle">∞</text><path class="ar" marker-end="url(#a3)" d="M230 200V70"/></g>
+      <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#777"/></marker></defs>
+      <g data-from="5"><rect class="tnew" x="650" y="202" width="44" height="44"/><text class="b" x="672" y="229" text-anchor="middle">B</text><rect class="tl" x="650" y="246" width="44" height="44"/><text class="b" x="672" y="273" text-anchor="middle">A</text><rect class="g1" x="662" y="241" width="20" height="10"/><text class="s" x="702" y="248">a</text><text class="s" x="702" y="273">seed</text><text class="b" x="650" y="180">2×1 complete ✓</text><text class="s" x="760" y="229">null above B: stops</text></g>
+    </svg>
+    <div class="vzbar"><button type="button" class="prev">Back</button><button type="button" class="next">Next</button><button type="button" class="rst">Restart</button><span>Tile types used: <span class="cnt">1</span></span></div>
+    <ol class="vzm" hidden>
+      <li data-c="1">Place the seed t. Both the north glue and the south glue of t are a.</li>
+      <li data-c="1">Another t attaches above. The south a of t matches the north a of the tile below.</li>
+      <li data-c="1">A third one attaches for the same reason.</li>
+      <li data-c="1">A fourth one attaches too.</li>
+      <li data-c="1">Nothing stops it, so the column grows forever. It is not 2×1.</li>
+      <li data-c="2">The fix: A has only a north glue a. B has only a south glue a. Nothing matches above B, so growth stops.</li>
+    </ol>
+    <p class="vzmsg" aria-live="polite"></p>
+    <figcaption><b class="n">Figure 3.</b> Left: with 1 type the column grows forever. Right: 2 types fix it and give 2×1. Why: equal north and south glues let a tile attach to itself. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F1</figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s0-4" role="tabpanel" aria-labelledby="st-s0-4" hidden>
+  <span class="stepno">Step 4 of 8</span>
+  <h2>Comb construction: n + 1 types always work</h2>
+  <p class="why"><b>Result.</b> The comb has n different types in the bottom row, one per cell. The top row has one type, T. That makes n + 1 types in total, so n = 5 gives 6 types.</p>
+  <div class="vzbar"><span class="st q">DERIVED-BY-HAND</span><span class="note">Note F3. Derived by hand and not simulated.</span></div>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--muted-foreground)"></span>glue (names are letters: e for the horizontal chain, u for vertical)</span><span><span class="sw2" style="background:var(--muted)"></span>tile</span><span>every glue strength = τ</span></div>
+  <figure class="box fig vzstep" data-n="10">
+    <svg class="vz neutral" viewBox="0 0 960 330" role="img" aria-label="Building the n = 5 comb one tile at a time">
+      <g data-from="0"><rect class="tl" x="40" y="200" width="90" height="70"/><text class="b" x="85" y="240" text-anchor="middle">B1</text><rect class="g2" x="75" y="200" width="20" height="10"/><text class="s" x="100" y="222">u</text>
+      </g>
+      <g data-from="1"><rect class="tl" x="40" y="130" width="90" height="70"/><text class="b" x="85" y="170" text-anchor="middle">T</text></g>
+      <g data-from="2"><rect class="tl" x="130" y="200" width="90" height="70"/><text class="b" x="175" y="240" text-anchor="middle">B2</text><rect class="g2" x="165" y="200" width="20" height="10"/><text class="s" x="190" y="222">u</text>
+        <rect class="g1" x="125" y="225" width="10" height="20"/><text class="s" x="130" y="290" text-anchor="middle">e1</text>
+      </g>
+      <g data-from="3"><rect class="tl" x="130" y="130" width="90" height="70"/><text class="b" x="175" y="170" text-anchor="middle">T</text></g>
+      <g data-from="4"><rect class="tl" x="220" y="200" width="90" height="70"/><text class="b" x="265" y="240" text-anchor="middle">B3</text><rect class="g2" x="255" y="200" width="20" height="10"/><text class="s" x="280" y="222">u</text>
+        <rect class="g1" x="215" y="225" width="10" height="20"/><text class="s" x="220" y="290" text-anchor="middle">e2</text>
+      </g>
+      <g data-from="5"><rect class="tl" x="220" y="130" width="90" height="70"/><text class="b" x="265" y="170" text-anchor="middle">T</text></g>
+      <g data-from="6"><rect class="tl" x="310" y="200" width="90" height="70"/><text class="b" x="355" y="240" text-anchor="middle">B4</text><rect class="g2" x="345" y="200" width="20" height="10"/><text class="s" x="370" y="222">u</text>
+        <rect class="g1" x="305" y="225" width="10" height="20"/><text class="s" x="310" y="290" text-anchor="middle">e3</text>
+      </g>
+      <g data-from="7"><rect class="tl" x="310" y="130" width="90" height="70"/><text class="b" x="355" y="170" text-anchor="middle">T</text></g>
+      <g data-from="8"><rect class="tl" x="400" y="200" width="90" height="70"/><text class="b" x="445" y="240" text-anchor="middle">B5</text><rect class="g2" x="435" y="200" width="20" height="10"/><text class="s" x="460" y="222">u</text>
+        <rect class="g1" x="395" y="225" width="10" height="20"/><text class="s" x="400" y="290" text-anchor="middle">e4</text>
+      </g>
+      <g data-from="9"><rect class="tl" x="400" y="130" width="90" height="70"/><text class="b" x="445" y="170" text-anchor="middle">T</text></g>
+      <text class="s" x="40" y="315">The seed is B1, the first tile of the bottom row (lower-left corner)</text>
+      <text class="s" x="40" y="110">East and west glues of T are null: no growth past column 5</text>
+      <text class="b" x="560" y="30">Tile types (✓ when used)</text>
+      <rect x="560" y="46" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="60">B1  north u, east e1</text><g data-from="0"><text class="b" x="900" y="60">✓</text></g>
+      <rect x="560" y="76" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="90">T   south u</text><g data-from="1"><text class="b" x="900" y="90">✓</text></g>
+      <rect x="560" y="106" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="120">B2  west e1, east e2, north u</text><g data-from="2"><text class="b" x="900" y="120">✓</text></g>
+      <rect x="560" y="136" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="150">B3  west e2, east e3, north u</text><g data-from="4"><text class="b" x="900" y="150">✓</text></g>
+      <rect x="560" y="166" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="180">B4  west e3, east e4, north u</text><g data-from="6"><text class="b" x="900" y="180">✓</text></g>
+      <rect x="560" y="196" width="18" height="18" fill="var(--muted)" stroke="var(--foreground)"/><text x="590" y="210">B5  west e4, north u</text><g data-from="8"><text class="b" x="900" y="210">✓</text></g>
+    </svg>
+    <div class="vzbar"><button type="button" class="prev">Back</button><button type="button" class="next">Next</button><button type="button" class="rst">Restart</button><span>Tile types used: <span class="cnt">1</span> / 6</span></div>
+    <ol class="vzm" hidden>
+      <li data-c="1">Place the seed B1. Type count: 1.</li>
+      <li data-c="2">T attaches to the north glue u of B1. T is a new type.</li>
+      <li data-c="3">B2 attaches to the east glue e1 of B1. It is a new type.</li>
+      <li data-c="3">T attaches to the north glue u of B2. T is already used, so the count does not grow.</li>
+      <li data-c="4">B3 attaches to the east glue e2 of B2. It is a new type.</li>
+      <li data-c="4">T above B3. The count stays the same.</li>
+      <li data-c="5">B4 attaches. It is a new type.</li>
+      <li data-c="5">T above B4. The count stays the same.</li>
+      <li data-c="6">B5 attaches. It is a new type, and the east side of B5 is null.</li>
+      <li data-c="6">T above B5. No cell is left to fill. Done: 6 = n + 1 types.</li>
+    </ol>
+    <p class="vzmsg" aria-live="polite"></p>
+    <figcaption><b class="n">Figure 4.</b> Counting types as the n = 5 comb grows one tile at a time. Why: each bottom-row cell has only one candidate tile, so the result is directed. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F3</figcaption>
+  </figure>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 134" role="img" aria-label="The comb grows in both directions from any bottom-row seed cell">
+      <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#777"/></marker></defs>
+      <text class="b" x="30" y="20">Same tile set if the seed is B3</text>
+      <rect class="tl" x="300" y="40" width="70" height="44"/><text class="b" x="335" y="67" text-anchor="middle">B1</text>
+      <rect class="tl" x="370" y="40" width="70" height="44"/><text class="b" x="405" y="67" text-anchor="middle">B2</text>
+      <rect class="tl" x="440" y="40" width="70" height="44" style="fill:var(--signal-flag-fill)"/><text class="b" x="475" y="67" text-anchor="middle">B3</text>
+      <rect class="tl" x="510" y="40" width="70" height="44"/><text class="b" x="545" y="67" text-anchor="middle">B4</text>
+      <rect class="tl" x="580" y="40" width="70" height="44"/><text class="b" x="615" y="67" text-anchor="middle">B5</text>
+      <path class="ar" marker-end="url(#a4)" d="M440 98H300"/>
+      <path class="ar" marker-end="url(#a4)" d="M510 98H650"/>
+      <text class="s" x="30" y="60">Seed B3 grows west and east</text>
+      <text class="s" x="30" y="78">B types all differ: any start works</text>
+      <text class="b" x="30" y="122">If the seed is in the top row, this set fails. Use the flipped comb (n types on top, 1 below). It also has n + 1 types.</text>
+    </svg>
+    <figcaption><b class="n">Figure 5.</b> The same 6 types build 2×5 wherever the seed sits in the bottom row. Why: each bottom-row tile has one matching glue per neighbour, so growth has no fixed direction. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F3 (derived by hand)</figcaption>
+  </figure>
+  <p class="note">Why this set fails with a top-row seed: the cells under the seed T fit all of B₁ ... Bₙ, so they overlap. The vertically flipped comb puts a chain T₁ ... Tₙ in the top row and one tile B in the bottom row. So n + 1 holds for every seed cell.</p>
+</section>
+
+<section class="stepbox" id="s0-5" role="tabpanel" aria-labelledby="st-s0-5" hidden>
+  <span class="stepno">Step 5 of 8</span>
+  <h2>Intuition for the bound √n / 2: a repeated state lets us lengthen the shape</h2>
+  <p class="why"><b>Result.</b> With few tile types t, the column states run out and some column repeats. The state also includes the attachment order. Then pumping makes the shape infinitely long, which is a contradiction.</p>
+  <div class="vzbar"><span class="st ok">PROVEN</span><span class="note">[S-MTS-2] Theorem 3.1: constant 1/2, any seed position</span><span class="st q">DERIVED-BY-HAND</span><span class="note">The intuition below is a hand summary of the proof idea. [S-MTS-2] proves the producibility step.</span></div>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 200" role="img" aria-label="Flowchart of the lower-bound argument">
+      <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#777"/></marker></defs>
+      <rect class="bx" x="20" y="15" width="270" height="70"/>
+      <text class="b" x="155" y="40" text-anchor="middle">1 Look at one column</text>
+      <text class="s" x="155" y="60" text-anchor="middle">one vertical column has 2 tiles</text>
+      <rect class="bx" x="345" y="15" width="270" height="70"/>
+      <text class="b" x="480" y="40" text-anchor="middle">2 Define the state</text>
+      <text class="s" x="480" y="60" text-anchor="middle">(top tile, bottom tile, attach order)</text>
+      <rect class="bx" x="670" y="15" width="270" height="70"/>
+      <text class="b" x="805" y="40" text-anchor="middle">3 Count the states</text>
+      <text class="s" x="805" y="60" text-anchor="middle">number of states ≤ 2 · t²</text>
+      <path class="ar" marker-end="url(#a5)" d="M290 50H343"/>
+      <path class="ar" marker-end="url(#a5)" d="M615 50H668"/>
+      <path class="ar" marker-end="url(#a5)" d="M805 85V100H155V113"/>
+      <rect class="bx" x="20" y="115" width="270" height="70"/>
+      <text class="b" x="155" y="140" text-anchor="middle">4 Large n: a state repeats</text>
+      <text class="s" x="155" y="160" text-anchor="middle">same state twice on one side of seed</text>
+      <rect class="bx" x="345" y="115" width="270" height="70"/>
+      <text class="b" x="480" y="140" text-anchor="middle">5 Copy the span between</text>
+      <text class="s" x="480" y="160" text-anchor="middle">pumping, if attach order matches</text>
+      <rect class="hi" x="666" y="111" width="278" height="78"/>
+      <text class="b" x="805" y="140" text-anchor="middle">6 Infinite shape: contradiction</text>
+      <text class="s" x="805" y="160" text-anchor="middle">so n ≲ 4 · t²</text>
+      <path class="ar" marker-end="url(#a5)" d="M290 150H343"/>
+      <path class="ar" marker-end="url(#a5)" d="M615 150H664"/>
+    </svg>
+    <figcaption><b class="n">Figure 6.</b> The six steps of the lower-bound argument. Why: a column holds only 2 tiles, so with few types the states repeat. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F4</figcaption>
+  </figure>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 244" role="img" aria-label="A 2×n strip copied between two identical columns">
+      <text class="b" x="40" y="22">2×n strip (the seed is the left end column)</text>
+      <rect class="tl" x="40" y="40" width="50" height="50"/><text x="65" y="71" text-anchor="middle">a</text><rect class="tl" x="40" y="90" width="50" height="50"/><text x="65" y="121" text-anchor="middle">p</text>
+      <rect class="tl" x="90" y="40" width="50" height="50"/><text x="115" y="71" text-anchor="middle">b</text><rect class="tl" x="90" y="90" width="50" height="50"/><text x="115" y="121" text-anchor="middle">q</text>
+      <rect class="tl" x="140" y="40" width="50" height="50"/><text x="165" y="71" text-anchor="middle">c</text><rect class="tl" x="140" y="90" width="50" height="50"/><text x="165" y="121" text-anchor="middle">r</text>
+      <rect class="tl" x="190" y="40" width="50" height="50" style="fill:var(--signal-flag-fill)"/><text x="215" y="71" text-anchor="middle">E</text><rect class="tl" x="190" y="90" width="50" height="50" style="fill:var(--signal-flag-fill)"/><text x="215" y="121" text-anchor="middle">D</text>
+      <rect class="tl" x="240" y="40" width="50" height="50"/><text x="265" y="71" text-anchor="middle">d</text><rect class="tl" x="240" y="90" width="50" height="50"/><text x="265" y="121" text-anchor="middle">s</text>
+      <rect class="tl" x="290" y="40" width="50" height="50"/><text x="315" y="71" text-anchor="middle">e</text><rect class="tl" x="290" y="90" width="50" height="50"/><text x="315" y="121" text-anchor="middle">z</text>
+      <rect class="tl" x="340" y="40" width="50" height="50"/><text x="365" y="71" text-anchor="middle">f</text><rect class="tl" x="340" y="90" width="50" height="50"/><text x="365" y="121" text-anchor="middle">u</text>
+      <rect class="tl" x="390" y="40" width="50" height="50" style="fill:var(--signal-flag-fill)"/><text x="415" y="71" text-anchor="middle">E</text><rect class="tl" x="390" y="90" width="50" height="50" style="fill:var(--signal-flag-fill)"/><text x="415" y="121" text-anchor="middle">D</text>
+      <text class="b" x="65" y="168" text-anchor="middle">seed</text>
+      <g class="fade"><rect class="tl" x="440" y="40" width="50" height="50"/><text x="465" y="71" text-anchor="middle">d</text><rect class="tl" x="440" y="90" width="50" height="50"/><text x="465" y="121" text-anchor="middle">s</text></g>
+      <g class="fade"><rect class="tl" x="490" y="40" width="50" height="50"/><text x="515" y="71" text-anchor="middle">e</text><rect class="tl" x="490" y="90" width="50" height="50"/><text x="515" y="121" text-anchor="middle">z</text></g>
+      <g class="fade"><rect class="tl" x="540" y="40" width="50" height="50"/><text x="565" y="71" text-anchor="middle">f</text><rect class="tl" x="540" y="90" width="50" height="50"/><text x="565" y="121" text-anchor="middle">u</text></g>
+      <g class="fade"><rect class="tl" x="590" y="40" width="50" height="50"/><text x="615" y="71" text-anchor="middle">E</text><rect class="tl" x="590" y="90" width="50" height="50"/><text x="615" y="121" text-anchor="middle">D</text></g>
+      <rect class="tl" x="640" y="40" width="50" height="50"/><text x="665" y="71" text-anchor="middle">g</text><rect class="tl" x="640" y="90" width="50" height="50"/><text x="665" y="121" text-anchor="middle">v</text>
+      <rect class="tl" x="690" y="40" width="50" height="50"/><text x="715" y="71" text-anchor="middle">h</text><rect class="tl" x="690" y="90" width="50" height="50"/><text x="715" y="121" text-anchor="middle">w</text>
+      <rect class="tl" x="740" y="40" width="50" height="50"/><text x="765" y="71" text-anchor="middle">i</text><rect class="tl" x="740" y="90" width="50" height="50"/><text x="765" y="121" text-anchor="middle">x</text>
+      <rect class="tl" x="790" y="40" width="50" height="50"/><text x="815" y="71" text-anchor="middle">j</text><rect class="tl" x="790" y="90" width="50" height="50"/><text x="815" y="121" text-anchor="middle">y</text>
+      <text class="s" x="215" y="168" text-anchor="middle">same state E/D</text>
+      <text class="s" x="415" y="168" text-anchor="middle">same state E/D</text>
+      <path d="M215 150H415" stroke="var(--foreground)" stroke-width="1"/>
+      <text class="s" x="540" y="168" text-anchor="middle">copied span (faded)</text>
+      <text class="s" x="740" y="168" text-anchor="middle">original later columns (shifted)</text>
+      <text class="s" x="40" y="200">Appending the span between E/D once more keeps every glue matching.</text>
+      <text class="s" x="40" y="220">The attach order is the same too, so we can re-attach in that order (proof: [S-MTS-2] Theorem 3.1).</text>
+      <text class="s" x="40" y="238">Tile letters are illustrative. The letter t is used only for the number of tile types.</text>
+    </svg>
+    <figcaption><b class="n">Figure 7.</b> The two yellow columns share a state, so columns 5–8 can be appended again. Why: with the same order, the longer assembly is producible too. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F4 (illustrative example, letters are arbitrary)</figcaption>
+  </figure>
+  <div class="box col">
+    <h3>Calculation: one step per line</h3>
+    <div class="formula">n ≲ 4 · t²</div>
+    <div class="formula">t ≳ √n / 2</div>
+    <div class="formula">n = 100 gives √100 / 2 = 5, so t ≥ 5</div>
+    <ul class="tdl">
+      <li>At τ = 2, matching glues alone do not allow the copy.</li>
+      <li>A copied tile may attach by cooperative binding. Then its helper neighbour may be another copy. That copy is placed later.</li>
+      <li>So the attach order must match. We must also show that the copied assembly is really producible. This step is the hard part.</li>
+      <li>The constant 1/2 comes from the count above. [S-MTS-2] Theorem 3.1 proves the producibility step.</li>
+      <li>The Window Movie Lemma can also prove the same step (original text not read). Counting at most 2t(t + 1) movies gives a constant of about 1/2 (hand calculation).</li>
+    </ul>
+  </div>
+</section>
+
+<section class="stepbox" id="s0-6" role="tabpanel" aria-labelledby="st-s0-6" hidden>
+  <span class="stepno">Step 6 of 8</span>
+  <h2>The τ = 2 counter: one cycle as a block grows</h2>
+  <p class="why"><b>Result.</b> A block counts the digit d down in the top row. It counts the position in the bottom row. Growth stops at d = 0 in the last block.</p>
+  <div class="vzbar"><span class="st q">DERIVED-BY-HAND</span><span class="note">Illustrative example</span><span class="note">Note §4.3. Status: traced by hand (m = 3, D = 2 and m = 12, D = 4). Not simulated. Size m = 3, D = 2, length n = 1 + 3 · 2 = 7, and 3 + 3 · 2 + 2 = 11 tile types</span></div>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--series-l1)"></span>glue strength 1</span><span><span class="sw2" style="background:var(--series-l2)"></span>glue strength 2</span><span><span class="sw2" style="background:var(--signal-flag-fill);border-color:var(--signal-flag-line);border-width:3px"></span>yellow outline: tile attached in this step</span><span>The seed is the lower-right corner. Growth goes west (left)</span></div>
+  <p class="note">Glue names: the east glue of P₂ is p₁ and the east glue of P₃ is p₂. Both have strength 2. Each digit has its own digit glue, δ₁ or δ₀. A shared name would let X₁ and X₀ fit the same cell. Then the assembly is not directed.</p>
+  <figure class="box fig vzstep" data-n="6">
+    <svg class="vz" viewBox="0 0 960 290" role="img" aria-label="Six steps of the block cycle of the τ = 2 counter">
+<g data-from="0">
+<rect class="tl" x="498" y="160" width="78" height="60"/><text class="b" x="537" y="195" text-anchor="middle">Z</text>
+<rect class="tl" x="498" y="100" width="78" height="60"/><text class="b" x="537" y="135" text-anchor="middle">Y</text>
+<rect class="g2" x="525" y="153" width="24" height="14"/><text class="s" x="553" y="155">z</text>
+</g>
+<g data-from="0">
+<rect class="tl" x="420" y="100" width="78" height="60"/><text class="b" x="459" y="135" text-anchor="middle">S₁</text>
+<rect class="g2" x="491" y="118" width="14" height="24"/><text class="s" x="486" y="134" text-anchor="end">r₁</text>
+</g>
+<g data-from="1">
+<rect class="tl" x="420" y="160" width="78" height="60"/><text class="b" x="459" y="195" text-anchor="middle">P₁</text>
+<rect class="g1" x="493" y="178" width="10" height="24"/><text class="s" x="486" y="194" text-anchor="end">q</text>
+<rect class="g1" x="447" y="155" width="24" height="10"/><text class="s" x="475" y="155">s</text>
+</g>
+<g data-from="2">
+<rect class="tl" x="342" y="160" width="78" height="60"/><text class="b" x="381" y="195" text-anchor="middle">P₂</text>
+<rect class="g2" x="413" y="178" width="14" height="24"/><text class="s" x="408" y="194" text-anchor="end">p₁</text>
+<rect class="tl" x="264" y="160" width="78" height="60"/><text class="b" x="303" y="195" text-anchor="middle">P₃</text>
+<rect class="g2" x="335" y="178" width="14" height="24"/><text class="s" x="330" y="194" text-anchor="end">p₂</text>
+</g>
+<g data-from="3">
+<rect class="tl" x="342" y="100" width="78" height="60"/><text class="b" x="381" y="135" text-anchor="middle">M₁</text>
+<rect class="g1" x="415" y="118" width="10" height="24"/><text class="s" x="408" y="134" text-anchor="end">δ₁</text>
+<rect class="g1" x="369" y="155" width="24" height="10"/><text class="s" x="397" y="155">g</text>
+</g>
+<g data-from="4">
+<rect class="tl" x="264" y="100" width="78" height="60"/><text class="b" x="303" y="135" text-anchor="middle">X₁</text>
+<rect class="g1" x="337" y="118" width="10" height="24"/><text class="s" x="330" y="134" text-anchor="end">δ₁</text>
+<rect class="g1" x="291" y="155" width="24" height="10"/><text class="s" x="319" y="155">b</text>
+<rect class="g2" x="257" y="118" width="14" height="24"/><text class="s" x="274" y="116">r₀</text>
+</g>
+<g data-from="5">
+<rect class="tl" x="186" y="100" width="78" height="60"/><text class="b" x="225" y="135" text-anchor="middle">S₀</text>
+<rect class="tl" x="186" y="160" width="78" height="60"/><text class="b" x="225" y="195" text-anchor="middle">P₁</text>
+<rect class="tl" x="108" y="100" width="78" height="60"/><text class="b" x="147" y="135" text-anchor="middle">M₀</text>
+<rect class="tl" x="108" y="160" width="78" height="60"/><text class="b" x="147" y="195" text-anchor="middle">P₂</text>
+<rect class="tl" x="30" y="100" width="78" height="60"/><text class="b" x="69" y="135" text-anchor="middle">X₀</text>
+<rect class="tl" x="30" y="160" width="78" height="60"/><text class="b" x="69" y="195" text-anchor="middle">P₃</text>
+<rect class="g2" x="257" y="118" width="14" height="24"/>
+<rect class="g1" x="259" y="178" width="10" height="24"/><text class="s" x="274" y="194">q</text>
+<rect class="g1" x="213" y="155" width="24" height="10"/><text class="s" x="241" y="155">s</text>
+<rect class="g1" x="181" y="118" width="10" height="24"/><text class="s" x="174" y="134" text-anchor="end">δ₀</text>
+<rect class="g2" x="179" y="178" width="14" height="24"/><text class="s" x="174" y="194" text-anchor="end">p₁</text>
+<rect class="g1" x="135" y="155" width="24" height="10"/><text class="s" x="163" y="155">g</text>
+<rect class="g1" x="103" y="118" width="10" height="24"/><text class="s" x="96" y="134" text-anchor="end">δ₀</text>
+<rect class="g2" x="101" y="178" width="14" height="24"/><text class="s" x="96" y="194" text-anchor="end">p₂</text>
+<rect class="g1" x="57" y="155" width="24" height="10"/><text class="s" x="85" y="155">b</text>
+<text class="s" x="69" y="256" text-anchor="middle">west of X₀ = null</text></g>
+<g data-only="0"><rect class="hnew" x="415" y="95" width="88" height="70"/></g>
+<g data-only="1"><rect class="hnew" x="415" y="155" width="88" height="70"/></g>
+<g data-only="2"><rect class="hnew" x="337" y="155" width="88" height="70"/><rect class="hnew" x="259" y="155" width="88" height="70"/></g>
+<g data-only="3"><rect class="hnew" x="337" y="95" width="88" height="70"/></g>
+<g data-only="4"><rect class="hnew" x="259" y="95" width="88" height="70"/></g>
+<g data-only="5"><rect class="hnew" x="181" y="95" width="88" height="70"/><rect class="hnew" x="181" y="155" width="88" height="70"/><rect class="hnew" x="103" y="95" width="88" height="70"/><rect class="hnew" x="103" y="155" width="88" height="70"/><rect class="hnew" x="25" y="95" width="88" height="70"/><rect class="hnew" x="25" y="155" width="88" height="70"/></g>
+<text class="b" x="30" y="30">m = 3, D = 2, n = 7</text>
+<text class="s" x="30" y="50">top row: digit d (1 → 0), bottom row: position in block P₁ → P₃</text>
+<g data-only="0"><text class="b" x="612" y="110">Why S₁ attaches</text><text x="612" y="134">r₁ one glue of strength 2</text><text x="612" y="154">2 ≥ τ 2 ✓</text></g>
+<g data-only="1"><text class="b" x="612" y="110">Why P₁ attaches</text><text x="612" y="134">q strength 1 + s strength 1</text><text x="612" y="154">sum 2 ≥ τ 2, cooperative ✓</text></g>
+<g data-only="2"><text class="b" x="612" y="110">Why P₂, P₃ attach</text><text x="612" y="134">p₁, p₂ strength 2 each</text><text x="612" y="154">2 ≥ τ 2 ✓</text><rect class="hi" x="606" y="170" width="336" height="64"/><text class="b" x="612" y="192">Traced by hand, not simulated</text><text class="s" x="612" y="210">traced cases: m = 3, D = 2 and m = 12, D = 4</text><text class="s" x="612" y="226">east glues of P₂, P₃: p₁, p₂ (strength 2)</text></g>
+<g data-only="3"><text class="b" x="612" y="110">Why M₁ attaches</text><text x="612" y="134">δ₁ strength 1 + g strength 1</text><text x="612" y="154">sum 2 ≥ τ 2 ✓</text></g>
+<g data-only="4"><text class="b" x="612" y="110">Why X₁ attaches</text><text x="612" y="134">δ₁ strength 1 + b strength 1</text><text x="612" y="154">sum 2 ≥ τ 2 ✓</text><text x="612" y="178">sends r₀ (strength 2) west</text></g>
+<g data-only="5"><text class="b" x="612" y="110">Block 2 (d = 0)</text><text x="612" y="134">the same cycle once more</text><text x="612" y="158">west glue of X₀ = null</text><text x="612" y="178">no place for an S tile to attach</text><text x="612" y="198">P₁ has only q: 1 &lt; 2</text><text class="b" x="612" y="222">Growth stops ✓</text></g>
+    </svg>
+    <div class="vzbar"><button type="button" class="prev">Back</button><button type="button" class="next">Next</button><button type="button" class="rst">Restart</button><span>Cycle step: <span class="cnt">1 / 6</span></span></div>
+    <ol class="vzm" hidden>
+      <li data-c="1 / 6">1. The start tile S₁ attaches west of Y. One glue of strength 2 is enough.</li>
+      <li data-c="2 / 6">2. P₁ attaches below S₁. Two glues (q, s) add up as 1 + 1. This is cooperative binding.</li>
+      <li data-c="3 / 6">3. P₂ and P₃ continue west along the bottom row. They use chain glues of strength 2.</li>
+      <li data-c="4 / 6">4. M₁ fills the top row above P₂. δ₁ and g give 1 + 1.</li>
+      <li data-c="5 / 6">5. X₁ attaches above P₃ and sends r₀ west. This is the start signal for the next block.</li>
+      <li data-c="6 / 6">6. Block 2 runs the same cycle. The west glue of X₀ is null, so no S tile attaches and growth stops.</li>
+    </ol>
+    <p class="vzmsg" aria-live="polite"></p>
+    <figcaption><b class="n">Figure 8.</b> Six steps of one block cycle for m = 3, D = 2. Why: the rows share the counting, so there are m + 3D + 2 types, of order √n. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.3</figcaption>
+  </figure>
+  <div class="box col">
+    <h3>At this size the comb is smaller</h3>
+    <ul class="tdl">
+      <li>The counter has 11 types = P₁, P₂, P₃ (3) + S₀, S₁, M₀, M₁, X₀, X₁ (6) + Z, Y (2).</li>
+      <li>The comb for n = 7 has 7 + 1 = 8 types, so it is smaller.</li>
+      <li>The counter wins only for large n. The note's example: n = 10,035 gives 349 counter types against 10,036 comb types (m = 173, D = 58).</li>
+      <li>Limit in the note: it covers only lengths with n = 1 + m · D. The simulation (R2) has not yet run on the cluster.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="stepbox" id="s0-7" role="tabpanel" aria-labelledby="st-s0-7" hidden>
+  <span class="stepno">Step 7 of 8</span>
+  <h2>Tile count comparison: the counter wins by a wide margin at large n</h2>
+  <p class="why"><b>Result.</b> At n = 49 the counter (26 types) is about half the comb (50 types), since 26 ÷ 50 = 0.52. At n = 10,035 it is 349 types against 10,036. That is 10,036 ÷ 349 = 28.8, so about 29 times (calculated value). No construction can go below the lower bound.</p>
+  <div class="vzbar"><span class="st ok">PROVEN</span><span class="note">Aggarwal upper and lower bounds (S-MTS-2)</span><span class="st q">DERIVED-BY-HAND</span><span class="note">The comb and the counter from the notes. The counter is not verified by simulation.</span></div>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--series-circle)"></span>comb n + 1</span><span><span class="sw2" style="background:var(--series-l3)"></span>counter from the notes m + 3D + 2</span><span><span class="sw2" style="background:var(--series-l2)"></span>Aggarwal upper bound 4⌈√n⌉ + 2</span><span><span class="sw2" style="background:var(--series-l1)"></span>lower bound √n / 2</span></div>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 370" role="img" aria-label="Tile type counts at two lengths as log-scale bars">
+      <text class="b" x="30" y="24">n = 49</text>
+<text x="222" y="50" text-anchor="end">Comb n + 1</text><rect x="230" y="34" width="269" height="22" fill="var(--series-circle)"/><text class="b" x="507" y="50">50</text>
+<text x="222" y="80" text-anchor="end">Counter (D = 4, m = 12)</text><rect x="230" y="64" width="224" height="22" fill="var(--series-l3)"/><text class="b" x="462" y="80">26</text>
+<text x="222" y="110" text-anchor="end">Aggarwal upper bound</text><rect x="230" y="94" width="234" height="22" fill="var(--series-l2)"/><text class="b" x="472" y="110">30</text>
+<text x="222" y="140" text-anchor="end">Lower bound √n / 2</text><rect x="230" y="124" width="86" height="22" fill="var(--series-l1)"/><text class="b" x="324" y="140">3.5</text>
+<text class="b" x="30" y="184">n = 10,035</text>
+<text x="222" y="210" text-anchor="end">Comb n + 1</text><rect x="230" y="194" width="633" height="22" fill="var(--series-circle)"/><text class="b" x="871" y="210">10,036</text>
+<text x="222" y="240" text-anchor="end">Counter (D = 58, m = 173)</text><rect x="230" y="224" width="402" height="22" fill="var(--series-l3)"/><text class="b" x="640" y="240">349</text>
+<text x="222" y="270" text-anchor="end">Aggarwal upper bound</text><rect x="230" y="254" width="412" height="22" fill="var(--series-l2)"/><text class="b" x="650" y="270">406</text>
+<text x="222" y="300" text-anchor="end">Lower bound √n / 2</text><rect x="230" y="284" width="269" height="22" fill="var(--series-l1)"/><text class="b" x="507" y="300">50.1</text>
+<path class="axis" d="M230 318H940" stroke="var(--border)"/>
+<path d="M230 30V318" stroke="var(--rule)"/><text class="s" x="230" y="335" text-anchor="middle">1</text>
+<path d="M388 30V318" stroke="var(--rule)"/><text class="s" x="388" y="335" text-anchor="middle">10</text>
+<path d="M546 30V318" stroke="var(--rule)"/><text class="s" x="546" y="335" text-anchor="middle">100</text>
+<path d="M704 30V318" stroke="var(--rule)"/><text class="s" x="704" y="335" text-anchor="middle">1000</text>
+<path d="M862 30V318" stroke="var(--rule)"/><text class="s" x="862" y="335" text-anchor="middle">10000</text>
+      <text class="s" x="585" y="358" text-anchor="middle">number of tile types t (log scale: one tick = 10×)</text>
+    </svg>
+    <figcaption><b class="n">Figure 9.</b> Four values at two lengths on the same log-scale bars. Why: on a logarithmic scale the comb grows with n and the counter with √n, so the gap widens. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3, §4.3 (Aggarwal upper and lower bounds at n = 49 are computed from the formulas)</figcaption>
+  </figure>
+  <p class="note">At n = 49 the counter's 26 types are below the Aggarwal upper bound of 30. The counter was not simulated, so this is not final.</p>
+</section>
+
+<section class="stepbox" id="s0-8" role="tabpanel" aria-labelledby="st-s0-8" hidden>
+  <span class="stepno">Step 8 of 8</span>
+  <h2>Our workflow: what is done and what is waiting</h2>
+  <p class="why"><b>Result.</b> Only the hand proofs are done. The rest waits for the setter's answer and for cluster runs.</p>
+  <div class="legendrow"><span><span class="sw2" style="background:var(--muted);border-width:2px"></span>done</span><span><span class="sw2" style="border-style:dashed"></span>waiting</span><span class="st q">DERIVED-BY-HAND</span></div>
+  <figure class="box fig">
+    <svg class="vz" viewBox="0 0 960 300" role="img" aria-label="Workflow from the setter's question to the 2-page paper">
+      <defs><marker id="a8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#777"/></marker></defs>
+      <rect class="bx wait" x="14" y="110" width="160" height="80"/>
+      <text class="b" x="94" y="134" text-anchor="middle">Setter's question</text>
+      <text class="s" x="94" y="152" text-anchor="middle">τ, directed/strict</text>
+      <text class="s" x="94" y="168" text-anchor="middle">input format</text>
+      <text class="s" x="94" y="184" text-anchor="middle">waiting: no answer</text>
+      <rect class="bx done" x="214" y="104" width="160" height="92"/>
+      <text class="b" x="294" y="124" text-anchor="middle">Hand proof</text>
+      <text class="s" x="294" y="142" text-anchor="middle">comb: n + 1 per seed</text>
+      <text class="s" x="294" y="157" text-anchor="middle">top seed: flipped</text>
+      <text class="s" x="294" y="172" text-anchor="middle">1 type fails (F1)</text>
+      <text class="b" x="294" y="188" text-anchor="middle">Done ✓</text>
+      <rect class="bx wait" x="414" y="30" width="200" height="80"/>
+      <text class="b" x="514" y="54" text-anchor="middle">R1 exhaustive search</text>
+      <text class="s" x="514" y="72" text-anchor="middle">n ≤ 8, each seed position</text>
+      <text class="s" x="514" y="88" text-anchor="middle">run on the cluster</text>
+      <text class="s" x="514" y="104" text-anchor="middle">waiting: not run yet</text>
+      <rect class="bx wait" x="414" y="190" width="200" height="80"/>
+      <text class="b" x="514" y="214" text-anchor="middle">R2 counter simulation</text>
+      <text class="s" x="514" y="232" text-anchor="middle">a few (m, D) pairs</text>
+      <text class="s" x="514" y="248" text-anchor="middle">run on the cluster</text>
+      <text class="s" x="514" y="264" text-anchor="middle">waiting: not run yet</text>
+      <rect class="bx wait" x="654" y="110" width="130" height="80"/>
+      <text class="b" x="719" y="144" text-anchor="middle">Result table</text>
+      <text class="s" x="719" y="164" text-anchor="middle">n, seed, min t</text>
+      <text class="s" x="719" y="180" text-anchor="middle">waiting</text>
+      <rect class="bx wait" x="824" y="110" width="124" height="80"/>
+      <text class="b" x="886" y="144" text-anchor="middle">2-page paper</text>
+      <text class="s" x="886" y="170" text-anchor="middle">waiting</text>
+      <path class="ar" marker-end="url(#a8)" d="M174 150H212"/>
+      <path class="ar" marker-end="url(#a8)" d="M374 150H394V70H412"/>
+      <path class="ar" marker-end="url(#a8)" d="M374 150H394V230H412"/>
+      <path class="ar" marker-end="url(#a8)" d="M614 70H634V150H652"/>
+      <path class="ar" marker-end="url(#a8)" d="M614 230H634V150H652"/>
+      <path class="ar" marker-end="url(#a8)" d="M784 150H822"/>
+    </svg>
+    <figcaption><b class="n">Figure 10.</b> The flow from the question to the paper, with the status of each stage. Why: it shows at a glance that only two things block us, the setter's answer and the cluster runs. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.4, §6, §7</figcaption>
+  </figure>
+</section>
+
+</div><!-- /tab-viz -->
+
+<div class="tabpanel" id="tab-now" role="tabpanel" aria-labelledby="tb-now" hidden>
+
+<div class="subtabs" role="tablist" aria-label="Tab 1 steps">
+  <button type="button" role="tab" id="st-s1-1" aria-controls="s1-1">Step 1 Problem and key idea</button>
+  <button type="button" role="tab" id="st-s1-2" aria-controls="s1-2">Step 2 Watch a 2×n assembly</button>
+  <button type="button" role="tab" id="st-s1-3" aria-controls="s1-3">Step 3 Upper and lower bound plot</button>
+  <button type="button" role="tab" id="st-s1-4" aria-controls="s1-4">Step 4 Case map</button>
+  <button type="button" role="tab" id="st-s1-5" aria-controls="s1-5">Step 5 Research directions for the open case</button>
+  <button type="button" role="tab" id="st-s1-6" aria-controls="s1-6">Step 6 Study tips and plan</button>
+</div>
+
+<section class="stepbox" id="s1-1" role="tabpanel" aria-labelledby="st-s1-1">
+  <span class="stepno">Step 1 of 6</span>
+  <h2>Problem and key idea: how many tile types build this shape</h2>
+  <div class="callout">
+    <p><b>Result.</b> With temperature (τ) = 2 and the seed in a corner, the minimum number of tile types for 2×n is Θ(√n). We did not find the exact formula. With an interior seed, even the setter says it is open. We know only the order Θ(√n) (the upper bound is by hand).</p>
+    <p class="note">Basis: lower bound √n / 2 (PROVEN), upper bound 4⌈√n⌉ + 2 (PROVEN). Both come from Aggarwal et al. 2005 (S-MTS-2). Step 3 plots them.</p>
+  </div>
+  <p class="why"><b>Problem to solve.</b> We do not know how few tile types can build one shape. Fewer types give a smaller assembly design. We call this number the tile complexity.</p>
+  <div class="two">
+    <div class="box col">
+      <h3>The abstract Tile Assembly Model (aTAM) on one page</h3>
+      <figure class="fig" style="margin:0">
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>tile type</td><td>One square. Each of its four sides (north, east, south, west) carries a glue label. You can use unlimited copies of a type.</td></tr>
+          <tr><td>glue and strength</td><td>Two touching sides bond only if the labels match and the strength is above 0.</td></tr>
+          <tr><td>temperature (τ)</td><td>The attachment threshold. A tile attaches when the strengths of its touching sides sum to at least τ.</td></tr>
+          <tr><td>cooperative binding</td><td>How tiles attach at τ = 2. You need one glue of strength 2, or two glues of strength 1.</td></tr>
+          <tr><td>seed</td><td>The first tile, placed at a fixed position. Growth starts here.</td></tr>
+          <tr><td>directed self-assembly</td><td>There is exactly one terminal assembly, and its shape is the target. Every run puts the same tile in the same cell.</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <figcaption><b class="n">Table 1.</b> Six terms of the abstract Tile Assembly Model (aTAM) and their meanings. Why: it makes glue, temperature, and seed mean the same thing in later steps. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §1</figcaption>
+      </figure>
+      <p class="note">Tiles only translate. They do not rotate. This rule is an inference from the definition and is PARTIAL. The problem statement says "uniquely self-assemble". We read it in the standard way as directed self-assembly (inference). Step 6 asks the setter to confirm.</p>
+    </div>
+    <figure class="box fig">
+      <div class="legendrow"><span><span class="sw2" style="background:var(--series-l1)"></span>glue strength 1</span><span><span class="sw2" style="background:var(--series-l2)"></span>glue strength 2</span><span><span class="sw2" style="background:var(--muted)"></span>placed tile</span><span><span class="sw2" style="border-style:dashed"></span>cell being tested</span></div>
+      <svg class="figA" viewBox="0 0 640 190" role="img" aria-label="Three cases of tile attachment" style="width:100%;height:auto">
+        <text class="ax" x="8" y="16">At temperature τ = 2, does the new tile (dashed cell) attach?</text>
+        <!-- A: one glue of strength 2 -->
+        <rect x="20" y="50" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
+        <rect x="80" y="50" width="50" height="50" fill="none" stroke="var(--foreground)" stroke-dasharray="5 3"/>
+        <line x1="70" y1="52" x2="70" y2="98" stroke="var(--series-l2)" stroke-width="5"/>
+        <text class="ax" x="75" y="46">a (strength 2)</text>
+        <text class="ax" x="20" y="130">1 glue, strength 2</text>
+        <text class="ax" x="20" y="146">2 ≥ 2: attaches</text>
+        <!-- B: cooperative binding -->
+        <rect x="240" y="50" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
+        <rect x="300" y="50" width="50" height="50" fill="none" stroke="var(--foreground)" stroke-dasharray="5 3"/>
+        <rect x="300" y="110" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
+        <line x1="290" y1="52" x2="290" y2="98" stroke="var(--series-l1)" stroke-width="3"/>
+        <line x1="302" y1="100" x2="348" y2="100" stroke="var(--series-l1)" stroke-width="3"/>
+        <text class="ax" x="240" y="44">1</text>
+        <text class="ax" x="362" y="108">1</text>
+        <text class="ax" x="226" y="176">2 glues</text>
+        <text class="ax" x="300" y="176">1 + 1 ≥ 2: attaches</text>
+        <!-- C: one glue of strength 1 -->
+        <rect x="470" y="50" width="50" height="50" fill="var(--muted)" stroke="var(--foreground)" stroke-width="1.5"/>
+        <rect x="530" y="50" width="50" height="50" fill="none" stroke="var(--foreground)" stroke-dasharray="5 3"/>
+        <line x1="520" y1="52" x2="520" y2="98" stroke="var(--series-l1)" stroke-width="3"/>
+        <text class="ax" x="500" y="44">b (strength 1)</text>
+        <text class="ax" x="470" y="130">1 glue, strength 1</text>
+        <text class="ax" x="470" y="146">1 &lt; 2: no attach</text>
+      </svg>
+      <figcaption><b class="n">Figure 11.</b> At temperature τ = 2, two cases attach a new tile and one does not. Why: every design rests on this one test, whether the strength sum reaches τ. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §1</figcaption>
+    </figure>
+  </div>
+  <div class="box col">
+    <h3>Why 2×n is a problem</h3>
+    <ul>
+      <li>We look at the Minimum Tileset Problem for general shapes.</li><li>This problem is nondeterministic polynomial-time complete (NP-complete) (Adleman et al. 2002).</li>
+      <li>An N×N square is solvable in polynomial time.</li>
+      <li>We found no exact complexity result for the 2×n rectangle (open as far as found).</li>
+      <li>The problem statement: if the seed must sit in a corner, a formula seems to exist. Without that assumption the case is open.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="stepbox" id="s1-2" role="tabpanel" aria-labelledby="st-s1-2" hidden>
+  <span class="stepno">Step 2 of 6</span>
+  <h2>Interactive 2×n assembly view</h2>
+  <p class="why"><b>Problem to solve.</b> Reading the definition alone does not show how a tile "grows". Attach tiles one by one from the corner seed. You will see why the bottom row gains types while the top row repeats one type.</p>
+  <p class="note">Illustrative example. This is the F3 comb construction from note §4.1. The view draws a hand-written tile set. It is not a search or a solver.</p>
+  <div class="two">
+    <div class="box col asm">
+      <div class="ctrl">
+        <label>Length n <input class="rng" type="range" id="asmN" min="1" max="8" value="5" style="max-width:160px"> <b id="asmNv">5</b></label>
+        <span>Glue strength τ</span>
+        <button type="button" id="asmT1" aria-pressed="false">τ = 1</button>
+        <button type="button" id="asmT2" aria-pressed="true">τ = 2</button>
+      </div>
+      <div id="asmView" class="tablewrap" style="padding:8px"></div>
+      <div class="ctrl">
+        <button type="button" id="asmPrev">Back</button>
+        <button type="button" id="asmNext">Attach next tile</button>
+        <button type="button" id="asmReset">Restart</button>
+      </div>
+      <p id="asmMsg" aria-live="polite"></p>
+      <p class="sm" id="asmStat"></p>
+      <div class="legendrow"><span><span class="sw2" style="background:var(--signal-flag-fill)"></span>tile just attached</span><span>side with no mark: a null glue of strength 0</span></div>
+      <figcaption style="font-size:12.5px;color:var(--muted-foreground)"><b class="n">Figure 12.</b> A 2×n comb that adds one tile per click, starting from the corner seed B₁. Why: the bottom row differs from B₁ to Bₙ and the top row is one T, so there are n + 1 types. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.1 F3</figcaption>
+    </div>
+    <div class="box col">
+      <h3>Rules of this tile set</h3>
+      <div class="tablewrap" id="asmTypes"></div>
+      <ul class="tdl">
+        <li>Every glue strength equals τ. So one glue is enough.</li>
+        <li>Each bottom cell has only one possible tile, so the assembly is directed.</li>
+        <li>East and west of T are null, so growth does not pass column n.</li>
+        <li>With a top-row seed this set fails. Use the flipped comb (Step 4, tab 0).</li>
+        <li>The number of types is n + 1. This is the F3 upper bound in the note. It equals the N + k − 1 comb of Furcy et al. 2019 (k = 2).</li>
+        <li>For n = 1 the types are B₁ and T. As note F1 shows, 1 type is not enough. If the seed type also filled the cell above, the same glue would repeat and the column would grow forever.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="stepbox" id="s1-3" role="tabpanel" aria-labelledby="st-s1-3" hidden>
+  <span class="stepno">Step 3 of 6</span>
+  <h2>Upper and lower bound plot: how the gap opens as n grows</h2>
+  <p class="why"><b>Problem to solve.</b> Formulas alone do not show the gap between √n and n. Plot n = 1 ... 100 in one figure. You then see when the τ = 2 counter construction becomes smaller than the comb.</p>
+  <div class="box col cht">
+    <div class="legend">
+      <span><i class="sw" style="background:var(--series-l1)"></i>lower bound √n / 2 (all τ, all seed positions, PROVEN)</span>
+      <span><i class="sw" style="background:var(--series-l2)"></i>upper bound 4⌈√n⌉ + 2 (τ = 2, corner seed, PROVEN)</span>
+      <span><i class="sw" style="background:var(--series-circle)"></i>upper bound n + 1 (comb, by hand: DERIVED-BY-HAND)</span>
+    </div>
+    <svg id="chart" viewBox="0 0 760 380" role="img" aria-label="Lower and upper bounds by n" style="width:100%;height:auto;max-width:760px"></svg>
+    <div class="ctrl"><label>n <input class="rng" type="range" id="chN" min="1" max="100" value="100" style="max-width:260px"></label></div>
+    <dl class="kv" id="chRead"></dl>
+    <figcaption><b class="n">Figure 13.</b> The lower bound and two upper bounds on tile types t for n = 1 ... 100. Why: the gap stays a constant factor (about 8, estimated), so the answer is Θ(√n) at τ = 2. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3</figcaption>
+  </div>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>n</th><th>lower bound √n / 2</th><th>upper bound 4⌈√n⌉ + 2 (τ = 2)</th><th>upper bound n + 1</th></tr></thead>
+      <tbody id="chTab"></tbody>
+    </table>
+  </div>
+  <figcaption><b class="n">Table 2.</b> The lower bound and two upper bounds at four values of n, from the formulas. Why: the gap stays a constant factor (about 8, estimated). Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3</figcaption>
+  </figure>
+  <p class="note">The note's examples are n = 100 and n = 10,000. They give 5 ≤ t ≤ 42 and 50 ≤ t ≤ 402. We recomputed them with the same formulas. The constant gap of about 8 is an estimate. The lower bound comes from the proof of Aggarwal et al. Theorem 3.1. Putting k = 2 there gives t ≥ (n / 4)<sup>1/2</sup>. The upper bound comes from the construction in Theorem 3.2, with m = ⌈√n⌉ and 4m + 2 tile types. The vertical axis of Figure 13 is a log scale. The browser computes the plotted values from the formulas.</p>
+</section>
+
+<section class="stepbox" id="s1-4" role="tabpanel" aria-labelledby="st-s1-4" hidden>
+  <span class="stepno">Step 4 of 6</span>
+  <h2>Case map: four cells by τ and seed position</h2>
+  <p class="why"><b>Problem to solve.</b> "We know the answer" and "we do not know" are mixed together. A status label on each cell shows what is proven and what is empty.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table class="matrix">
+    <thead><tr><th></th><th>corner seed</th><th>interior seed</th></tr></thead>
+    <tbody>
+      <tr><td><b>τ = 1</b></td>
+        <td><span class="st part">PROVEN-conditional, PARTIAL</span><br><span class="sm">n + 1, under the assumption of no glue mismatch</span><br><span class="st open">exact value without the assumption is open</span></td>
+        <td><span class="st part">PROVEN-conditional, PARTIAL</span><br><span class="sm">n + 1, under the same assumption</span><br><span class="st open">exact value without the assumption is open</span></td></tr>
+      <tr><td><b>τ = 2</b></td>
+        <td><span class="st ok">Θ(√n)</span> <span class="st open">exact formula CONJECTURE</span><br><span class="sm">The setter says a formula exists, but we did not find it</span></td>
+        <td><span class="st ok">lower bound √n / 2</span> <span class="st q">Θ(√n) by hand</span> <span class="st open">exact value open</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 3.</b> A summary of the 2×2 case map by τ and seed position. Why: it shows first which cell is empty, then Table 4 gives the basis for each cell. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4</figcaption>
+  </figure>
+
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Cell</th><th>Lower bound</th><th>Upper bound</th><th>Exact value</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>τ = 1, corner seed</td>
+        <td><ul><li>√n / 2 (all τ, Aggarwal et al. Theorem 3.1)</li><li>Ω(√n) (Furcy et al., S-MTS-5)</li><li>n + 1 (assuming no glue mismatch, S-MTS-6)</li></ul></td>
+        <td><ul><li>n + 1 comb (F3)</li><li>Equals N + k − 1, the best upper bound Furcy et al. know</li></ul></td>
+        <td>Exactly n + 1 under the assumption. Open without it. We must check in the original that the definition of Manhattan diameter is the same</td>
+        <td><span class="st part">PROVEN-conditional, PARTIAL</span><br><span class="sm">We read only the search summary of S-MTS-6</span></td></tr>
+      <tr><td>τ = 1, interior seed</td>
+        <td>Same. The bound √n / 2 does not depend on the seed position</td>
+        <td>n + 1. The comb serves the corner seed and the bottom-row seed. The flipped comb serves the top-row seed. It holds for every seed cell.</td>
+        <td>n + 1 under the assumption. Open without it</td>
+        <td><span class="st part">PROVEN-conditional, PARTIAL</span><br><span class="sm">The seed positions are checked by hand derivation</span></td></tr>
+      <tr><td>τ = 2, corner seed</td>
+        <td>√n / 2 (Aggarwal et al. Theorem 3.1)</td>
+        <td><ul><li>4⌈√n⌉ + 2 (Aggarwal et al. Theorem 3.2, seed column at the east end)</li><li>m + 3D + 2, n = 1 + m·D (by hand, box below)</li></ul></td>
+        <td>The setter says a formula exists. We did not find it in any source.</td>
+        <td><span class="st ok">PROVEN (Θ(√n))</span> <span class="st q">DERIVED-BY-HAND</span> <span class="st open">CONJECTURE: the exact formula is c·√n + O(1), 1/2 ≤ c ≤ 2√3 ≈ 3.46</span></td></tr>
+      <tr><td>τ = 2, interior seed</td>
+        <td>√n / 2. The proof of Theorem 3.1 holds wherever the seed is.</td>
+        <td><ul><li>n + 1 (comb, F3)</li><li>For a + b = n − 1: 4⌈√a⌉ + 4⌈√b⌉ + O(1) ≤ 4√2·√n + O(1) (two-arm counter, by hand, relies on the length claim on page 8 of [S-MTS-2])</li></ul></td>
+        <td>This is the hackathon question and it is open. The key is whether the two arms can share tile types.</td>
+        <td><span class="st ok">PROVEN (lower bound)</span> <span class="st q">DERIVED-BY-HAND (upper bound)</span> <span class="st open">open: exact value, hackathon question</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 4.</b> Lower bound, upper bound, exact value, and status for the four cells. Why: we split the basis by cell so the paper does not mix "proven" with "conjecture". Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §3, §4</figcaption>
+  </figure>
+
+  <div class="two">
+    <div class="box col">
+      <h3>Table for small n (n = 1 ... 6)</h3>
+      <figure class="fig" style="margin:0">
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>n</th><th>Lower bound</th><th>Best upper bound found</th><th>Exact value</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>2 (F1)</td><td>2</td><td><b>2</b> <span class="st q">DERIVED-BY-HAND</span></td></tr>
+          <tr><td>2</td><td>2</td><td>3 (comb)</td><td>needs a run (R1)</td></tr>
+          <tr><td>3</td><td>2</td><td>4</td><td>needs a run (R1)</td></tr>
+          <tr><td>4</td><td>2</td><td>5</td><td>needs a run (R1)</td></tr>
+          <tr><td>5</td><td>2</td><td>6</td><td>needs a run (R1)</td></tr>
+          <tr><td>6</td><td>2</td><td>7</td><td>needs a run (R1)</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <figcaption><b class="n">Table 5.</b> Lower bound, best upper bound found, and exact value for n = 1 ... 6. Why: the counter pays off only for large n, so for n ≤ 6 the comb n + 1 is the best we found (inference). Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.4</figcaption>
+      </figure>
+    </div>
+    <div class="box col">
+      <h3>The two-row counter derived by hand <span class="st q">DERIVED-BY-HAND</span></h3>
+      <p class="note">We traced it by hand and did not simulate it (R2 is optional). The seed is the lower-right corner and growth goes west. The length n = 1 + m·D is valid only for m ≥ 2.</p>
+      <figure class="fig" style="margin:0">
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Tile group</th><th>Number of types</th><th>Job</th></tr></thead>
+        <tbody>
+          <tr><td>P<sub>1</sub> ... P<sub>m</sub></td><td>m</td><td>Count the position in the block, in the bottom row.</td></tr>
+          <tr><td>S<sub>d</sub></td><td>D</td><td>Start a block.</td></tr>
+          <tr><td>M<sub>d</sub></td><td>D</td><td>Fill the top row.</td></tr>
+          <tr><td>X<sub>d</sub></td><td>D</td><td>Lower the block count d by one.</td></tr>
+          <tr><td>Z, Y</td><td>2</td><td>The seed column.</td></tr>
+          <tr><td><b>Total</b></td><td><b>m + 3D + 2</b></td><td></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <figcaption><b class="n">Table 6.</b> The five tile groups of the hand-derived counter and their number of types. Why: it shows by group where the total m + 3D + 2 comes from. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §4.3</figcaption>
+      </figure>
+      <ul class="tdl">
+        <li>Choosing m ≈ 3D gives about 2√(3n) ≈ 3.46√n types. The source [S-MTS-2] gives 4√n + 2.</li>
+        <li>D = 4 and m = 12 give 26 types for n = 49 (the comb has 50).</li>
+        <li>D = 58 and m = 173 give 349 types for n = 10,035.</li>
+        <li>Other lengths need a method that uses only part of the first block. We have not solved it.</li>
+        <li>The east glue of P₂ is p₁ and the east glue of P₃ is p₂, both of strength 2. The digit glue has a different name for each digit, δ₁ and δ₀.</li>
+        <li>Status: traced by hand (m = 3, D = 2 and m = 12, D = 4). Not simulated.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="stepbox" id="s1-5" role="tabpanel" aria-labelledby="st-s1-5" hidden>
+  <span class="stepno">Step 5 of 6</span>
+  <h2>Research directions for the open case</h2>
+  <p class="why"><b>Problem to solve.</b> We must write a 2-page paper in 24 hours. We rank what we can claim in the open interior-seed case. We also rank the risks.</p>
+  <div class="box col">
+    <h3>The key fork</h3>
+    <ul>
+      <li>If the seed sits in column s (1 &lt; s &lt; n), growth goes along two arms, west and east. Their lengths are s − 1 and n − s.</li>
+      <li>The lower bound √n / 2 still holds. Theorem 3.1 does not depend on the seed position.</li>
+      <li>Separate counters on the two arms cost c√a + c√b (a + b = n − 1). This is more than the c√n of the corner seed (inference). The upper bound 4√2·√n + O(1) still gives order Θ(√n) (by hand).</li>
+      <li>An interior seed wins only if the two arms share tile types. Tiles do not rotate. So the west-growth glue and the east-growth glue must both fit in one type.</li>
+    </ul>
+  </div>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Rank</th><th>Direction</th><th>Claim it can support</th><th>Risk</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><b>Non-hardness by sparsity.</b> It holds when the input is unary n or a sorted list of cells. An input of length L has only polynomially many options in L. So the language is a sparse set. Mahaney's theorem uses this. An unsorted cell list is not sparse as it stands, because one shape has (2n)! encodings. It needs a normalization reduction. This turns any encoding into the normal form ⟨1<sup>n</sup>, s, k⟩. Here s and k are unary or fixed width. An input with k ≥ n + 1 maps to a fixed yes input (the comb gives n + 1 types, so the answer is yes). A non-rectangle maps to a fixed no input. If k is written in binary, the set is not sparse.</td><td>"Suppose polynomial time (P) and nondeterministic polynomial time (NP) differ. Then the minimum tileset for 2×n is not nondeterministic polynomial-time complete (NP-complete)." It does not depend on the seed rule. It is a short, rigorous theorem.</td><td>Low. We must state the encoding. If n is given in binary, the set is not sparse and the argument breaks. Membership in nondeterministic polynomial time (NP) also becomes unclear. The input k may be binary. The reduction rewrites k as unary or fixed width. Membership in nondeterministic polynomial time (NP) needs a fixed τ or a bound on the strength.</td></tr>
+      <tr><td>2</td><td><b>Subexponential-time algorithm.</b> Fix τ = 2. List every system with at most 4⌈√n⌉ + 2 tile types. There are 2<sup>O(√n log n)</sup> candidates, and each is checked in polynomial time (S-MTS-1). If the seed cell is a fixed input, the search reaches the two-arm upper bound. That bound is 4⌈√a⌉ + 4⌈√b⌉ + O(1) (a = s − 1, b = n − s, rank 5). The bound 4⌈√n⌉ + 2 is proven only for the corner seed.</td><td>"It is solvable in 2<sup>O(√n log n)</sup> time." Only for fixed τ = 2 and unary n or a cell list. It pairs well with rank 1.</td><td>Low. With binary n the input length is log n, so the time is not subexponential. At τ = 1 the only upper bound is n + 1, so the same listing costs 2<sup>O(n log n)</sup>. We must fix τ or cite a strength bound from S-MTS-4.</td></tr>
+      <tr><td>3</td><td><b>Without-loss-of-generality corner lemma.</b> Use an exchange argument. Show that an optimal interior-seed system turns into a corner-seed system. It uses no more tile types.</td><td>It solves the open case, and the general answer equals the corner formula.</td><td>High. It may be false if the two arms share tiles.</td></tr>
+      <tr><td>4</td><td><b>Seed position decomposition.</b> Optimum (OPT) = min<sub>s</sub> f(s − 1, n − s). Here f is the cost of two arms, including sharing. A closed form for f gives an O(n)-time algorithm.</td><td>A polynomial-time algorithm, conditional on f.</td><td>Medium to high.</td></tr>
+      <tr><td>5</td><td><b>Constant-factor approximation.</b> If the seed is free (part of the solution), compare two bounds. The corner construction 4⌈√n⌉ + 2 is proven. The lower bound is √n / 2. The ratio is about 8 (about 11 or less for small n). If the seed cell is a fixed input, use two arms. One counter grows west. One mirrored counter grows east. They share the seed column and use different glue names. The ratio is about 8√2 ≈ 11.3. If the seed cell is in the top row, also flip top and bottom.</td><td>"About 8-approximation (free seed)": a theorem from [S-MTS-2] alone. The "7-approximation" uses the §4.3 counter and holds asymptotically only when n = 1 + m·D. A fixed seed gives about 8√2.</td><td>Low. The fixed seed relies on the paper's claim that the counter of [S-MTS-2] handles arm lengths 1 ... m² (not rechecked).</td></tr>
+      <tr><td>6</td><td><b>Exact table for small n.</b> On the cluster, compare the corner optimum with the interior optimum for n ≤ 8 (R1).</td><td>Evidence for rank 3.</td><td>Needs a cluster run and the owner's approval.</td></tr>
+      <tr><td>7</td><td><b>A proof of nondeterministic polynomial-time hardness (NP-hardness).</b> Rank 1 blocks it for the unary n encoding and the sorted cell list encoding.</td><td>Not recommended.</td><td>Very high.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 7.</b> Seven research directions with claims and risks (all are inference, not proof). Why: it helps us choose in 24 hours which results become theorems and which stay conjectures. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §5</figcaption>
+  </figure>
+  <div class="box col">
+    <h3>A realistic 24-hour paper (inference from the note)</h3>
+    <ol>
+      <li>State rank 1 and rank 2 as theorems.</li>
+      <li>State the 8x form of rank 5 as a theorem, using [S-MTS-2] alone. Add the 7x form if the hand-derived counter is verified.</li>
+      <li>State rank 3 as a conjecture. Add the rank 6 data as evidence if we have it.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="stepbox" id="s1-6" role="tabpanel" aria-labelledby="st-s1-6" hidden>
+  <span class="stepno">Step 6 of 6</span>
+  <h2>Study tips and plan</h2>
+  <p class="why"><b>Problem to solve.</b> Time to the deadline is short. You save time if you know what to learn first and where mistakes are likely.</p>
+  <div class="three">
+    <div class="box col">
+      <h3>Basics to learn first</h3>
+      <ol class="steps">
+        <li>The rules of tile type, glue, temperature (τ), and cooperative binding</li>
+        <li>Producible assemblies and terminal assemblies</li>
+        <li>The difference between directed self-assembly and strict self-assembly</li>
+        <li>Write by hand why one tile type fails for 2×1 (F1)</li>
+        <li>Check the comb upper bound n + 1 yourself (F3)</li>
+        <li>The lower-bound argument: a column holds only 2 tiles, so there are at most 2t² states. A state that repeats with the same attach order allows pumping (DERIVED-BY-HAND)</li>
+        <li>Read the counter construction of Aggarwal et al. (Figure 3.1, Theorem 3.2)</li>
+        <li>Big-O, Omega, and Theta notation, and sparse sets</li>
+      </ol>
+    </div>
+    <div class="box col">
+      <h3>Study order</h3>
+      <ol class="steps">
+        <li>Summarize the problem statement and the abstract Tile Assembly Model (aTAM) definition in one page</li>
+        <li>Click n = 1 ... 8 in the Step 2 view and follow the same assembly by hand</li>
+        <li>Prove F1 and F3 in 5 lines each</li>
+        <li>Put k = 2 into Aggarwal et al. Theorem 3.1 to get √n / 2</li>
+        <li>Pick an empty cell on the Step 4 map</li>
+        <li>Draft the proofs for rank 1 and rank 2 of Step 5. Write the encoding assumption first</li>
+        <li>Finish the paper skeleton even without R1 and R2 results</li>
+      </ol>
+    </div>
+    <div class="box col">
+      <h3>Pitfalls</h3>
+      <ul>
+        <li><b>Mixed-up definitions.</b> Directed self-assembly and strict self-assembly differ. Adleman et al. treat the first. Bryans et al. treat the second.</li>
+        <li><b>Temperature.</b> τ = 1 and τ = 2 give different answers. Check whether τ is fixed or chosen by the solver.</li>
+        <li><b>Encoding.</b> Rank 1 holds only for unary n or a sorted cell list. It breaks if n is given in binary.</li>
+        <li><b>Unverified sources.</b> Check the original of S-MTS-8, 9, 11, 12 before you cite them.</li>
+        <li><b>Hand-derived counter.</b> Do not use it as a theorem before simulation. Use it as a candidate.</li>
+        <li><b>n + 1 at τ = 1.</b> It is proven only under the no-glue-mismatch assumption.</li>
+        <li><b>The setter's name.</b> That Dr. Schwaller is Robert Schweller is an assumption.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Run</th><th>What</th><th>What we get</th><th>Where</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td>Exhaustive search for the minimum tile set of 2×n, n = 2 ... 8, at τ = 1 and τ = 2, for every seed position. Candidate checks use the polynomial-time uniqueness check of S-MTS-1.</td><td>A table of n, seed position, minimum number of tile types, and one witness tile set</td><td><b>Run on the cluster</b></td><td><span class="st open">NOT RUN</span></td></tr>
+      <tr><td>R2</td><td>Simulate the hand-derived counter for a few (m, D). The model is the abstract Tile Assembly Model (aTAM).</td><td>Check that it is directed and what the terminal shape is</td><td><b>Run on the cluster</b></td><td><span class="st open">NOT RUN</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 8.</b> The two verification runs. Why: only these runs can turn a DERIVED-BY-HAND item into CONJECTURE or PROVEN. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §6</figcaption>
+  </figure>
+  <p class="note">We do not run the search on this computer. We run it on the cluster.</p>
+
+  <div class="two">
+    <div class="box col">
+      <h3>What to ask Dr. Schwaller first</h3>
+      <ol>
+        <li>Is the temperature (τ) 1 or 2? Does the solver choose it?</li>
+        <li>Is the minimum tile count for directed self-assembly or strict self-assembly? We read "uniquely self-assemble" in the problem as directed self-assembly.</li>
+        <li>Is the input shape unary n or a sorted cell list, or is n given in binary? The sparsity theorem does not hold for binary n.</li>
+        <li>Does "the seed is in a corner" allow any of the four corners?</li>
+        <li>Is "Dr. Schwaller" Professor Robert Schweller? Is that professor at the University of Texas Rio Grande Valley (UTRGV)?</li>
+        <li>Do tiles only translate and never rotate? (This is an assumption from the definition.)</li>
+        <li>What form does the "formula" for the corner seed take? (For example, is it of the form c·√n + O(1)?)</li>
+      </ol>
+    </div>
+    <div class="box col">
+      <h3>Plan for the 2-page paper (from the note's inference)</h3>
+      <ol>
+        <li>State the model choice: τ, directed self-assembly, encoding</li>
+        <li>Table of known bounds: √n / 2, 4⌈√n⌉ + 2, n + 1</li>
+        <li>Theorem: by sparsity it is not nondeterministic polynomial-time complete (NP-complete) (rank 1). The input is unary or a list, and the proof includes the normalization reduction.</li>
+        <li>Theorem: a 2<sup>O(√n log n)</sup> algorithm (rank 2, fixed τ = 2, unary or list input)</li>
+        <li>Theorem: about 8x approximation (rank 5). The 7x form if the counter is verified</li>
+        <li>Conjecture: the corner lemma (rank 3), and small-n data if we have it (rank 6)</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="col">
+    <span class="eyebrow">Files in tips/Dr_Schwaller_MinTileset</span>
+    <ul class="files">
+      <li>00_research_notes.md: the only fact source of this page (Korean)</li>
+      <li>01_study_guide.md, 02_possible_solutions.md, 03_plan_and_design.md: other documents in the same folder (Korean)</li>
+      <li>study_tips.html: the Korean version of this page</li>
+      <li>study_tips_en.html: this page</li>
+    </ul>
+  </div>
+</section>
+
+</div><!-- /tab-now -->
+
+<div class="tabpanel" id="tab-background" role="tabpanel" aria-labelledby="tb-background" hidden>
+
+<div class="subtabs" role="tablist" aria-label="Tab 2 steps">
+  <button type="button" role="tab" id="st-s2-1" aria-controls="s2-1">Step 1 What this problem is</button>
+  <button type="button" role="tab" id="st-s2-2" aria-controls="s2-2">Step 2 History timeline</button>
+  <button type="button" role="tab" id="st-s2-3" aria-controls="s2-3">Step 3 Applications</button>
+</div>
+
+<section class="stepbox" id="s2-1" role="tabpanel" aria-labelledby="st-s2-1">
+  <span class="stepno">Step 1 of 3</span>
+  <h2>What this problem is</h2>
+  <p class="why"><b>Problem to solve.</b> You cannot find the literature for a problem that has no name. A name links it to earlier work.</p>
+  <p>This problem is the 2×n rectangle case of the Minimum Tileset Problem. The 2×n rectangle is the case k = 2 of the more general thin rectangle k×N.</p>
+  <div class="three">
+    <div class="box col"><h3>As an assembly</h3><p class="note">Start from one seed and attach only tiles whose glues match. It succeeds if there is exactly one terminal assembly and its shape is 2×n.</p></div>
+    <div class="box col"><h3>As complexity</h3><p class="note">The general shape case is nondeterministic polynomial-time complete (NP-complete). The square case is polynomial time. We did not find the exact complexity of 2×n.</p></div>
+    <div class="box col"><h3>As a design</h3><p class="note">The task is to fit a counter that counts the length n into height 2. At height 2 a binary counter does not fit. A 2-digit counter with base about √n fits.</p></div>
+  </div>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Comparison</th><th>N×N square (τ = 2)</th><th>2×n rectangle</th></tr></thead>
+    <tbody>
+      <tr><td>Number of tile types</td><td>Θ(log N / log log N) (lower bound for almost all N, upper bound for all N)</td><td>Θ(√n)</td></tr>
+      <tr><td>Number of candidate systems</td><td>polynomially many</td><td>(√n)<sup>O(√n)</sup> = 2<sup>O(√n log n)</sup> (inference)</td></tr>
+      <tr><td>Known complexity</td><td>polynomial time (S-MTS-1, S-MTS-4)</td><td>no result found</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 9.</b> A comparison of the square and the 2×n rectangle. Why: squares take polynomial time because they have polynomially many candidates. That reason breaks for 2×n. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2</figcaption>
+  </figure>
+  <p class="note">The square algorithm is an exhaustive search. It tests every τ = 2 system with at most O(log n / log log n) tile types. The input is a cell list, so its size is about n².</p>
+</section>
+
+<section class="stepbox" id="s2-2" role="tabpanel" aria-labelledby="st-s2-2" hidden>
+  <span class="stepno">Step 2 of 3</span>
+  <h2>History timeline</h2>
+  <p class="why"><b>Problem to solve.</b> This problem did not appear suddenly. If you know which results led here, you know what to read.</p>
+  <figure class="fig" style="margin:0;gap:12px">
+  <ol class="timeline">
+    <li><span class="yr">1982</span><div><b>Mahaney: the sparse set theorem.</b><p class="note">This is the original source of the sparse set argument. It is the basis of research direction rank 1 (Mahaney's theorem, PARTIAL).</p></div></li>
+    <li><span class="yr">2000</span><div><b>Rothemund–Winfree: the lower bound for squares.</b><p class="note">An N×N square needs Ω(log N / log log N) types. The title is from memory and unverified.</p></div></li>
+    <li><span class="yr">2001</span><div><b>Adleman et al.: the upper bound for squares.</b><p class="note">It matches with O(log N / log log N). The title is unverified.</p></div></li>
+    <li><span class="yr">2002</span><div><b>Adleman et al. (Symposium on Theory of Computing, 2002): a combinatorial optimization problem.</b><p class="note">The minimum tileset is nondeterministic polynomial-time complete (NP-complete) in general. It is polynomial time for trees and squares. Checking that a given system builds a shape uniquely is also polynomial time. We read only the abstract.</p></div></li>
+    <li><span class="yr">2004 / 2005</span><div><b>Aggarwal et al. (Schweller is a co-author): complexity of generalized models.</b><p class="note">They gave the lower bound Ω(N<sup>1/k</sup>/k) and the upper bound O(N<sup>1/k</sup> + k) for thin rectangles k×N. This is the most direct prior work on this problem. Preliminary version: Symposium on Discrete Algorithms (SODA) 2004. Journal version: Society for Industrial and Applied Mathematics (SIAM) Journal on Computing 2005.</p></div></li>
+    <li><span class="yr">2010</span><div><b>Maňuch–Stacho–Stoll: two lower bounds at τ = 1.</b><p class="note">Assuming no glue mismatch, a τ = 1 system needs at least (Manhattan diameter + 1) types. We read only the search summary.</p></div></li>
+    <li><span class="yr">2010 / 2011</span><div><b>Bryans et al.: the power of nondeterminism.</b><p class="note">The minimum tileset in the strict model is Σ₂ᴾ-complete (complete for the second level of the polynomial hierarchy, one level above nondeterministic polynomial time). The paper separates the definitions of directed self-assembly and strict self-assembly. Symposium on Discrete Algorithms (SODA) 2011, arXiv 1006.2897.</p></div></li>
+    <li><span class="yr">2011</span><div><b>Chen–Doty–Seki: program size and temperature.</b><p class="note">They removed the τ = 2 assumption of the square algorithm. They showed it runs in polynomial time at every temperature. arXiv 1011.3493.</p></div></li>
+    <li><span class="yr">2018 / 2019</span><div><b>Furcy–Summers–Wendlandt: thin rectangles at τ = 1.</b><p class="note">They stated the lower bound Ω(N<sup>1/k</sup>) and the best known upper bound N + k − 1 (the comb). arXiv 1808.04358.</p></div></li>
+    <li><span class="yr">2020</span><div><b>Thin rectangles in three dimensions (3D) (arXiv 2007.11093).</b><p class="note">Authors and bounds are unverified (search summary only).</p></div></li>
+    <li class="now"><span class="yr">2026</span><div><b>This hackathon problem.</b><p class="note">It asks for the complexity of 2×n. The corner seed seems to have a formula. Solving the seed position is an open problem.</p></div></li>
+  </ol>
+  <figcaption><b class="n">Figure 14.</b> A chronological list of results that lead to this problem, from 1982 to 2026. Why: it shows which results leave a gap that the current problem fills. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2, §3, §7</figcaption>
+  </figure>
+  <p class="note">We could not confirm the origin of the model itself (the abstract Tile Assembly Model) in the note, so we left it out of the timeline.</p>
+</section>
+
+<section class="stepbox" id="s2-3" role="tabpanel" aria-labelledby="st-s2-3" hidden>
+  <span class="stepno">Step 3 of 3</span>
+  <h2>Applications</h2>
+  <p class="why"><b>Problem to solve.</b> You must know where a solution is used to write the paper's motivation. We separate what the note supports from general background.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Field</th><th>Link</th><th>Basis</th></tr></thead>
+    <tbody>
+      <tr><td>deoxyribonucleic acid (DNA) tile self-assembly</td><td>In experiments, each tile type needs its own deoxyribonucleic acid (DNA) strand design. So the number of tile types matches the number of strand types to design.</td><td><span class="st dead">UNVERIFIED</span><br><span class="sm">General background. We could not verify it in the note</span></td></tr>
+      <tr><td>Minimum tile counts for squares</td><td>An earlier case of building one shape with the smallest design in the same model.</td><td><span class="st part">PARTIAL</span><br><span class="sm">S-MTS-11 and S-MTS-12 are cited by S-MTS-2~4</span></td></tr>
+      <tr><td>Length control with counters</td><td>A design technique that cuts the number of types to Θ(√n). It can build every length 1 ... m<sup>k</sup>.</td><td><span class="st ok">VERIFIED</span><br><span class="sm">S-MTS-2 p.8</span></td></tr>
+      <tr><td>Sparse set arguments in complexity theory</td><td><ul><li>Used for problems whose input size is proportional to n.</li><li>They show that such problems cannot be nondeterministic polynomial-time complete (NP-complete).</li><li>Premise: polynomial time (P) and nondeterministic polynomial time (NP) differ.</li></ul></td><td><span class="st part">PARTIAL</span><br><span class="sm">S-MTS-7</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 10.</b> Four rows of applications and links. Why: it separates rows we may cite from rows that are only general background. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §2, §3, §7</figcaption>
+  </figure>
+  <p class="note">The note did not survey applications. The first row is general background. Find a source before you use it in the paper.</p>
+</section>
+
+</div><!-- /tab-background -->
+
+<div class="tabpanel" id="tab-papers" role="tabpanel" aria-labelledby="tb-papers" hidden>
+
+<div class="subtabs" role="tablist" aria-label="Tab 3 steps">
+  <button type="button" role="tab" id="st-s3-1" aria-controls="s3-1">Step 1 Lineage chart</button>
+  <button type="button" role="tab" id="st-s3-2" aria-controls="s3-2">Step 2 Milestone paper table</button>
+  <button type="button" role="tab" id="st-s3-3" aria-controls="s3-3">Step 3 Where this problem sits</button>
+  <button type="button" role="tab" id="st-s3-4" aria-controls="s3-4">Step 4 Sources</button>
+</div>
+
+<section class="stepbox" id="s3-1" role="tabpanel" aria-labelledby="st-s3-1">
+  <span class="stepno">Step 1 of 4</span>
+  <h2>Lineage: where it came from and where it goes</h2>
+  <p class="why"><b>Problem to solve.</b> With many papers, you do not know what to read first. The lineage chart shows the reading order and the place of this problem.</p>
+  <p class="note">The top lane is squares. The middle lane is thin rectangles. The bottom lane is τ = 1 and the strict model. Inside each lane, time runs from left to right.</p>
+  <figure class="fig" style="margin:0">
+  <p class="legend">A solid box is a paper. A dashed box is a paper whose details we could not verify. The clipped-corner box is this problem.</p>
+  <div class="tablewrap" style="padding:12px">
+  <svg class="lineage lin2" viewBox="0 0 960 460" role="img" aria-label="Flow chart of related papers">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted-foreground)"/></marker></defs>
+    <text x="8" y="22" class="lane">Squares N×N</text><text x="8" y="172" class="lane">Thin rectangles k×N</text><text x="8" y="322" class="lane">τ = 1 and strict model</text>
+    <g class="edges"><path d="M170,90 H200"/><path d="M360,90 H390"/><path d="M550,90 H580"/><path d="M360,240 H390"/><path d="M550,240 H580"/><path d="M360,390 H390"/><path class="hot" d="M740,240 H780"/><path d="M740,90 H765 V225 H780"/><path d="M550,390 H765 V255 H780"/></g>
+    <g class="nodes">
+      <g><rect x="10" y="40" width="160" height="100"/><text x="20" y="60" class="y">2000</text><text x="20" y="78">Rothemund–Winfree</text><text x="20" y="93">square lower bound</text></g>
+      <g><rect x="200" y="40" width="160" height="100"/><text x="210" y="60" class="y">2001</text><text x="210" y="78">Adleman et al.</text><text x="210" y="93">square upper bound</text></g>
+      <g><rect x="390" y="40" width="160" height="100"/><text x="400" y="60" class="y">2002</text><text x="400" y="78">Adleman et al.</text><text x="400" y="93">General: NP-complete</text><text x="400" y="108">Squares: polynomial</text><text x="400" y="123">time</text></g>
+      <g><rect x="580" y="40" width="160" height="100"/><text x="590" y="60" class="y">2011</text><text x="590" y="78">Chen–Doty–Seki</text><text x="590" y="93">squares, all τ</text></g>
+      <g><rect x="200" y="190" width="160" height="100"/><text x="210" y="210" class="y">2004 / 2005</text><text x="210" y="228">Aggarwal et al.</text><text x="210" y="243">k×N bounds</text><text x="210" y="258">corner seed</text></g>
+      <g><rect x="390" y="190" width="160" height="100"/><text x="400" y="210" class="y">2018 / 2019</text><text x="400" y="228">Furcy et al.</text><text x="400" y="243">τ = 1 thin</text><text x="400" y="258">rectangles</text></g>
+      <g class="plan"><rect x="580" y="190" width="160" height="100"/><text x="590" y="210" class="y">2020 (unverified)</text><text x="590" y="228">arXiv 2007.11093</text><text x="590" y="243">three-dimensional</text><text x="590" y="258">thin rectangle</text></g>
+      <g><rect x="200" y="340" width="160" height="100"/><text x="210" y="360" class="y">2010</text><text x="210" y="378">Maňuch et al.</text><text x="210" y="393">τ = 1 lower bound</text></g>
+      <g><rect x="390" y="340" width="160" height="100"/><text x="400" y="360" class="y">2011</text><text x="400" y="378">Bryans et al.</text><text x="400" y="393">strict model:</text><text x="400" y="408">Σ₂ᴾ-complete</text></g>
+      <g class="target"><polygon points="794,190 936,190 950,204 950,276 936,290 794,290 780,276 780,204"/><text x="790" y="222">This problem:</text><text x="790" y="239">2×n minimum</text><text x="790" y="256">tile set</text></g>
+    </g>
+  </svg>
+  </div>
+  <figcaption><b class="n">Figure 15.</b> Three lines of earlier work (NP-complete means nondeterministic polynomial-time complete) meet at this problem. Why: it shows which paper supplies which part (bounds, τ = 1, definitions). Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §7</figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s3-2" role="tabpanel" aria-labelledby="st-s3-2" hidden>
+  <span class="stepno">Step 2 of 4</span>
+  <h2>Milestone paper table</h2>
+  <p class="why"><b>Problem to solve.</b> We must choose which papers to cite. One table collects what each paper did and how it links to our problem.</p>
+  <p class="note">"Verification status" copies the Verified column of the note as it is. Read the original of PARTIAL and UNVERIFIED papers before you cite them.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table class="papers">
+    <thead><tr><th>Year</th><th>Paper</th><th>What it did</th><th>Link to this problem</th><th>Verification status</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1982</td><td>Mahaney, "Sparse complete sets for NP: solution of a conjecture of Berman and Hartmanis", Journal of Computer and System Sciences (S-MTS-7)</td><td>Proved the sparse set theorem (Mahaney's theorem)</td><td>Basis of research direction rank 1 (sparsity)</td><td><span class="st part">PARTIAL</span></td></tr>
+      <tr><td class="num">2000</td><td>Rothemund, Winfree, Symposium on Theory of Computing (STOC) 2000 (S-MTS-11)</td><td>Lower bound Ω(log N / log log N) for N×N squares</td><td>Contrast between squares and 2×n</td><td><span class="st part">PARTIAL</span><br><span class="sm">Title is from memory and unverified</span></td></tr>
+      <tr><td class="num">2001</td><td>Adleman, Cheng, Goel, Huang, Symposium on Theory of Computing (STOC) 2001 (S-MTS-12)</td><td>Matching upper bound O(log N / log log N)</td><td>Contrast between squares and 2×n</td><td><span class="st part">PARTIAL</span><br><span class="sm">Title is from memory and unverified</span></td></tr>
+      <tr><td class="num">2002</td><td>Adleman, Cheng, Goel, Huang, Kempe, Moisset de Espanés, Rothemund, "Combinatorial optimization problems in self-assembly", Symposium on Theory of Computing (STOC) 2002, pages 23–32 (S-MTS-1)</td><td><ul><li>General shapes are nondeterministic polynomial-time complete (NP-complete).</li><li>Trees and squares take polynomial time.</li><li>Verification also takes polynomial time.</li></ul></td><td>The source of this problem's definition. It gives the candidate check for R1.</td><td><span class="st part">PARTIAL</span><br><span class="sm">Abstract only</span></td></tr>
+      <tr><td class="num">2004 / 2005</td><td>Aggarwal, Cheng, Goldwasser, Kao, Moisset de Espanés, Schweller, "Complexities for generalized models of self-assembly", Society for Industrial and Applied Mathematics (SIAM) Journal on Computing 2005 (S-MTS-2)</td><td>Theorem 3.1 lower bound, Theorem 3.2 counter construction, corner seed</td><td><b>The most direct prior work</b>. Source of the lower bound √n / 2 and the upper bound 4⌈√n⌉ + 2</td><td><span class="st ok">VERIFIED</span><br><span class="sm">Full text, pages 1–8</span></td></tr>
+      <tr><td class="num">2010</td><td>Maňuch, Stacho, Stoll, "Two lower bounds for self-assemblies at temperature 1", Journal of Computational Biology 17(6) (S-MTS-6)</td><td>At least (Manhattan diameter + 1) types, assuming no glue mismatch</td><td>The conditional result that n + 1 is exact at τ = 1</td><td><span class="st part">PARTIAL</span><br><span class="sm">Search summary only</span></td></tr>
+      <tr><td class="num">2011</td><td>Bryans, Chiniforooshan, Doty, Kari, Seki, "The power of nondeterminism in self-assembly", Symposium on Discrete Algorithms (SODA) 2011 (S-MTS-3)</td><td>Strict model is Σ₂ᴾ-complete, and the separation of two definitions</td><td>The standard for deciding which definition "uniquely self-assemble" in the problem means</td><td><span class="st ok">VERIFIED</span><br><span class="sm">Pages 1–5</span></td></tr>
+      <tr><td class="num">2011</td><td>Chen, Doty, Seki, "Program size and temperature in self-assembly", arXiv 1011.3493 (S-MTS-4)</td><td>Squares take polynomial time at every temperature</td><td>Removes the τ assumption from the square algorithm</td><td><span class="st ok">VERIFIED</span><br><span class="sm">Pages 1–3, journal information PARTIAL</span></td></tr>
+      <tr><td class="num">2018 / 2019</td><td>Furcy, Summers, Wendlandt, "New bounds on the tile complexity of thin rectangles at temperature-1", arXiv 1808.04358 (S-MTS-5)</td><td>τ = 1 lower bound Ω(N<sup>1/k</sup>), upper bound N + k − 1</td><td>The current best bounds at τ = 1. The exact value is open</td><td><span class="st ok">VERIFIED</span></td></tr>
+      <tr><td class="num">2020</td><td>"Improved lower and upper bounds on the tile complexity of uniquely self-assembling a thin rectangle non-cooperatively in 3D", arXiv 2007.11093 (S-MTS-8)</td><td>Three-dimensional (3D) τ = 1 thin rectangle</td><td>We could not read the authors and bounds.</td><td><span class="st dead">UNVERIFIED</span></td></tr>
+      <tr><td class="num">unverified</td><td>"Proving new directed tile complexity lower bounds at temperature 1 by folding between 2D and just-barely 3D self-assembly", ResearchGate 379409972 (S-MTS-9)</td><td>May tighten the two-dimensional (2D) τ = 1 directed lower bound</td><td>The first paper to check if time allows</td><td><span class="st dead">UNVERIFIED</span><br><span class="sm">The page returned 403</span></td></tr>
+      <tr><td class="num">unverified</td><td>Chalk, Luchsinger, Schweller, Wylie, core.ac.uk/download/160477919.pdf (S-MTS-10)</td><td>Evidence that Schweller is at the University of Texas Rio Grande Valley (UTRGV)</td><td>Basis for the guess at the setter's name</td><td><span class="st part">PARTIAL</span><br><span class="sm">Search summary only</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 11.</b> Year, citation, content, link, and verification status of 12 papers (4 VERIFIED, 6 PARTIAL, 2 UNVERIFIED). Why: it lets us check which paper supports which part before we cite. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §7</figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s3-3" role="tabpanel" aria-labelledby="st-s3-3" hidden>
+  <span class="stepno">Step 3 of 4</span>
+  <h2>Where this problem sits</h2>
+  <p class="why"><b>Problem to solve.</b> We need to know what is new at the hackathon. Splitting the known from the gaps shows the contribution.</p>
+  <div class="two">
+    <div class="box col">
+      <h3>Already known</h3>
+      <ul>
+        <li>General shapes are nondeterministic polynomial-time complete (NP-complete).</li><li>Trees and squares take polynomial time.</li>
+        <li>Bounds for k×N thin rectangles: lower bound Ω(N<sup>1/k</sup>/k) and upper bound O(N<sup>1/k</sup> + k) (τ = 2).</li>
+        <li>The lower bound holds wherever the seed is.</li>
+        <li>At τ = 1 we have Ω(N<sup>1/k</sup>) ≤ t ≤ N + k − 1.</li>
+      </ul>
+    </div>
+    <div class="box col">
+      <h3>Gaps this hackathon can fill</h3>
+      <ul>
+        <li>The exact formula for the corner seed at τ = 2 (the formula the problem statement says exists)</li>
+        <li>The complexity and upper bound for the interior seed</li>
+        <li>The exact value at τ = 1 (without the assumption)</li>
+        <li>An exact complexity result for 2×n: we did not find one.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box col">
+    <h3>To read next from the same folder</h3>
+    <ul>
+      <li>Three items we left out because we could not read them.<ul><li>"Self-assemblying classes of shapes with a minimum number of tiles" (ResearchGate 221583734)</li><li>"Toward minimum size self-assembled counters" (Springer 10.1007/s11047-008-9070-3)</li><li>"Size-dependent tile self-assembly: constant-height rectangles" (arXiv 1509.06898)</li></ul></li>
+      <li>The note says the counter paper among them is worth reading next.</li>
+      <li>The last one uses a different model with size-dependent temperature, so it is outside the standard model.</li>
+      <li>We did not search for the three-dimensional (3D) square τ = 1 paper of Furcy–Micka–Summers (unverified).</li>
+    </ul>
+  </div>
+</section>
+
+<section class="stepbox" id="s3-4" role="tabpanel" aria-labelledby="st-s3-4" hidden>
+  <span class="stepno">Step 4 of 4</span>
+  <h2>Sources</h2>
+  <p class="why"><b>Purpose.</b> These links let you check the claims on this page against the originals. All access dates are 2026-11-07.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Identifier</th><th>Link</th><th>Type and what was read</th><th>Verification status</th></tr></thead>
+    <tbody>
+      <tr><td>S-MTS-1</td><td><a href="https://authors.library.caltech.edu/3141">Combinatorial optimization problems in self-assembly</a> (doi 10.1145/509907.509913)</td><td>paper, abstract only</td><td><span class="st part">PARTIAL</span></td></tr>
+      <tr><td>S-MTS-2</td><td><a href="https://users.cs.northwestern.edu/~schwellerr/papers/CGM_siam.pdf">Complexities for generalized models of self-assembly</a></td><td>paper, full text pages 1–8</td><td><span class="st ok">VERIFIED</span></td></tr>
+      <tr><td>S-MTS-3</td><td><a href="https://arxiv.org/abs/1006.2897">The power of nondeterminism in self-assembly</a></td><td>paper, pages 1–5</td><td><span class="st ok">VERIFIED</span></td></tr>
+      <tr><td>S-MTS-4</td><td><a href="https://arxiv.org/abs/1011.3493">Program size and temperature in self-assembly</a></td><td>paper, pages 1–3</td><td><span class="st ok">VERIFIED</span></td></tr>
+      <tr><td>S-MTS-5</td><td><a href="https://arxiv.org/abs/1808.04358">New bounds on the tile complexity of thin rectangles at temperature-1</a></td><td>paper, ar5iv body text</td><td><span class="st ok">VERIFIED</span></td></tr>
+      <tr><td>S-MTS-6</td><td><a href="https://journals.sagepub.com/doi/pdf/10.1089/cmb.2009.0067">Two lower bounds for self-assemblies at temperature 1</a></td><td>paper, search summary only</td><td><span class="st part">PARTIAL</span></td></tr>
+      <tr><td>S-MTS-7</td><td><a href="https://en.wikipedia.org/wiki/Mahaney%27s_theorem">Mahaney's theorem</a></td><td>aggregator site, summary only</td><td><span class="st part">PARTIAL</span></td></tr>
+      <tr><td>S-MTS-8</td><td><a href="https://arxiv.org/abs/2007.11093">Improved bounds, thin rectangle, three-dimensional (3D)</a></td><td>paper, search summary only</td><td><span class="st dead">UNVERIFIED</span></td></tr>
+      <tr><td>S-MTS-9</td><td><a href="https://www.researchgate.net/publication/379409972">Folding between two-dimensional (2D) and just-barely three-dimensional (3D)</a></td><td>paper, not readable (403)</td><td><span class="st dead">UNVERIFIED</span></td></tr>
+      <tr><td>S-MTS-10</td><td><a href="https://core.ac.uk/download/160477919.pdf">University of Texas Rio Grande Valley (UTRGV) Schweller paper</a></td><td>paper, search summary only</td><td><span class="st part">PARTIAL</span></td></tr>
+      <tr><td>S-MTS-11, S-MTS-12</td><td>no link</td><td>Copied from what S-MTS-2, 3, 4 cite. Titles are from memory</td><td><span class="st part">PARTIAL</span><br><span class="sm">Titles unverified</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 12.</b> Links and what was read for 12 sources. Why: it separates claims from full text from claims from a summary only. Source: <code>tips/Dr_Schwaller_MinTileset/00_research_notes.md</code> §7</figcaption>
+  </figure>
+</section>
+
+</div><!-- /tab-papers -->
+
+</div>
+<script>
+(function(){
+"use strict";
+// ---------- Step 2: comb assembly view. It only draws a hand-written tile set and does no search or solving ----------
+const sub=n=>String(n).replace(/\d/g,d=>'₀₁₂₃₄₅₆₇₈₉'[d]);
+const CELL=64, PAD=16, TOP=18;
+const $=id=>document.getElementById(id);
+const nIn=$('asmN'), nOut=$('asmNv'), view=$('asmView'), msg=$('asmMsg'), stat=$('asmStat'), typesBox=$('asmTypes');
+const b1=$('asmT1'), b2=$('asmT2');
+let n=5, k=1, tau=2;
+
+function seq(n){
+  const s=[];
+  for(let i=1;i<=n;i++){
+    s.push({name:'B'+sub(i),c:i,r:0,kind:'B',i});
+    s.push({name:'T',c:i,r:1,kind:'T',i});
+  }
+  return s;
+}
+function glues(t,n){ // glue label for each side. A missing side is null
+  if(t.kind==='B') return {N:'u',E:t.i<n?'e'+sub(t.i):'',S:'',W:t.i>1?'e'+sub(t.i-1):''};
+  return {N:'',E:'',S:'u',W:''};
+}
+function why(t){
+  if(t.kind==='B' && t.i===1) return 'Tile B₁ is the seed. It sits in the corner cell from the start.';
+  if(t.kind==='B') return `Tile B${sub(t.i)} attaches to the east glue e${sub(t.i-1)} of B${sub(t.i-1)} on its left. Strength ${tau} is at least the temperature τ = ${tau}, so one glue is enough.`;
+  if(t.i===1) return `Tile T attaches above B₁. The north glue u and the south glue u match, with strength ${tau}. T is the type reused across the whole top row.`;
+  return `Tile T attaches above B${sub(t.i)}. It is a copy of the same T, not a new type.`;
+}
+function draw(){
+  const s=seq(n), W=n*CELL+2*PAD, H=2*CELL+2*PAD+TOP;
+  let h=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="2×${n} assembly view" style="width:100%;max-width:${W}px;height:auto">`;
+  for(let c=1;c<=n;c++)for(let r=0;r<2;r++){
+    const x=PAD+(c-1)*CELL, y=PAD+TOP+(1-r)*CELL;
+    h+=`<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" fill="none" stroke="var(--rule)" stroke-dasharray="4 3"/>`;
+  }
+  for(let j=0;j<k;j++){
+    const t=s[j], x=PAD+(t.c-1)*CELL, y=PAD+TOP+(1-t.r)*CELL, g=glues(t,n);
+    const fill=j===k-1?'var(--signal-flag-fill)':(t.kind==='T'?'var(--card)':'var(--muted)');
+    h+=`<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" fill="${fill}" stroke="var(--foreground)" stroke-width="${j===0?3.5:1.5}"/>`;
+    h+=`<text class="nm" x="${x+CELL/2}" y="${y+CELL/2+5}" text-anchor="middle">${t.name}</text>`;
+    if(g.N) h+=`<text class="gl" x="${x+CELL/2}" y="${y+12}" text-anchor="middle">${g.N}</text>`;
+    if(g.S) h+=`<text class="gl" x="${x+CELL/2}" y="${y+CELL-5}" text-anchor="middle">${g.S}</text>`;
+    if(g.W) h+=`<text class="gl" x="${x+4}" y="${y+CELL/2+4}">${g.W}</text>`;
+    if(g.E) h+=`<text class="gl" x="${x+CELL-4}" y="${y+CELL/2+4}" text-anchor="end">${g.E}</text>`;
+  }
+  h+=`<text class="ax" x="${PAD}" y="12">top row</text>`;
+  h+='</svg>';
+  view.innerHTML=h;
+  const used=new Set(s.slice(0,k).map(t=>t.name));
+  msg.textContent = k===0 ? 'Click "Attach next tile" to place the seed B₁.' :
+    (why(s[k-1]) + (k===2*n ? ' No cell is left to fill. The assembly is terminal and its shape is 2×'+n+'.' : ''));
+  stat.textContent = `Tiles attached ${k} / ${2*n}, types used ${used.size} / ${n+1}, glue strength ${tau}, temperature τ = ${tau}`;
+  let t='<table><thead><tr><th>Type</th><th>North</th><th>East</th><th>South</th><th>West</th><th>Times used</th></tr></thead><tbody>';
+  for(let i=1;i<=n;i++){const nm='B'+sub(i), g=glues({kind:'B',i},n), cnt=s.slice(0,k).filter(x=>x.name===nm).length;
+    t+=`<tr class="${cnt?'usedrow':''}"><td>${nm}</td><td>${g.N||'null'}</td><td>${g.E||'null'}</td><td>null</td><td>${g.W||'null'}</td><td>${cnt}</td></tr>`}
+  const cT=s.slice(0,k).filter(x=>x.name==='T').length;
+  t+=`<tr class="${cT?'usedrow':''}"><td>T</td><td>null</td><td>null</td><td>u</td><td>null</td><td>${cT}</td></tr></tbody></table>`;
+  typesBox.innerHTML=t;
+  $('asmPrev').disabled=k<=1; $('asmNext').disabled=k===2*n;
+  b1.setAttribute('aria-pressed',tau===1?'true':'false'); b2.setAttribute('aria-pressed',tau===2?'true':'false');
+}
+nIn.addEventListener('input',()=>{n=+nIn.value;nOut.textContent=n;k=1;draw()});
+$('asmNext').addEventListener('click',()=>{if(k<2*n){k++;draw()}});
+$('asmPrev').addEventListener('click',()=>{if(k>1){k--;draw()}});
+$('asmReset').addEventListener('click',()=>{k=1;draw()});
+b1.addEventListener('click',()=>{tau=1;draw()});
+b2.addEventListener('click',()=>{tau=2;draw()});
+draw();
+
+// ---------- Step 3: chart computed from the formulas (n = 1..100) ----------
+const low=m=>Math.sqrt(m)/2, up2=m=>4*Math.ceil(Math.sqrt(m))+2, up1=m=>m+1;
+const CW=760, CH=380, ml=58, mr=24, mt=18, mb=46;
+const lo=Math.log10(.3), hi=Math.log10(150);
+const X=m=>ml+(m-1)/99*(CW-ml-mr), Y=v=>mt+(1-(Math.log10(v)-lo)/(hi-lo))*(CH-mt-mb);
+const pts=f=>{let s='';for(let m=1;m<=100;m++)s+=(m>1?' ':'')+X(m).toFixed(1)+','+Y(f(m)).toFixed(1);return s};
+let svg='';
+[0.5,1,2,5,10,20,50,100].forEach(v=>{svg+=`<line class="grid" x1="${ml}" x2="${CW-mr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${ml-6}" y="${Y(v)+4}" text-anchor="end">${v}</text>`});
+[1,10,20,30,40,50,60,70,80,90,100].forEach(m=>{svg+=`<line class="grid" x1="${X(m)}" x2="${X(m)}" y1="${mt}" y2="${CH-mb}"/><text class="ax" x="${X(m)}" y="${CH-mb+16}" text-anchor="middle">${m}</text>`});
+svg+=`<line class="axis" x1="${ml}" x2="${CW-mr}" y1="${CH-mb}" y2="${CH-mb}"/><line class="axis" x1="${ml}" x2="${ml}" y1="${mt}" y2="${CH-mb}"/>`;
+svg+=`<text class="ax" x="${(ml+CW-mr)/2}" y="${CH-8}" text-anchor="middle">n (rectangle length, number of columns)</text>`;
+svg+=`<text class="ax" transform="translate(14 ${(mt+CH-mb)/2}) rotate(-90)" text-anchor="middle">number of tile types t (log scale)</text>`;
+svg+=`<polyline class="sline sl3" points="${pts(up1)}"/><polyline class="sline sl2" points="${pts(up2)}"/><polyline class="sline sl1" points="${pts(low)}"/>`;
+svg+=`<g id="chMark"></g>`;
+$('chart').innerHTML=svg;
+const f1=v=>v.toFixed(2);
+function mark(){
+  const m=+$('chN').value, g=$('chMark');
+  g.innerHTML=`<line class="mark" x1="${X(m)}" x2="${X(m)}" y1="${mt}" y2="${CH-mb}"/>`+
+   [[low,'var(--series-l1)'],[up2,'var(--series-l2)'],[up1,'var(--series-circle)']].map(([f,c])=>`<circle cx="${X(m)}" cy="${Y(f(m))}" r="4" fill="${c}" stroke="var(--card)"/>`).join('')+
+   `<text class="vl" x="${Math.min(X(m)+6,CW-mr-60)}" y="${mt+12}">n = ${m}</text>`;
+  $('chRead').innerHTML=`<dt>lower bound √n / 2</dt><dd>${f1(low(m))}</dd><dt>upper bound 4⌈√n⌉ + 2 (τ = 2)</dt><dd>${up2(m)}</dd><dt>upper bound n + 1 (comb)</dt><dd>${up1(m)}</dd>`+
+   `<dt>Is the τ = 2 construction smaller than the comb?</dt><dd>${up2(m)<up1(m)?'yes':(up2(m)===up1(m)?'equal':'no')}</dd>`;
+}
+$('chN').addEventListener('input',mark);mark();
+let cross=0;for(let m=1;m<=100;m++){if(up2(m)<up1(m)){cross=m;break}}
+const rows=[1,cross,100,10000].map(m=>`<tr><td>${m}${m===cross?' (first n smaller than the comb)':''}</td><td class="num">${f1(low(m))}</td><td class="num">${up2(m)}</td><td class="num">${up1(m)}</td></tr>`).join('');
+$('chTab').innerHTML=rows;
+})();
+</script>
+<script>
+(function(){
+  // Tab 0 step figures: show hand-drawn states one at a time. This is not a simulator.
+  document.querySelectorAll('.vzstep').forEach(f=>{
+    const N=+f.dataset.n, msgs=[...f.querySelectorAll('.vzm li')], out=f.querySelector('.vzmsg'), cnt=f.querySelector('.cnt');
+    const prev=f.querySelector('.prev'), next=f.querySelector('.next'), rst=f.querySelector('.rst');
+    let k=0;
+    function draw(){
+      f.querySelectorAll('[data-from]').forEach(g=>{g.style.display=(+g.dataset.from<=k)?'':'none'});
+      f.querySelectorAll('[data-only]').forEach(g=>{g.style.display=(+g.dataset.only===k)?'':'none'});
+      out.textContent=msgs[k].textContent; cnt.textContent=msgs[k].dataset.c;
+      prev.disabled=k===0; next.disabled=k===N-1;
+    }
+    prev.addEventListener('click',()=>{if(k>0){k--;draw()}});
+    next.addEventListener('click',()=>{if(k<N-1){k++;draw()}});
+    rst.addEventListener('click',()=>{k=0;draw()});
+    draw();
+  });
+})();
+</script>
+<script>
+(function(){
+  // Four top-level tabs, and sub-step tabs inside each. Each tab remembers its chosen step.
+  // The Korean page also has a terms appendix tab with a back button. This English page has none, so that code is removed.
+  const tabs=[...document.querySelectorAll('.tabs [role=tab]')], names=tabs.map(t=>t.dataset.tab);
+  const subs={}, cur={};
+  names.forEach(n=>{subs[n]=[...document.getElementById('tab-'+n).querySelectorAll('.subtabs [role=tab]')];cur[n]=0});
+  let active='viz';
+  const hashOf=()=>'#'+(subs[active].length?active+'-'+(cur[active]+1):active);
+  function render(){
+    tabs.forEach(t=>{const on=t.dataset.tab===active;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;
+      document.getElementById('tab-'+t.dataset.tab).hidden=!on});
+    names.forEach(n=>subs[n].forEach((b,i)=>{const on=i===cur[n];b.setAttribute('aria-selected',on?'true':'false');b.tabIndex=on?0:-1;
+      document.getElementById(b.getAttribute('aria-controls')).hidden=!on}));
+  }
+  function go(name,step){active=name;if(step!=null&&step>=0&&subs[name].length)cur[name]=step;render()}
+  // Allowed hashes: viz, now, background, papers, and the form now-2. Any other hash gives null.
+  function parse(h){const m=h.match(/^([a-z]+)(?:-(\d+))?$/);if(!m||!names.includes(m[1]))return null;
+    if(m[2]===undefined)return {name:m[1],step:null};
+    const s=+m[2]-1;return s>=0&&s<subs[m[1]].length?{name:m[1],step:s}:null}
+  function openStep(id){const el=document.getElementById(id),p=el&&el.closest('.tabpanel');if(!p)return;
+    const name=p.id.slice(4);go(name,subs[name].findIndex(b=>b.getAttribute('aria-controls')===id));
+    history.replaceState(null,'',hashOf());el.scrollIntoView({behavior:'smooth',block:'start'})}
+  window.openStep=openStep;
+  function manual(name,step,focusEl){go(name,step);history.replaceState(null,'',hashOf());if(focusEl)focusEl.focus()}
+  function arrows(list,i,e,pick){if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;e.preventDefault();
+    pick((i+(e.key==='ArrowRight'?1:list.length-1))%list.length)}
+  tabs.forEach((t,i)=>{
+    t.addEventListener('click',()=>manual(t.dataset.tab));
+    t.addEventListener('keydown',e=>arrows(tabs,i,e,j=>manual(tabs[j].dataset.tab,null,tabs[j])));
+  });
+  names.forEach(n=>subs[n].forEach((b,i)=>{
+    b.addEventListener('click',()=>manual(n,i));
+    b.addEventListener('keydown',e=>arrows(subs[n],i,e,j=>manual(n,j,subs[n][j])));
+  }));
+  const apply=h=>{const r=parse(h);if(r)go(r.name,r.step)};
+  render();apply(location.hash.slice(1));
+  window.addEventListener('hashchange',()=>{const r=parse(location.hash.slice(1));if(r){go(r.name,r.step)}});
+  // In-page links: a link to a step box id goes to that step.
+  document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;
+    const id=a.getAttribute('href').slice(1),t=document.getElementById(id);if(!t)return;
+    if(t.classList.contains('stepbox')){e.preventDefault();openStep(id)}});
+})();
+
+</script>
+</body>
+</html>

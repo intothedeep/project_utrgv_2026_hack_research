@@ -1,0 +1,1291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HACK · Smallest circle tips</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500&display=swap">
+<style>
+/* html-theme: the one theme for HTML output (rules/answering.md §3).
+   Light tokens: ported from the owner's earlier web project's globals.css
+   (shadcn neutral, achromatic, radius 0, whole-UI IBM Plex Mono).
+   Dark tokens: added 2026-10-02 in the same achromatic family; the source had no dark theme. */
+
+:root {
+    --radius: 0;
+
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.55 0 0);
+    --rule: oklch(0.9 0 0);          /* hairlines and chart grid; the source --border is too strong for grids */
+    --ring: oklch(0.45 0 0);
+
+    /* signal colours carry meaning, not decoration */
+    --signal-instruction: #d40000;   /* an instruction / something the reader must act on */
+    --signal-plan: #0432ff;          /* a plan / a pre-registered line */
+    --signal-flag-fill: #fff3a0;     /* a highlighted cell or row */
+    --signal-flag-line: #e6d24a;
+    --signal-dead-fill: #e4e4e2;     /* retired, skipped, out of scope */
+    --signal-dead-ink: oklch(0.53 0.01 260);
+
+    /* Plex Mono has no Hangul; Korean falls through to Plex Sans KR */
+    --font: "IBM Plex Mono", "IBM Plex Sans KR", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+* { box-sizing: border-box; border-radius: var(--radius); }
+body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font);
+    font-feature-settings: "cv11", "ss01";
+    font-size: 14px;
+    line-height: 1.6;
+    padding-inline: 16px;
+    padding-block: 32px 64px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1 { font-size: 24px; line-height: 1.3; font-weight: 700; margin: 0; text-wrap: balance; }
+h2 { font-size: 17px; font-weight: 500; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.muted { color: var(--muted-foreground); }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+.panel { background: var(--card); color: var(--card-foreground); border: 1px solid var(--border); padding: 16px; }
+.scroll-x { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
+th { font-weight: 500; color: var(--muted-foreground); }
+th:first-child, td:first-child { text-align: left; }
+.flag { background: var(--signal-flag-fill); box-shadow: inset 2px 0 0 var(--signal-flag-line); }
+.instruction { color: var(--signal-instruction); }
+.plan { color: var(--signal-plan); }
+.dead { background: var(--signal-dead-fill); color: var(--signal-dead-ink); }
+button { font: inherit; padding: 4px 12px; border: 1px solid var(--border); background: var(--card); color: var(--foreground); cursor: pointer; }
+button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+svg text { fill: var(--muted-foreground); font-family: var(--font); font-size: 11px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+/* Chart series colours: set by the page. They do not overlap the signal colours (red, blue, yellow, grey fill). */
+:root{
+  --series-l1:#0e7490; --series-l2:#b45309; --series-l3:#4d7c0f;
+  --series-circle:#a21caf; --series-sphere:#6b7280;
+}
+/* Page layout */
+body{word-break:keep-all}
+section,.stepbox{display:flex;flex-direction:column;gap:16px}
+.stepbox{border-top:6px solid var(--foreground);padding-top:12px;scroll-margin-top:60px}
+.stepno{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+[hidden]{display:none!important}
+.subtabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border)}
+.subtabs button{font-size:13px;font-weight:500;background:none;color:var(--muted-foreground);border:none;border-bottom:3px solid transparent;padding:8px 12px;margin-bottom:-1px;text-align:left}
+.subtabs button:hover{color:var(--foreground)}
+.subtabs button[aria-selected="true"]{color:var(--primary-foreground);background:var(--primary);font-weight:700}
+.back{align-self:flex-start}
+a{color:var(--foreground);text-decoration:underline}
+a.t{text-decoration:underline dotted}
+.lede{display:flex;flex-direction:column;gap:12px}
+.lede p{max-width:80ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted-foreground);font-size:13px}
+.meta b{color:var(--foreground);font-weight:700}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+code,.mono{font-size:.95em}
+h3{font-size:14px;font-weight:700;margin:0}
+p{max-width:80ch}
+.box{background:var(--card);border:1px solid var(--border);padding:16px}
+.note{font-size:13px;color:var(--muted-foreground)}
+.why{border-left:3px solid var(--foreground);padding:2px 0 2px 12px}
+.thm{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.thm .stmt{display:flex;flex-direction:column;gap:10px}
+.thm figure,figure.fig{margin:0;display:flex;flex-direction:column;gap:8px}
+figcaption{font-size:12.5px;color:var(--muted-foreground)}
+figcaption b.n{color:var(--foreground)}
+.formula{background:var(--muted);padding:8px 12px;font-size:13px;overflow-x:auto;white-space:nowrap}
+.explorer{display:grid;grid-template-columns:230px minmax(0,1fr) 300px;gap:16px;align-items:start}
+.presets{display:flex;flex-direction:column;gap:14px;max-height:640px;overflow-y:auto;padding-right:4px}
+.pgroup{display:flex;flex-direction:column;gap:5px}
+.presets button,.ctrl button{font-size:13px;text-align:left;line-height:1.35;padding:6px 9px}
+.stage{display:flex;flex-direction:column;gap:8px;min-width:0}
+.canvasbox{position:relative;background:var(--card);border:1px solid var(--border);aspect-ratio:4/3;max-width:100%;overflow:hidden;touch-action:none;cursor:grab}
+.canvasbox:active{cursor:grabbing}
+.figbox{aspect-ratio:1/1}
+canvas{display:block;width:100%;height:100%}
+.ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted-foreground)}
+.ctrl label{display:flex;gap:5px;align-items:center;cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted-foreground)}
+.sw{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
+.readout{display:flex;flex-direction:column;gap:12px;min-width:0}
+.case{font-size:15px;line-height:1.4;font-weight:500}
+.chip{display:inline-flex;font-size:12px;font-weight:700;padding:2px 9px;width:fit-content;border:1px solid var(--border)}
+.chip.a2{background:var(--muted)}
+.chip.a3{background:var(--primary);color:var(--primary-foreground)}
+.chip.a0{background:var(--card)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;font-size:13px;margin:0}
+.kv dt{color:var(--muted-foreground)}
+.kv dd{margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+th,td{text-align:left;white-space:normal;vertical-align:top;font-size:13px}
+td.num{font-variant-numeric:tabular-nums}
+.readout th,.readout td{white-space:nowrap}
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--border)}
+.st{font-size:12px;font-weight:700;padding:2px 8px;white-space:nowrap;border:1px solid var(--border);display:inline-block}
+.st.ok{background:var(--primary);color:var(--primary-foreground)}
+.st.q{background:var(--signal-flag-fill);border-color:var(--signal-flag-line);color:var(--foreground)}
+.st.open{background:var(--card);color:var(--foreground);border-style:dashed}
+.flow{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center}
+.node{background:var(--card);border:1px solid var(--border);padding:10px 14px;max-width:580px;width:100%;text-align:center;font-size:13px}
+.node.q{border-width:2px;background:var(--muted)}
+.arrow{height:26px;width:2px;background:var(--border);position:relative}
+.arrow::after{content:"";position:absolute;bottom:-1px;left:-5px;border:6px solid transparent;border-top-color:var(--border)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;width:100%;max-width:980px}
+.branch{display:flex;flex-direction:column;align-items:center}
+.branch .tag{font-size:12px;color:var(--muted-foreground);padding:6px 0}
+.leafs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;width:100%}
+.leaf{background:var(--card);border:1px solid var(--border);padding:8px 10px;font-size:12.5px}
+.leaf b{display:block}
+.node.yes{border-width:2px}
+.node.no{border-style:dashed}
+.tl{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--border);padding:16px}
+.tlrow{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;align-items:center;font-size:12.5px}
+.tltrack{position:relative;height:20px;background:var(--muted)}
+.tlbar{position:absolute;top:0;bottom:0;background:var(--series-l1)}
+.tlbar.bonus{background:var(--series-l2)}
+.tlbar.write{background:var(--series-circle)}
+.tlaxis{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;font-size:11px;color:var(--muted-foreground)}
+.ticks{position:relative;height:16px}
+.ticks span{position:absolute;transform:translateX(-50%)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.col{display:flex;flex-direction:column;gap:10px}
+ol,ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.files li{font-size:13px}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px}
+.steps li::before{content:counter(s);font-weight:700}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--background);z-index:5;padding-top:8px}
+.tabs button{font-size:13px;font-weight:500;background:none;color:var(--muted-foreground);border:none;border-bottom:3px solid transparent;padding:10px 14px;margin-bottom:-1px}
+.tabs button:hover{color:var(--foreground)}
+.tabs button[aria-selected="true"]{color:var(--foreground);border-bottom-color:var(--foreground);font-weight:700;background:none}
+.tabpanel{display:flex;flex-direction:column;gap:40px}
+.timeline{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0;border-left:2px solid var(--border);margin-left:8px}
+.timeline li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;padding:0 0 18px 18px;position:relative}
+.timeline li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--card);border:2px solid var(--foreground)}
+.timeline li.now::before{background:var(--series-circle);border-color:var(--series-circle)}
+.timeline .yr{font-size:12.5px;padding-top:2px}
+.timeline li.now .yr{font-weight:700}
+.timeline b{display:block}
+.lineage{width:100%;min-width:2540px;height:auto;display:block}
+.lineage.flow2{min-width:780px}
+.lineage.flow2 .edges path{marker-end:url(#ah2)}
+.lineage .lane{font-size:12px;font-weight:700;fill:var(--muted-foreground)}
+.lineage rect{fill:var(--card);stroke:var(--border);stroke-width:1.2}
+.lineage text{font-size:12px;fill:var(--foreground)}
+.lineage text.y{font-size:11px;fill:var(--muted-foreground)}
+.lineage .target polygon{fill:var(--muted);stroke:var(--series-circle);stroke-width:2.5}
+.lineage .plan rect{stroke-dasharray:5 3}
+.lineage [data-box]{cursor:pointer}
+.lineage [data-box]:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.lineage [data-box][aria-pressed="true"] rect,.lineage [data-box][aria-pressed="true"] polygon{stroke:var(--primary);stroke-width:4}
+.nodeinfo h3{margin:0 0 8px}
+.nodeinfo th{text-align:left;white-space:nowrap;vertical-align:top;width:1%}
+.nodeinfo ul{margin:0;padding-left:18px}
+.lineage text.al{font-size:11px;fill:var(--foreground)}
+.lineage .edges path{fill:none;stroke:var(--muted-foreground);stroke-width:1.4;marker-end:url(#ah)}
+.lineage .edges path.hot{stroke:var(--series-circle);stroke-width:2}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.gcard{background:var(--card);border:1px solid var(--border);padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.gtitle{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.gbox{aspect-ratio:1/1}
+.ginfo{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12px}
+.ginfo button{font-size:12px;margin-left:auto;padding:4px 8px}
+.ginfo .ill{flex-basis:100%;font-size:11px;color:var(--muted-foreground)}
+@media (max-width:900px){
+  .explorer{grid-template-columns:minmax(0,1fr)}
+  .presets{max-height:none;flex-direction:row;flex-wrap:wrap}
+  .pgroup{flex:1 1 200px}
+  .thm,.three{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .split,.two{grid-template-columns:minmax(0,1fr)}
+  .tlrow,.tlaxis{grid-template-columns:120px minmax(0,1fr)}
+  .timeline li{grid-template-columns:minmax(0,1fr);gap:2px}
+}
+/* Language switch, top right. Hidden inside tips/index.html, which has its own. */
+.langsw{position:absolute;top:12px;right:16px;display:flex;z-index:10}
+.langsw a,.langsw b{padding:4px 10px;border:1px solid var(--border);font-weight:500;text-decoration:none;color:var(--foreground);background:var(--background)}
+.langsw a+b,.langsw b+a{border-left:0}
+.langsw b{background:var(--primary);color:var(--primary-foreground)}
+.framed .langsw{display:none}
+</style>
+<script>if (window.self !== window.top) { document.documentElement.classList.add("framed"); }</script>
+</head>
+<body>
+<nav class="langsw" aria-label="Language"><a href="study_tips.html" lang="ko" hreflang="ko">한국어</a><b aria-current="page">English</b></nav>
+<div class="wrap">
+
+<header class="lede">
+  <span class="eyebrow">University of Texas Rio Grande Valley (UTRGV) Research Hackathon 2026 · Set by Tim Wylie</span>
+  <h1>The smallest circle that meets three lines in three dimensions: study tips</h1>
+  <p>This is a study map for beginners. You learn what to know and why, step by step. Tab 1 has 6 steps. Tabs 2 and 3 have 5 steps each. Each step builds on the one before.</p>
+  <p>The problem is this. Three infinite lines are given in space. Find the smallest circle (center, radius, plane) that meets all three lines.</p>
+  <div class="meta"><span>Due <b>Nov 8 (Sun) 09:00</b></span><span>Deliverable <b>two-page paper</b> (Overleaf, only this is judged)</span><span>Status <b>planning stage, paper body not written</b></span></div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Page sections">
+  <button type="button" role="tab" id="tb-now" aria-controls="tab-now" data-tab="now">1. Current version · study map</button>
+  <button type="button" role="tab" id="tb-background" aria-controls="tab-background" data-tab="background">2. Background and history</button>
+  <button type="button" role="tab" id="tb-papers" aria-controls="tab-papers" data-tab="papers">3. Key paper lineage</button>
+</nav>
+
+<div class="tabpanel" id="tab-now" role="tabpanel" aria-labelledby="tb-now">
+
+<div class="subtabs" role="tablist" aria-label="Tab 1 steps">
+  <button type="button" role="tab" id="st-s1-1" aria-controls="s1-1">Step 1 Problem and key idea</button>
+  <button type="button" role="tab" id="st-s1-2" aria-controls="s1-2">Step 2 Three-dimensional case explorer</button>
+  <button type="button" role="tab" id="st-s1-3" aria-controls="s1-3">Step 3 Case gallery</button>
+  <button type="button" role="tab" id="st-s1-4" aria-controls="s1-4">Step 4 Decision flowchart</button>
+  <button type="button" role="tab" id="st-s1-5" aria-controls="s1-5">Step 5 Solution table by case</button>
+  <button type="button" role="tab" id="st-s1-6" aria-controls="s1-6">Step 6 Study tips and plan</button>
+</div>
+
+<section class="stepbox" id="s1-1" role="tabpanel" aria-labelledby="st-s1-1">
+  <span class="stepno">Step 1 of 6</span>
+  <h2>Problem and key idea: think of the circle as part of a sphere</h2>
+  <p class="why"><b>Problem to solve.</b> Three lines can sit in many layouts. Solving each case alone never ends. We need one question that covers all cases.</p>
+  <div class="thm">
+    <div class="stmt box">
+      <p><b>Lower bound.</b> Say a circle with center c and radius r meets line L at point p. Then this inequality holds.</p>
+      <div class="formula">dist(c, L) ≤ |c − p| = r</div>
+      <p>So every circle that meets the condition satisfies this.</p>
+      <div class="formula">r ≥ r* = min<sub>c</sub> max<sub>i</sub> dist(c, L<sub>i</sub>)</div>
+      <p>r* is the radius of the smallest sphere that meets all three lines. The distance from a point to a line is a convex function. The maximum of three convex functions is also convex. So this is a convex optimization in c. Add the variable r. Then it is a second-order cone programming (SOCP) problem with 4 variables (c, r).</p>
+      <p><b>The lower bound is always reached.</b> Say one pair is not parallel. The distance grows as c moves away, so a minimum exists. If all three lines are parallel, reduce to a cross-section. At the optimum, the Karush-Kuhn-Tucker conditions (KKT) hold. They say a positive combination of the unit vectors u<sub>i</sub> is 0. Each u<sub>i</sub> points from a contact point to c. If r* = 0, u<sub>i</sub> is undefined. So this argument holds only for r* &gt; 0.</p>
+      <p>Three such vectors must lie in one plane. So the contact points and c lie in the same plane. That plane gives a great circle that passes through all three lines.</p>
+      <p>Say two constraints are active. Then the two contact points are antipodal points of the sphere. Then you can rotate the plane to catch the third line.</p>
+      <p class="note">Conclusion: the case analysis shrinks to one decision, "are 2 or 3 lines active?", and a solution of the 3-active subcase. An active line is a line whose multiplier in the Karush-Kuhn-Tucker conditions (KKT) is positive. That line is at distance exactly r from the optimal center.</p>
+    </div>
+    <figure class="box fig">
+      <div class="canvasbox figbox"><canvas id="fig1" aria-label="Three skew lines with three-fold symmetry, the smallest sphere, and a great circle"></canvas></div>
+      <figcaption><b class="n">Figure 1.</b> Example with 3 active lines. It shows three skew lines with three-fold symmetry and the great circle (magenta) of the smallest sphere, with r* = 1.5. Why: the three radius arrows lie in one plane, so the great circle is the answer. This r* is an illustrative value. Drag to rotate. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+    </figure>
+    <figure class="box fig">
+      <div class="canvasbox figbox"><canvas id="fig2" aria-label="Tilted smallest circle of an obtuse prism"></canvas></div>
+      <figcaption><b class="n">Figure 2.</b> Example with 2 active lines. Three parallel lines with an obtuse cross-section have two exactly opposite radii (antipodal points). Why: it shows the circle plane tilting against the line direction. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="stepbox" id="s1-2" role="tabpanel" aria-labelledby="st-s1-2" hidden>
+  <span class="stepno">Step 2 of 6</span>
+  <h2>Three-dimensional case explorer</h2>
+  <p class="why"><b>Problem to solve.</b> Formulas alone do not show the shape of a case. Rotate a setup by hand and you see why the active line count changes.</p>
+  <p class="note">Pick a setup from Figure 1 of the problem statement. The page solves the minimax distance and reports the active lines. Then it builds the circle and checks that the circle really touches each line. Drag to rotate. Scroll or pinch to zoom.</p>
+  <div class="explorer">
+    <div class="presets" id="presets"></div>
+    <figure class="stage fig" style="margin:0">
+      <div class="canvasbox" id="cbox"><canvas id="cv" aria-label="Three-dimensional view of three lines and the smallest circle"></canvas></div>
+      <div class="ctrl">
+        <button id="spin" type="button">Spin</button>
+        <button id="resetv" type="button">Reset view</button>
+        <button id="rnd" type="button">Random lines</button>
+        <button id="rndp" type="button">Random (one parallel pair)</button>
+        <label><input type="checkbox" id="showSphere" checked> Sphere</label>
+        <label><input type="checkbox" id="showFeet" checked> Foot of perpendicular</label>
+      </div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--series-l1)"></i>L1</span>
+        <span><i class="sw" style="background:var(--series-l2)"></i>L2</span>
+        <span><i class="sw" style="background:var(--series-l3)"></i>L3</span>
+        <span><i class="sw" style="background:var(--series-circle)"></i>Smallest circle (back half dotted)</span>
+        <span><i class="sw" style="background:var(--series-sphere)"></i>Smallest sphere outline</span>
+      </div>
+      <figcaption><b class="n">Figure 3.</b> Three-dimensional view of three lines, the smallest circle, and the smallest sphere for the chosen preset. The readout on the right shows illustrative values. Why: you rotate the setup yourself to see how the active line count changes with the layout. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+    </figure>
+    <div class="readout box" id="readout" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="stepbox" id="s1-3" role="tabpanel" aria-labelledby="st-s1-3" hidden>
+  <span class="stepno">Step 3 of 6</span>
+  <h2>Case gallery: Figure 1 of the problem statement and 4 extra cases</h2>
+  <p class="why"><b>Problem to solve.</b> We needed a way to compare 20 cases at a glance. The same axes and the same drawing style make the differences visible.</p>
+  <p class="note">The 20 cards are the 16 cases of Figure 1 in the problem statement and 4 extra cases. The extra 4 are one concurrent case and three variants (2 meet far, 2 parallel with a far skew line, obtuse prism). All sit on three-dimensional coordinate axes. Drag each figure to rotate. A button loads it into the explorer above. The magenta circle is the smallest circle. The dashed circle is the outline of the smallest sphere.</p>
+  <figure class="fig" style="margin:0">
+    <div class="gallery" id="gallery"></div>
+    <figcaption><b class="n">Figure 4.</b> The smallest circle and the active line count for each of the 20 cards. The r value on each card is an illustrative value. Why: it shows side by side how the shape of the answer changes with the case. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s1-4" role="tabpanel" aria-labelledby="st-s1-4" hidden>
+  <span class="stepno">Step 4 of 6</span>
+  <h2>Decision flowchart</h2>
+  <p class="why"><b>Problem to solve.</b> You cannot pick a formula until you know the case of the input. The flowchart sets the order of decisions from input to answer.</p>
+  <figure class="fig" style="margin:0;gap:12px">
+  <div class="flow">
+    <div class="node">Three lines L<sub>i</sub> = a<sub>i</sub> + t·d<sub>i</sub></div>
+    <div class="arrow"></div>
+    <div class="node">Decide whether each pair is parallel, meeting, or skew. For each pair, compute ρ<sub>ij</sub> = dist(L<sub>i</sub>, L<sub>j</sub>)/2. Also compute the set of optimal centers C<sub>ij</sub>. C<sub>ij</sub> is the meeting point, the midpoint of the common perpendicular, the midline, or (if the two lines coincide) that line.</div>
+    <div class="arrow"></div>
+    <div class="node q">Pick the pair (i, j) with the largest ρ. Does the third line L<sub>k</sub> pass within ρ<sub>ij</sub> of C<sub>ij</sub>?</div>
+    <div class="arrow"></div>
+    <div class="split">
+      <div class="branch">
+        <span class="tag">Yes</span>
+        <div class="node yes"><b>2 active.</b> r = ρ<sub>ij</sub>. The plane passes through the two antipodal contact points and one point of L<sub>k</sub> on the sphere. It is a closed form. The run time is O(1) in big-O notation.</div>
+      </div>
+      <div class="branch">
+        <span class="tag">No</span>
+        <div class="node no"><b>3 active.</b> c is at the same distance from all three lines. The three contact points and c lie in one plane.</div>
+        <div class="arrow"></div>
+        <div class="leafs">
+          <div class="leaf"><b>Coplanar triangle</b>incircle</div>
+          <div class="leaf"><b>3 parallel, acute</b>circumcircle of the cross-section triangle</div>
+          <div class="leaf"><b>2 parallel</b>one quadratic equation in the height z</div>
+          <div class="leaf"><b>1 meet + perpendicular line</b>Apollonius point-line-line problem (PLL) in the plane</div>
+          <div class="leaf"><b>General skew lines</b>a polynomial system, degree unsolved</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption><b class="n">Figure 5.</b> The decision flow from three input lines to the active line count and the formula. Why: the first fork of the case analysis is one question, "does the third line fall inside?". Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s1-5" role="tabpanel" aria-labelledby="st-s1-5" hidden>
+  <span class="stepno">Step 5 of 6</span>
+  <h2>Solution table by case</h2>
+  <p class="why"><b>Problem to solve.</b> Each case has its own answer and its own progress. One table shows which cases are still empty.</p>
+  <p class="note">Rows follow the order of Figure 1 in the problem statement. One row joins two cases in some places. We added two cases that are not in the figure. "Status" is the progress of the derivation. Check every row by hand again before it goes into the paper.</p>
+  <div class="box col">
+    <h3>Symbols in the table</h3>
+    <ul>
+      <li>δ: the shortest distance between two skew lines.</li>
+      <li>w: the gap between two parallel lines. h = w/2.</li>
+      <li>M: the midline of two parallel lines.</li>
+      <li>z: the height of the center above the plane of the two parallel lines.</li>
+      <li>q(z): the quadratic you get by minimizing (distance to L3)² − z² over y. If q(z) = h², all three distances are equal.</li>
+      <li>Perpendicular line: a line perpendicular to the plane parallel to L1 and L2. S is the point where it meets that plane.</li>
+      <li>a: the distance from S to M.</li>
+      <li>P, θ: the meeting point of two lines and the angle between them.</li>
+      <li>b: the unit vector of the angle bisector on the side of S.</li>
+      <li>t: the distance from P to the center c along b.</li>
+      <li>v = S − P.</li>
+      <li>A, B, C: the vertices of the triangle. ℓ<sub>a</sub>, ℓ<sub>b</sub>, ℓ<sub>c</sub>: the lengths of the sides opposite each vertex.</li>
+    </ul>
+  </div>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Case in Figure 1 of the problem statement</th><th>Active count</th><th>Answer</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>3 meet (triangle)</td><td>3</td><td>incircle<ul><li>c = (ℓ<sub>a</sub>A + ℓ<sub>b</sub>B + ℓ<sub>c</sub>C)/(ℓ<sub>a</sub> + ℓ<sub>b</sub> + ℓ<sub>c</sub>)</li><li>r = 2·area/(ℓ<sub>a</sub> + ℓ<sub>b</sub> + ℓ<sub>c</sub>)</li></ul></td><td><span class="st ok">Closed form</span></td></tr>
+      <tr><td>Three lines meet at one point (not in the figure)</td><td>None</td><td>r = 0, a degenerate point circle</td><td><span class="st ok">Closed form</span></td></tr>
+      <tr><td>2 meet, 1 cross</td><td>2 or 3</td><td>If the transversal passes within δ/2 of the midpoint of the common perpendicular of the skew pair, 2 are active and r = δ/2</td><td><span class="st q">2 done, 3 unsolved</span></td></tr>
+      <tr><td>1 meet, 2 cross (over / over-under)</td><td>2 or 3</td><td>Decide with the decision flowchart. The label tells whether L3 passes on the same side of the plane at the two crossing points</td><td><span class="st q">Sketch</span></td></tr>
+      <tr><td>0 meet (all skew)</td><td>2 or 3</td><td>2 active is a closed form. 3 active gives three quadratics and one cubic in (c, r). The Bézout bound is 24. r appears only as r², so (c, r) and (c, −r) pair up. So there are at most 12 solutions with r &gt; 0</td><td><span class="st open">Research question</span></td></tr>
+      <tr><td>2 parallel, 1 meets both</td><td>2</td><td>r = w/2. The center is a whole segment on the midline</td><td><span class="st ok">Closed form</span></td></tr>
+      <tr><td>2 parallel, 1 meet 1 cross</td><td>2</td><td>Always r = w/2</td><td><span class="st ok">Closed form</span></td></tr>
+      <tr><td>2 parallel, 0 meet (over, over/under)</td><td>2 or 3</td><td><ul><li>Apply the decision flowchart first.</li><li>If the pair with the largest ρ is (L1, L2) and dist(M, L3) ≤ h, 2 are active and r = h.</li><li>If another pair has the largest ρ and passes the flowchart, r is the ρ of that pair. Example: "2 parallel + perpendicular line (outside)".</li><li>If 3 are active, solve q(z) = h². Pick the root with the smallest |z|.</li></ul></td><td><span class="st q">Quadratic, needs expansion</span></td></tr>
+      <tr><td>3 parallel, coplanar</td><td>2</td><td>r = half the gap between the two outer lines. The center can be anywhere on the midline</td><td><span class="st ok">Closed form</span></td></tr>
+      <tr><td>3 parallel, 2 coplanar (read as a prism whose three lines are not in one plane)</td><td>3 if acute, 2 if right or obtuse</td><td>The minimum enclosing circle (MEC) of the cross-section triangle. If obtuse, the circle plane tilts</td><td><span class="st ok">Closed form</span></td></tr>
+      <tr><td>1 meet + perpendicular line</td><td>2 or 3</td><td>By symmetry, c lies in the plane. 3 active is the Apollonius point-line-line problem (PLL)<ul><li>c = P + t·b, r = t·sin(θ/2)</li><li>t²cos²(θ/2) − 2t(b · v) + |v|² = 0</li></ul></td><td><span class="st q">Quadratic, needs checking</span></td></tr>
+      <tr><td>1 cross + perpendicular line</td><td>2 or 3</td><td><ul><li>The z reflection symmetry breaks. A 180° rotational symmetry may remain.</li><li>Say S is on the axis of the rotation that swaps L1 and L2. Then L3 stays in place too. So the center lies on the rotation axis. The condition that the squared distances from the center to L1 and L3 are equal is a quadratic in one variable.</li><li>Example: the explorer preset gives r ≈ 0.70 with 3 active.</li><li>If S is off the bisector, use the general decision flowchart.</li></ul></td><td><span class="st q">Partly closed form</span></td></tr>
+      <tr><td>2 parallel + perpendicular line (between)</td><td>2</td><td>r = w/2. The center is not unique. Example: put the center at the foot of the perpendicular from S to the midline. Then the circle lies in the plane that holds L3</td><td><span class="st ok">Closed form</span></td></tr>
+      <tr><td>2 parallel + perpendicular line (outside)</td><td>2</td><td>The far parallel line and L3 are active: r = (a + h)/2</td><td><span class="st ok">Closed form</span></td></tr>
+      <tr><td>Two lines coincide (not in the figure)</td><td>2</td><td>Reduce to a two-line problem: r = half the distance between the lines</td><td><span class="st ok">Closed form</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 1.</b> The active line count, the answer, and the derivation status for the 16 cases of Figure 1 in the problem statement (13 rows) and 2 cases outside it (2 rows). Why: you see at a glance which cases have a closed form and which are empty. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s1-6" role="tabpanel" aria-labelledby="st-s1-6" hidden>
+  <span class="stepno">Step 6 of 6</span>
+  <h2>Study tips and plan</h2>
+  <p class="why"><b>Problem to solve.</b> Time to the deadline is short. You save time if you know what to learn first and where mistakes are likely.</p>
+  <div class="three">
+    <div class="box col">
+      <h3>Basics to learn first</h3>
+      <ol class="steps">
+        <li>Line forms: vector form a + t·d, two-point form, Plücker coordinates</li>
+        <li>Derive the point-line distance and the foot of perpendicular, do not memorize them</li>
+        <li>Decide how two lines relate: d₁×d₂, (a₂−a₁)·(d₁×d₂)</li>
+        <li>The common perpendicular of two skew lines and the formula for the nearest points</li>
+        <li>Incircle, circumcircle, and the minimum enclosing circle (MEC) for acute and obtuse triangles</li>
+        <li>Convex function, minimax, Karush-Kuhn-Tucker conditions (KKT), and the subgradient of a max</li>
+        <li>Apollonius point-line-line problem (PLL): the circle tangent to 1 point and 2 lines</li>
+        <li>Second-order cone programming (SOCP): min r s.t. ‖P<sub>i</sub>(c − a<sub>i</sub>)‖ ≤ r</li>
+      </ol>
+    </div>
+    <div class="box col">
+      <h3>Study order</h3>
+      <ol class="steps">
+        <li>Redraw the figures of Figure 1 in the problem statement by hand. Write the number of parallel, meeting, and skew pairs</li>
+        <li>Write the lower bound proof yourself in 5 lines</li>
+        <li>Write the Karush-Kuhn-Tucker conditions (KKT) argument: why is it coplanar if a positive combination is 0?</li>
+        <li>Press every preset in the explorer above and tabulate the active counts</li>
+        <li>Derive from easy to hard: triangle, 3 parallel, 2 parallel, perpendicular line, 1 cross, all skew</li>
+        <li>Plan the check that compares the closed forms with second-order cone programming (SOCP) numerical solutions</li>
+      </ol>
+    </div>
+    <div class="box col">
+      <h3>Pitfalls</h3>
+      <ul>
+        <li><b>The meaning of "touch".</b> Intersect and tangent give different answers in almost all cases, except the coplanar triangle. A 3-active solution also makes the line tangent to the sphere, but not to the circle. Example: Figure 1, acute prism. Ask the setter and state it in the paper.</li>
+        <li><b>Missing degenerate cases.</b> Concurrent lines (r = 0) and two coincident lines.</li>
+        <li><b>The solution is not unique.</b> Describe the family of solutions for parallel cases.</li>
+        <li><b>Obtuse prism.</b> The circle plane is not perpendicular to the lines.</li>
+        <li><b>Tolerance.</b> Deciding parallel and meeting needs ε. In the paper, assume exact arithmetic.</li>
+        <li><b>General skew case.</b> There may be no closed form with radicals. Do not claim one without proof.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="fig" style="margin:0">
+    <span class="eyebrow">Plan · Sat 16:30 → Sun 09:00</span>
+    <div class="tl" id="tl"></div>
+    <figcaption><b class="n">Figure 6.</b> The plan of work blocks up to the deadline (teal is math and code, brown is bonus, magenta is paper writing). Why: it shows the time share so that the bonus can be dropped first. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+
+  <div class="two">
+    <div class="box col">
+      <h3>Questions to ask Tim Wylie first</h3>
+      <ol>
+        <li>Does "touches" mean the circle intersects the line, or is tangent to it?</li>
+        <li>Is r = 0 accepted as an answer when the three lines pass through one point?</li>
+        <li>When the solution is not unique (parallel cases), is one circle enough? Or must we describe the whole family?</li>
+        <li>Which input form is best for closed forms: vector form, two-point form, or Plücker coordinates?</li>
+      </ol>
+    </div>
+    <div class="box col">
+      <h3>Plan for the two-page paper</h3>
+      <ol>
+        <li>Introduction and the stated reading of "touch" (¼ page)</li>
+        <li>Main theorem: the smallest circle is a great circle of the smallest sphere (½ page)</li>
+        <li>Case table: (c, r, n) for each row (⅗ page)</li>
+        <li>Two figures: the sphere with its great circle, and the tilted circle of the obtuse prism</li>
+        <li>Check against second-order cone programming (SOCP), and the unsolved skew case</li>
+        <li>Future work: a basis of 4 lines, a segment version, an exact algorithm in three dimensions (a few lines)</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="col">
+    <span class="eyebrow">Files in tips/Wylie_SmallestCircle</span>
+    <ul class="files">
+      <li>01_study_guide.md: basics, self-checks, pitfalls</li>
+      <li>02_possible_solutions.md: derivations and status by case</li>
+      <li>03_plan_and_design.md: timeline, paper outline, code structure</li>
+      <li>study_tips_en.html: this page</li>
+    </ul>
+    <p class="note">The numbers in the explorer and the gallery come from a rough numerical solver inside this page. They are illustrative values. Use them only to check derivations. Do not cite them as paper results.</p>
+  </div>
+</section>
+
+</div><!-- /tab-now -->
+
+<div class="tabpanel" id="tab-background" role="tabpanel" aria-labelledby="tb-background" hidden>
+
+<div class="subtabs" role="tablist" aria-label="Tab 2 steps">
+  <button type="button" role="tab" id="st-s2-1" aria-controls="s2-1">Step 1 What this problem is</button>
+  <button type="button" role="tab" id="st-s2-2" aria-controls="s2-2">Step 2 History timeline</button>
+  <button type="button" role="tab" id="st-s2-3" aria-controls="s2-3">Step 3 Why this problem was set</button>
+  <button type="button" role="tab" id="st-s2-4" aria-controls="s2-4">Step 4 What it means in this context</button>
+  <button type="button" role="tab" id="st-s2-5" aria-controls="s2-5">Step 5 Applications</button>
+</div>
+
+<section class="stepbox" id="s2-1" role="tabpanel" aria-labelledby="st-s2-1">
+  <span class="stepno">Step 1 of 5</span>
+  <h2>What this problem is</h2>
+  <p class="why"><b>Problem to solve.</b> You cannot search the literature for a problem without a name. A name links it to earlier work.</p>
+  <p>"The smallest circle that meets three lines" is an intersection radius problem in computational geometry. In recent terms, it is the circle version of the minimum touching ball problem.</p>
+  <p>The starting point is the minimum enclosing circle (MEC) that wraps a set of points. Think of it as that problem with lines in place of points, and a curve in place of a disk.</p>
+  <div class="three">
+    <div class="box col"><h3>As geometry</h3><p class="note">Among the circles that share a point with all three lines, take the one with the smallest radius. You find the center, the radius, and the plane.</p></div>
+    <div class="box col"><h3>As optimization</h3><p class="note">It is min<sub>c</sub> max<sub>i</sub> dist(c, L<sub>i</sub>). It is a 1-center problem that minimizes the largest distance to the lines. Second-order cone programming (SOCP) solves it.</p></div>
+    <div class="box col"><h3>As algebra</h3><p class="note">With 3 active lines, it is a system of three quadratics and one cubic. The degree of the solution and its Galois group decide whether a closed form exists.</p></div>
+  </div>
+</section>
+
+<section class="stepbox" id="s2-2" role="tabpanel" aria-labelledby="st-s2-2" hidden>
+  <span class="stepno">Step 2 of 5</span>
+  <h2>History timeline</h2>
+  <p class="why"><b>Problem to solve.</b> This problem did not appear from nowhere. If you know which problems piled up to reach it, you see where to read.</p>
+  <figure class="fig" style="margin:0;gap:12px">
+  <ol class="timeline">
+    <li><span class="yr">About year −200</span><div><b>Apollonius, <i>Tangencies</i></b><p class="note">The problem is to construct a circle tangent to three objects: points, lines, or circles. The original text is lost. Viète rebuilt it in 1600. It is the ancestor of the problem type "a circle that touches three objects". The perpendicular line special case of our problem reduces to it (the Apollonius point-line-line problem, PLL).</p></div></li>
+    <li><span class="yr">1857</span><div><b>Sylvester poses the minimum enclosing circle (MEC) problem</b><p class="note">It asks for the smallest circle that wraps all points of a plane. It is the start of the "smallest radius" family of problems. Chrystal gave an algorithm in 1885.</p></div></li>
+    <li><span class="yr">1868–1879</span><div><b>Plücker coordinates and the counting geometry of Schubert</b><p class="note">Plücker's line geometry is a way to handle three-dimensional lines with coordinates. Schubert gave counting results such as "2 lines meet four lines in general position". The algebraic language of three-dimensional line problems came from here.</p></div></li>
+    <li><span class="yr">1983–1992</span><div><b>The age of computational geometry: linear-time algorithms and the linear programming-type problem (LP-type problem)</b><p class="note">Megiddo solved the minimum enclosing circle (MEC) in O(n) time, in big-O notation. Then came Welzl's randomized algorithm and the linear programming-type problem (LP-type problem) framework of Sharir and Welzl. This framework needs a basis computation. It gives the closed-form solution for a small subset (the basis).</p></div></li>
+    <li><span class="yr">1991–1994</span><div><b>From points to lines: the intersection radius problem</b><p class="note">Bhattacharya et al. solved the smallest ball and circle that meet all hyperplanes and segments, in optimal time. It is the first systematic study where the objects are shapes, not points.</p></div></li>
+    <li><span class="yr">2001–2002</span><div><b>Counting contacts between lines and spheres</b><p class="note">Macdonald, Pach, and Theobald showed that four unit spheres have at most 12 common tangent lines. It showed the algebraic complexity of line-sphere contact problems.</p></div></li>
+    <li><span class="yr">2004–2008</span><div><b>L-infinity norm geometry in computer vision</b><p class="note">Hartley, Schaffalitzky, and Kahl solved triangulation by second-order cone programming (SOCP). It minimizes the maximum error over many camera rays, with a global optimum. It is a leading real use of "minimize the largest distance to lines".</p></div></li>
+    <li><span class="yr">2006–2008</span><div><b>Missing data is a line</b><p class="note">Gao, Langberg, and Schulman saw that a data point with some coordinates missing becomes a flat, such as a line or a plane. They gave a Helly-type theorem and a core-set to approximate the smallest ball that meets all such flats.</p></div></li>
+    <li><span class="yr">2025</span><div><b>Trajectory minimum touching ball</b><p class="note">Phillips and Schou treated the smallest ball that meets all moving trajectories made of segments. A one-segment trajectory is a linear programming-type problem (LP-type problem) with combinatorial dimension d+1, so it runs in linear time. This shows the topic is still active research.</p></div></li>
+    <li class="now"><span class="yr">2026</span><div><b>This hackathon problem</b><p class="note">It asks for a <i>circle</i>, not a sphere. It asks for a <i>closed-form solution by case</i>, not a numerical algorithm. It is an empty cell in the lineage above.</p></div></li>
+  </ol>
+  <figcaption><b class="n">Figure 7.</b> A time-ordered list of the events that led to this problem, from about year −200 to 2026 (a negative year means before the common era). Why: it shows which earlier work this problem fills in. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s2-3" role="tabpanel" aria-labelledby="st-s2-3" hidden>
+  <span class="stepno">Step 3 of 5</span>
+  <h2>Why this problem was set: the context of the task</h2>
+  <p class="why"><b>Problem to solve.</b> Without the setter's intent, you cannot pick what to stress. We split confirmed facts from guesses.</p>
+  <div class="two">
+    <div class="box col">
+      <h3>Confirmed facts</h3>
+      <ul>
+        <li>The setter is Tim Wylie. He holds a 2013 doctorate from Montana State University. His thesis is on the discrete Fréchet distance and its applications. His advisor is Binhai Zhu.</li>
+        <li>His publication list covers tile self-assembly, robot reconfiguration, and computational geometry.</li>
+        <li>The problem statement does not give its motive. It says only "simple but tedious algebraic case analysis".</li>
+      </ul>
+    </div>
+    <div class="box col">
+      <h3>Guesses (ask the setter to confirm)</h3>
+      <ul>
+        <li>In computational geometry, handling <b>degenerate cases</b> is harder than the general algorithm. Figure 1 of the problem statement is a list of degenerate cases.</li>
+        <li>Welzl's randomized algorithm is for linear programming-type problems (LP-type problems). It needs a basis computation that solves a constant-size subset. The closed form for three lines is that basis computation for the n-line problem.</li>
+        <li>By the hackathon format, the problem looks built to give many "partial results" in one day ("Try to find as many solutions as you can").</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="stepbox" id="s2-4" role="tabpanel" aria-labelledby="st-s2-4" hidden>
+  <span class="stepno">Step 4 of 5</span>
+  <h2>What it means in this context: why it matters</h2>
+  <p class="why"><b>Problem to solve.</b> We must explain why a closed form for just three lines has value. The answer is that it is a part of a larger algorithm.</p>
+  <div class="three">
+    <div class="box col"><h3>1. A part of an algorithm</h3><p class="note">Say you solve the smallest intersecting sphere of n lines as a linear programming-type problem (LP-type problem). Then every step needs the exact smallest sphere of 3 or 4 lines. A closed form makes this inner loop fast and exact.</p></div>
+    <div class="box col"><h3>2. Robustness</h3><p class="note">Numerical solvers turn unstable on degenerate input such as parallel lines, meeting lines, or concurrent lines. With a case split and a formula per case, you can use exact arithmetic.</p></div>
+    <div class="box col"><h3>3. Circle versus sphere</h3><p class="note">The literature mostly treats spheres. For three lines, the smallest circle is a great circle of the smallest sphere. This is the key theorem of this page, and it bridges the two problems. It generally breaks for 4 or more lines. Example: 4 lines perpendicular to the radius at the 4 vertices of a regular tetrahedron on the unit sphere. The smallest sphere is then the unit sphere alone. The 4 contact points are not in one plane, so no great circle can be the answer.</p></div>
+  </div>
+</section>
+
+<section class="stepbox" id="s2-5" role="tabpanel" aria-labelledby="st-s2-5" hidden>
+  <span class="stepno">Step 5 of 5</span>
+  <h2>Applications</h2>
+  <p class="why"><b>Problem to solve.</b> To write the motive of the paper, you must know where this problem is used. We split applications in the literature from illustrative examples.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Field</th><th>What is a line</th><th>How it connects</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>Multiple-view triangulation (computer vision)</td><td>The ray from each camera</td><td>The point that minimizes the largest distance to the rays is our center c (L-infinity norm triangulation, second-order cone programming (SOCP))</td><td><span class="st ok">Literature</span></td></tr>
+      <tr><td>Missing data analysis and clustering</td><td>A data point with some coordinates missing</td><td>The smallest ball that meets all flats is the answer of the 1-center problem for missing data</td><td><span class="st ok">Literature</span></td></tr>
+      <tr><td>Trajectory analysis</td><td>A movement path (segment)</td><td>The smallest region that all trajectories pass (a meeting place, a sensor position)</td><td><span class="st ok">Literature</span></td></tr>
+      <tr><td>Line-sphere contact computation (graphics, geometric modeling)</td><td>Line of sight, tangent line</td><td>The number and the places of lines tangent to a sphere</td><td><span class="st ok">Literature</span></td></tr>
+      <tr><td>Geometric constraint solving in robotics and computer-aided design (CAD)</td><td>Joint axis, edge</td><td>A constraint such as "the circle (rotation path) must meet three axes"</td><td><span class="st q">Example</span></td></tr>
+      <tr><td>Communication and surveillance range design</td><td>Road, air route</td><td>The smallest ring or sphere that covers all three routes</td><td><span class="st q">Example</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 2.</b> Six application fields, the object that plays the line, and the kind of evidence. Why: it separates the rows you may cite in the paper from the illustrative examples. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+  <p class="note">"Literature" means applications that appear directly in the papers of the next tab. "Example" means an imagined use for explanation. Cite only the "Literature" rows in the paper.</p>
+</section>
+
+</div><!-- /tab-background -->
+
+<div class="tabpanel" id="tab-papers" role="tabpanel" aria-labelledby="tb-papers" hidden>
+
+<div class="subtabs" role="tablist" aria-label="Tab 3 steps">
+  <button type="button" role="tab" id="st-s3-1" aria-controls="s3-1">Step 1 Lineage chart</button>
+  <button type="button" role="tab" id="st-s3-2" aria-controls="s3-2">Step 2 Milestone paper list</button>
+  <button type="button" role="tab" id="st-s3-3" aria-controls="s3-3">Step 3 Where this problem sits</button>
+  <button type="button" role="tab" id="st-s3-4" aria-controls="s3-4">Step 4 Future work</button>
+  <button type="button" role="tab" id="st-s3-5" aria-controls="s3-5">Step 5 Sources</button>
+</div>
+
+<section class="stepbox" id="s3-1" role="tabpanel" aria-labelledby="st-s3-1">
+  <span class="stepno">Step 1 of 5</span>
+  <h2>Lineage: where it came from and where it goes</h2>
+  <p class="why"><b>Problem to solve.</b> With many papers, you do not know what to read first. The lineage chart shows a reading order and the place of this problem.</p>
+  <p class="note">Three lines of research meet at this problem. The top lane is the smallest-radius problem (from points to lines). The middle lane is the algebraic geometry of lines in three dimensions. The bottom lane is optimization and applications. Inside each lane, time runs from left to right.</p>
+  <figure class="fig" style="margin:0">
+  <p class="legend">A rectangle is a paper. A box with cut corners is this problem. A dashed box is a planned output. The words beside an arrow are what that step passed to the next paper.</p>
+  <p class="legend">Press a box to see a summary below the figure. In the figure, LP-type problem means linear programming-type problem. MEC means minimum enclosing circle. SOCP means second-order cone programming. A year with a minus sign is before the common era.</p>
+  <p class="legend">The figure is wide. Scroll right or press a button. <button type="button" id="lineJumpTarget">Go to the box of this problem</button><button type="button" id="lineJumpStart">Back to start</button></p>
+  <div class="tablewrap" id="lineagewrap" style="padding:12px">
+  <svg class="lineage" viewBox="0 0 2540 470" role="img" aria-label="Flowchart of related papers">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted-foreground)"/></marker></defs>
+    <text x="8" y="18" class="lane">Smallest radius problem: points → lines</text><text x="8" y="176" class="lane">Algebraic geometry of lines in three dimensions</text><text x="8" y="332" class="lane">Optimization and applications</text>
+    <g class="edges"><path d="M160,88 H256"/><path d="M396,88 H492"/><path d="M632,88 H728"/><path d="M868,88 H964"/><path d="M1104,88 H1200"/><path d="M1340,88 H1436"/><path d="M1576,88 H1672" class="hot"/><path d="M868,244 H964"/><path d="M1104,244 H1200"/><path d="M1340,244 H1436"/><path class="hot" d="M1576,244 H1712 V142"/><path d="M1104,400 H1200"/><path d="M1340,400 H1436"/><path class="hot" d="M1576,400 H1772 V142"/><path d="M1812,88 L1908,62"/><path d="M1812,88 L1908,192"/><path d="M1812,88 L1908,322"/><path d="M2048,62 L2144,192"/><path d="M2048,192 L2144,192"/><path d="M2048,322 L2144,192"/><path d="M2284,192 H2380"/></g>
+    <g class="nodes"><g id="b1" data-box="b1" role="button" tabindex="0" aria-pressed="false"><rect x="20" y="34" width="140" height="108"/><text x="30" y="54" class="y">Year −200</text><text x="30" y="72">Apollonius</text><text x="30" y="87">tangent circle</text></g><g id="b2" data-box="b2" role="button" tabindex="0" aria-pressed="false"><rect x="256" y="34" width="140" height="108"/><text x="266" y="54" class="y">1857</text><text x="266" y="72">Sylvester</text><text x="266" y="87">minimum</text><text x="266" y="102">enclosing circle</text><text x="266" y="117">(MEC)</text></g><g id="b3" data-box="b3" role="button" tabindex="0" aria-pressed="false"><rect x="492" y="34" width="140" height="108"/><text x="502" y="54" class="y">1983</text><text x="502" y="72">Megiddo</text></g><g id="b4" data-box="b4" role="button" tabindex="0" aria-pressed="false"><rect x="728" y="34" width="140" height="108"/><text x="738" y="54" class="y">1991 · 1992</text><text x="738" y="72">Welzl,</text><text x="738" y="87">Sharir-Welzl</text><text x="738" y="102">LP-type</text><text x="738" y="117">problem</text></g><g id="b5" data-box="b5" role="button" tabindex="0" aria-pressed="false"><rect x="964" y="34" width="140" height="108"/><text x="974" y="54" class="y">1994</text><text x="974" y="72">Bhattacharya</text><text x="974" y="87">et al.</text><text x="974" y="102">intersection</text><text x="974" y="117">radius</text></g><g id="b6" data-box="b6" role="button" tabindex="0" aria-pressed="false"><rect x="1200" y="34" width="140" height="108"/><text x="1210" y="54" class="y">2008</text><text x="1210" y="72">Gao et al.</text></g><g id="b7" data-box="b7" role="button" tabindex="0" aria-pressed="false"><rect x="1436" y="34" width="140" height="108"/><text x="1446" y="54" class="y">2025</text><text x="1446" y="72">Phillips-Schou</text></g><g id="b15" data-box="b15" role="button" tabindex="0" aria-pressed="false" class="target"><polygon points="1686,34 1798,34 1812,48 1812,128 1798,142 1686,142 1672,128 1672,48"/><text x="1682" y="72">This problem:</text><text x="1682" y="89">smallest circle</text><text x="1682" y="106">of three lines</text><text x="1682" y="123">(2026 hackathon)</text></g><g id="b8" data-box="b8" role="button" tabindex="0" aria-pressed="false"><rect x="728" y="190" width="140" height="108"/><text x="738" y="210" class="y">1868</text><text x="738" y="228">Plücker</text></g><g id="b9" data-box="b9" role="button" tabindex="0" aria-pressed="false"><rect x="964" y="190" width="140" height="108"/><text x="974" y="210" class="y">1879</text><text x="974" y="228">Schubert</text></g><g id="b10" data-box="b10" role="button" tabindex="0" aria-pressed="false"><rect x="1200" y="190" width="140" height="108"/><text x="1210" y="210" class="y">2001</text><text x="1210" y="228">Macdonald-</text><text x="1210" y="243">Pach-Theobald</text></g><g id="b11" data-box="b11" role="button" tabindex="0" aria-pressed="false"><rect x="1436" y="190" width="140" height="108"/><text x="1446" y="210" class="y">2002</text><text x="1446" y="228">Sottile-</text><text x="1446" y="243">Theobald</text></g><g id="b12" data-box="b12" role="button" tabindex="0" aria-pressed="false"><rect x="964" y="346" width="140" height="108"/><text x="974" y="366" class="y">1998</text><text x="974" y="384">Lobo et al.</text><text x="974" y="399">second-order</text><text x="974" y="414">cone programming</text><text x="974" y="429">(SOCP)</text></g><g id="b13" data-box="b13" role="button" tabindex="0" aria-pressed="false"><rect x="1200" y="346" width="140" height="108"/><text x="1210" y="366" class="y">2004</text><text x="1210" y="384">Hartley-</text><text x="1210" y="399">Schaffalitzky</text></g><g id="b14" data-box="b14" role="button" tabindex="0" aria-pressed="false"><rect x="1436" y="346" width="140" height="108"/><text x="1446" y="366" class="y">2005 · 2008</text><text x="1446" y="384">Kahl,</text><text x="1446" y="399">Kahl-Hartley</text></g><g id="b16" data-box="b16" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="1908" y="20" width="140" height="84"/><text x="1918" y="40" class="y">(Plan)</text><text x="1918" y="58">Great circle</text><text x="1918" y="73">theorem</text></g><g id="b17" data-box="b17" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="1908" y="150" width="140" height="84"/><text x="1918" y="170" class="y">(Plan)</text><text x="1918" y="188">Case-by-case</text><text x="1918" y="203">closed-form</text><text x="1918" y="218">table</text></g><g id="b18" data-box="b18" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="1908" y="280" width="140" height="84"/><text x="1918" y="300" class="y">(Plan)</text><text x="1918" y="318">Degree of the</text><text x="1918" y="333">general skew</text><text x="1918" y="348">lines case</text></g><g id="b19" data-box="b19" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="2144" y="150" width="140" height="84"/><text x="2154" y="170" class="y">(Plan)</text><text x="2154" y="188">Two-page paper</text></g><g id="b20" data-box="b20" role="button" tabindex="0" aria-pressed="false" class="plan"><rect x="2380" y="150" width="140" height="84"/><text x="2390" y="170" class="y">(Plan)</text><text x="2390" y="188">Future work</text></g></g>
+    <g class="labels"><text class="al" text-anchor="middle" x="208" y="67">Circle tangent</text><text class="al" text-anchor="middle" x="208" y="80">to 3 objects</text><text class="al" text-anchor="middle" x="444" y="67">Smallest</text><text class="al" text-anchor="middle" x="444" y="80">radius problem</text><text class="al" text-anchor="middle" x="680" y="80">Linear time</text><text class="al" text-anchor="middle" x="916" y="80">General frame</text><text class="al" text-anchor="middle" x="1152" y="54">Objects:</text><text class="al" text-anchor="middle" x="1152" y="67">points to</text><text class="al" text-anchor="middle" x="1152" y="80">lines</text><text class="al" text-anchor="middle" x="1388" y="41">Higher-</text><text class="al" text-anchor="middle" x="1388" y="54">dimensional</text><text class="al" text-anchor="middle" x="1388" y="67">flats,</text><text class="al" text-anchor="middle" x="1388" y="80">core-sets</text><text class="al" text-anchor="middle" x="1624" y="41">Segment</text><text class="al" text-anchor="middle" x="1624" y="54">trajectories,</text><text class="al" text-anchor="middle" x="1624" y="67">combinatorial</text><text class="al" text-anchor="middle" x="1624" y="80">dimension d+1</text><text class="al" text-anchor="middle" x="1644" y="236">Algebraic degree</text><text class="al" text-anchor="middle" x="1674" y="353">Second-order cone</text><text class="al" text-anchor="middle" x="1674" y="366">programming (SOCP)</text><text class="al" text-anchor="middle" x="1674" y="379">check view</text></g>
+  </svg>
+
+
+
+  </div>
+  <figcaption><b class="n">Figure 8.</b> A flowchart where the main line and two branches (algebraic geometry, optimization) meet at this problem and lead to the planned outputs. Why: it shows what each paper passed to the next, so you know which paper to read for which part of this problem. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+  <div class="panel nodeinfo" id="nodeinfo" aria-live="polite"></div>
+</section>
+
+<section class="stepbox" id="s3-2" role="tabpanel" aria-labelledby="st-s3-2" hidden>
+  <span class="stepno">Step 2 of 5</span>
+  <h2>Milestone paper list</h2>
+  <p class="why"><b>Problem to solve.</b> We must pick the papers to cite. One table shows what each paper did and how it links to our problem.</p>
+  <p class="note">We checked most citation data by web search. Check the original file once more before you cite a paper. "Status" tells how that result is used today.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table class="papers">
+    <thead><tr><th>Year</th><th>Paper</th><th>What it did</th><th>Link to our problem</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="num">−200<br>/1600</td><td>Apollonius, <i>Tangencies</i> (lost)<br>Viète, <i>Apollonius Gallus</i></td><td>Construct a circle tangent to three objects (points, lines, circles)</td><td>The perpendicular line special case is the planar Apollonius point-line-line problem (PLL)</td><td><span class="st ok">Classic, textbook</span></td></tr>
+      <tr><td class="num">1857</td><td>J. J. Sylvester, "A question in the geometry of situation", <i>Quarterly Journal of Pure and Applied Mathematics</i></td><td>Poses the minimum enclosing circle (MEC) problem</td><td>The 3 parallel lines case is the minimum enclosing circle (MEC) of the cross-section triangle</td><td><span class="st ok">Classic</span></td></tr>
+      <tr><td class="num">1868</td><td>J. Plücker, <i>Neue Geometrie des Raumes</i></td><td>Writes a line with six homogeneous coordinates</td><td>A candidate input form. Plücker coordinates are the language to decide how lines relate</td><td><span class="st ok">In use in graphics and robotics</span></td></tr>
+      <tr><td class="num">1983</td><td>N. Megiddo, "Linear-time algorithms for linear programming in R³ and related problems", <i>SIAM Journal on Computing</i> 12(4)</td><td>Solves the minimum enclosing circle (MEC) deterministically in O(n) time, in big-O notation, by prune-and-search</td><td>The algorithmic starting point of the smallest-radius problem</td><td><span class="st ok">Textbook standard</span></td></tr>
+      <tr><td class="num">1991</td><td>E. Welzl, "Smallest enclosing disks (balls and ellipsoids)", <i>Lecture Notes in Computer Science</i> 555</td><td>A randomized incremental algorithm with expected O(n) time, in big-O notation (Welzl's randomized algorithm)</td><td>The algorithm frame when we extend to n lines</td><td><span class="st ok">Implemented in the Computational Geometry Algorithms Library (CGAL) and others</span></td></tr>
+      <tr><td class="num">1992</td><td>M. Sharir, E. Welzl, "A combinatorial bound for linear programming and related problems", <i>Symposium on Theoretical Aspects of Computer Science</i></td><td>Defines the linear programming-type problem (LP-type problem) and a general algorithm</td><td>If the smallest intersecting ball is a linear programming-type problem (LP-type problem), the basis computation is our closed form</td><td><span class="st ok">Theory standard</span></td></tr>
+      <tr><td class="num">1994</td><td>N. Amenta, "Helly-type theorems and generalized linear programming", <i>Discrete &amp; Computational Geometry</i> 12</td><td>Links Helly-type theorems and the linear programming-type problem (LP-type problem)</td><td>The ground for the combinatorial dimension (the number of active objects needed)</td><td><span class="st ok">Theory standard</span></td></tr>
+      <tr><td class="num">1994</td><td>B. K. Bhattacharya, S. Jadhav, A. Mukhopadhyay, J.-M. Robert, "Optimal algorithms for some intersection radius problems", <i>Computing</i> 52(3) (first version at the Symposium on Computational Geometry 1991)</td><td>Finds the smallest ball and circle that meet hyperplanes and segments, in optimal time</td><td><b>The most direct earlier work</b>. It treats line-like objects in place of points</td><td><span class="st ok">Foundational result</span></td></tr>
+      <tr><td class="num">1998</td><td>M. S. Lobo, L. Vandenberghe, S. Boyd, H. Lebret, "Applications of second-order cone programming", <i>Linear Algebra and its Applications</i> 284</td><td>Surveys applications of second-order cone programming (SOCP), such as the smallest enclosing ball</td><td>A way to check our r* numerically</td><td><span class="st ok">Daily use in solvers</span></td></tr>
+      <tr><td class="num">2001</td><td>I. G. Macdonald, J. Pach, T. Theobald, "Common tangents to four unit balls in R³", <i>Discrete &amp; Computational Geometry</i> 26(1)</td><td>At most 12 common tangents (a question of Larman)</td><td>The algebraic degree of line-sphere contact. A model for the general skew case</td><td><span class="st q">Active follow-up work</span></td></tr>
+      <tr><td class="num">2002</td><td>F. Sottile, T. Theobald, "Lines tangent to 2n−2 spheres in Rⁿ", <i>Transactions of the American Mathematical Society</i> 354</td><td>The n-dimensional generalization of the result above</td><td>A method for degree computation (real algebraic geometry)</td><td><span class="st q">Under research</span></td></tr>
+      <tr><td class="num">2002</td><td>M. Bădoiu, S. Har-Peled, P. Indyk, "Approximate clustering via core-sets", <i>Symposium on Theory of Computing</i></td><td>Core-set approximation of the smallest enclosing ball</td><td>Direction for high dimensions and large scale</td><td><span class="st ok">Used in machine learning</span></td></tr>
+      <tr><td class="num">2004</td><td>R. Hartley, F. Schaffalitzky, "L∞ minimization in geometric reconstruction problems", <i>Conference on Computer Vision and Pattern Recognition</i></td><td>Globally optimal reconstruction under the L-infinity norm error</td><td>Minimizing the largest distance to rays has the same structure as r*</td><td><span class="st ok">Used in vision</span></td></tr>
+      <tr><td class="num">2005<br>/2008</td><td>F. Kahl, "Multiple view geometry and the L∞-norm", <i>International Conference on Computer Vision</i> 2005<br>F. Kahl, R. Hartley, <i>IEEE Transactions on Pattern Analysis and Machine Intelligence</i> 30(9) 2008</td><td>Turns triangulation and similar problems into quasi-convex problems and solves them by second-order cone programming (SOCP)</td><td>A direct precedent for seeing our problem as second-order cone programming (SOCP)</td><td><span class="st ok">Public toolbox</span></td></tr>
+      <tr><td class="num">2008</td><td>J. Gao, M. Langberg, L. J. Schulman, "Analysis of incomplete data and an intrinsic-dimension Helly theorem", <i>Discrete &amp; Computational Geometry</i> 40(4) (first version at the ACM-SIAM Symposium on Discrete Algorithms 2006)</td><td>The smallest intersection radius of sets of lines and flats, a Helly-type theorem, a core-set</td><td>An approximation algorithm for the smallest ball that meets the lines</td><td><span class="st q">Data analysis use</span></td></tr>
+      <tr><td class="num">2025</td><td>J. M. Phillips, J. K. R. Schou, "Trajectory minimum touching ball", arXiv:2505.02472</td><td>The minimum touching ball that meets trajectories. For segments it is a linear programming-type problem (LP-type problem) with combinatorial dimension d+1</td><td>In R³ the combinatorial dimension is 4, so a closed form for a basis of 3 to 4 lines is needed</td><td><span class="st open">Latest research</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 3.</b> Year, citation, content, link to our problem, and status of the 16 milestone papers. Why: you check which paper supports which part before you cite it. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+</section>
+
+<section class="stepbox" id="s3-3" role="tabpanel" aria-labelledby="st-s3-3" hidden>
+  <span class="stepno">Step 3 of 5</span>
+  <h2>Where this problem sits</h2>
+  <p class="why"><b>Problem to solve.</b> We must know what we can add in the hackathon. Split the known from the empty cells and the contribution shows.</p>
+  <div class="two">
+    <div class="box col">
+      <h3>Already known</h3>
+      <ul>
+        <li>The smallest <b>sphere</b> that meets lines, segments, and flats: algorithms and approximations exist</li>
+        <li>The smallest radius has a numerical global optimum by second-order cone programming (SOCP)</li>
+        <li>Line-sphere contact problems are algebraically complex (for example, 12 common tangents)</li>
+      </ul>
+    </div>
+    <div class="box col">
+      <h3>Empty cells this hackathon can fill</h3>
+      <ul>
+        <li>The link between the smallest <b>circle</b> and the smallest sphere (the great circle theorem for three lines)</li>
+        <li>A <b>closed-form</b> table for every case of Figure 1 in the problem statement</li>
+        <li>The algebraic degree of the general skew case (the limit of closed forms)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="stepbox" id="s3-4" role="tabpanel" aria-labelledby="st-s3-4" hidden>
+  <span class="stepno">Step 4 of 5</span>
+  <h2>Future work</h2>
+  <p class="why"><b>Problem to solve.</b> We look for the gaps the 2025 Phillips-Schou paper left. We pick research that follows from those gaps.</p>
+  <p class="note">The gaps are facts checked in the source. The proposed research is our proposal, not a claim of the source.</p>
+  <figure class="fig" style="margin:0">
+  <div class="tablewrap">
+  <table class="papers">
+    <thead><tr><th>Gap (checked in the source)</th><th>Ground</th><th>Proposed research</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td>There is no closed-form solution for a small basis</td><td>The linear programming-type problem (LP-type problem) part is left to a general solver (Clarkson, Seidel, Matoušek-Sharir-Welzl)</td><td>A closed-form basis computation for 3 and 4 lines in three dimensions</td><td><ul><li>Hackathon: 3 lines</li><li>Later: 4 lines</li></ul></td></tr>
+      <tr><td>It is open whether trajectories of 2 or 3 segments are linear programming-type problems (LP-type problems)</td><td>It treats only 1 segment (yes) and 4 or more (no)</td><td>Fix the combinatorial dimension of trajectories with 2 and 3 segments</td><td>Later</td></tr>
+      <tr><td>The exact algorithm covers only the plane (two dimensions)</td><td>The exact algorithm theorem (Theorem 4.1) treats only ℝ²</td><td><ul><li>An exact algorithm in three dimensions</li><li>Use the closed-form basis as a part</li></ul></td><td>Later</td></tr>
+      <tr><td>There is no computational lower bound</td><td>There is no lower bound or hardness result</td><td>Prove a lower bound for the algorithm of about O((nk)² log n) in big-O notation, or improve the algorithm</td><td>Later</td></tr>
+      <tr><td>There is no implementation or experiment</td><td><ul><li>There is no implementation, experiment, or numerical robustness discussion</li><li>It assumes general position</li></ul></td><td><ul><li>An implementation with exact arithmetic</li><li>Experiments on real trajectory data</li></ul></td><td>Later (needs a compute environment)</td></tr>
+      <tr><td>There are no variants with infinite lines, circles, tangency, or outliers</td><td>The source treats only finite segments and spheres</td><td><ul><li>The line version (this problem)</li><li>The circle version (the great circle theorem)</li><li>A version that drops m outliers</li></ul></td><td><ul><li>Hackathon: lines, circle</li><li>Later: outliers</li></ul></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figcaption><b class="n">Table 4.</b> Six gaps of the 2025 paper with ground, proposed research, and timing. Why: it shows which gaps the hackathon fills and which wait. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+  <figure class="fig" style="margin:0">
+  <p class="legend">A solid box is a fact checked in the source. A dashed box is a plan.</p>
+  <div class="tablewrap" style="padding:12px">
+  <svg class="lineage flow2" viewBox="0 0 780 180" role="img" aria-label="Flowchart of future work">
+    <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted-foreground)"/></marker></defs>
+    <g class="edges"><path d="M220,95 H290"/><path d="M490,95 H560"/></g>
+    <g class="nodes"><g><rect x="20" y="40" width="200" height="110"/><text x="30" y="60" class="y">2025 paper:</text><text x="30" y="78">6 gaps</text></g><g class="plan"><rect x="290" y="40" width="200" height="110"/><text x="300" y="60" class="y">Hackathon (plan)</text><text x="300" y="78">Closed-form solution</text><text x="300" y="93">for 3 lines,</text><text x="300" y="108">great circle theorem</text></g><g class="plan"><rect x="560" y="20" width="200" height="150"/><text x="570" y="38" class="y">Later (plan)</text><text x="570" y="56">Basis of 4 lines</text><text x="570" y="69">Segment endpoint case</text><text x="570" y="82">Exact algorithm in</text><text x="570" y="95">three dimensions</text><text x="570" y="108">Combinatorial dimension</text><text x="570" y="121">of 2 to 3 segments</text><text x="570" y="134">Lower bound</text><text x="570" y="147">Implementation, tests</text><text x="570" y="160">Outliers</text></g></g>
+  </svg>
+  </div>
+  <figcaption><b class="n">Figure 9.</b> A flowchart from the 6 gaps of the 2025 paper to the hackathon plan and the later plan. Why: it splits at a glance what to do in the hackathon and what to defer. Source: <code>tips/Wylie_SmallestCircle/</code></figcaption>
+  </figure>
+  <div class="box col">
+    <h3>Questions that follow from this problem (hypotheses)</h3>
+    <ul>
+      <li>With 4 or more lines, the great circle theorem generally breaks. Example: 4 tangent lines of a regular tetrahedron have contact points that do not lie in one plane. There is no reason for 4 active constraints to lie in one plane.</li>
+      <li>Then it is open whether the smallest circle problem is a linear programming-type problem (LP-type problem).</li>
+      <li>With the tangent reading, the smallest circle differs in almost all cases, except the coplanar triangle. A 3-active solution also makes the line tangent to the sphere, but not to the circle.</li>
+      <li>The segment version must also treat contact at the endpoints.</li>
+      <li>We do not yet know the polynomial degree of the general skew lines case.</li>
+    </ul>
+  </div>
+</section>
+
+
+<section class="stepbox" id="s3-5" role="tabpanel" aria-labelledby="st-s3-5" hidden>
+  <span class="stepno">Step 5 of 5</span>
+  <h2>Sources</h2>
+  <p class="why"><b>Purpose.</b> We collected links to the originals so you can check the claims of this tab yourself.</p>
+  <ul class="files">
+    <li><a href="https://link.springer.com/doi/10.1007/BF02246508">Bhattacharya et al., Computing 1994</a></li>
+    <li><a href="https://arxiv.org/abs/2505.02472">Phillips &amp; Schou, arXiv:2505.02472</a></li>
+    <li><a href="https://link.springer.com/content/pdf/10.1007/s00454-008-9107-5.pdf">Gao, Langberg, Schulman, Discrete &amp; Computational Geometry 2008</a></li>
+    <li><a href="https://vision.ucsd.edu/sites/default/files/publications/pdfs/Multiple%20View%20Geometry%20and%20the%20L-infinity%20Norm.pdf">Kahl, International Conference on Computer Vision 2005</a></li>
+    <li><a href="https://lup.lub.lu.se/search/publication/788368">Kahl &amp; Hartley, IEEE Transactions on Pattern Analysis and Machine Intelligence 2008</a></li>
+    <li><a href="https://www.math.uni-frankfurt.de/~theobald/publications/tangents2.pdf">Macdonald, Pach, Theobald, Discrete &amp; Computational Geometry 2001</a></li>
+    <li><a href="https://mathgenealogy.org/id.php?id=175317">Timothy Wylie, Mathematics Genealogy</a></li>
+    <li><a href="https://portal.mardi4nfdi.de/wiki/Person:300221">Timothy Wylie, publication list (MaRDI)</a></li>
+  </ul>
+  <p class="note">The other classic sources (Sylvester, Plücker, Megiddo, Welzl, Sharir-Welzl, Amenta, Lobo et al., Sottile-Theobald, Bădoiu et al., Hartley-Schaffalitzky) use widely known citation data. We did not search for and check them this time.</p>
+</section>
+
+</div><!-- /tab-papers -->
+
+</div>
+<script>
+(function(){
+"use strict";
+// ---------- vector helpers ----------
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const sc=(a,s)=>[a[0]*s,a[1]*s,a[2]*s];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm=a=>Math.hypot(a[0],a[1],a[2]);
+const unit=a=>{const n=norm(a);return n<1e-15?[0,0,0]:sc(a,1/n)};
+const mid=(a,b)=>sc(add(a,b),.5);
+const L=(a,d)=>({a:a.slice(),d:unit(d)});
+const foot=(Ln,c)=>add(Ln.a,sc(Ln.d,dot(sub(c,Ln.a),Ln.d)));
+const dist=(Ln,c)=>norm(sub(c,foot(Ln,c)));
+const anyPerp=v=>{const t=Math.abs(v[0])<.9?[1,0,0]:[0,1,0];return unit(cross(v,t))};
+const EPS=1e-7;
+
+function lineLine(A,B){
+  const n=cross(A.d,B.d), nn=norm(n), w=sub(B.a,A.a);
+  if(nn<1e-9){
+    const p=A.a, q=foot(B,p), dd=norm(sub(q,p));
+    return {rel: dd<EPS?'coincident':'parallel', p, q, dist: dd};
+  }
+  const b=dot(A.d,B.d), d1w=dot(A.d,w), d2w=dot(B.d,w), den=1-b*b;
+  const s=(d1w-b*d2w)/den, t=(b*d1w-d2w)/den;
+  const p=add(A.a,sc(A.d,s)), q=add(B.a,sc(B.d,t)), dd=norm(sub(p,q));
+  return {rel: dd<EPS?'meet':'skew', p, q, dist: dd};
+}
+
+// ---------- solver: min_c max_i dist(c, L_i) ----------
+const f=(Ls,c)=>Math.max(dist(Ls[0],c),dist(Ls[1],c),dist(Ls[2],c));
+
+function nelderMead(fun,x0,step,iters){
+  let S=[x0.slice()];
+  for(let i=0;i<3;i++){const x=x0.slice();x[i]+=step;S.push(x)}
+  let F=S.map(fun);
+  for(let it=0;it<iters;it++){
+    const idx=[0,1,2,3].sort((a,b)=>F[a]-F[b]); S=idx.map(i=>S[i]); F=idx.map(i=>F[i]);
+    const cen=sc(add(add(S[0],S[1]),S[2]),1/3);
+    const xr=add(cen,sub(cen,S[3])), fr=fun(xr);
+    if(fr<F[0]){const xe=add(cen,sc(sub(cen,S[3]),2)),fe=fun(xe); if(fe<fr){S[3]=xe;F[3]=fe}else{S[3]=xr;F[3]=fr}}
+    else if(fr<F[2]){S[3]=xr;F[3]=fr}
+    else{const xc=add(cen,sc(sub(S[3],cen),.5)),fc=fun(xc);
+      if(fc<F[3]){S[3]=xc;F[3]=fc}
+      else{for(let i=1;i<4;i++){S[i]=add(S[0],sc(sub(S[i],S[0]),.5));F[i]=fun(S[i])}}}
+  }
+  let bi=0;for(let i=1;i<4;i++)if(F[i]<F[bi])bi=i;
+  return S[bi];
+}
+
+function solve4(M,v){ // Gaussian elimination, 4x4
+  const A=M.map((r,i)=>r.concat([v[i]])), n=4;
+  for(let c=0;c<n;c++){
+    let p=c;for(let r=c+1;r<n;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;
+    if(Math.abs(A[p][c])<1e-14)return null;
+    [A[c],A[p]]=[A[p],A[c]];
+    for(let r=0;r<n;r++)if(r!==c){const k=A[r][c]/A[c][c];for(let j=c;j<=n;j++)A[r][j]-=k*A[c][j]}
+  }
+  return A.map((r,i)=>r[n]/r[i]);
+}
+
+function polish3(Ls,c0){ // Newton on: d_i - r = 0, det[q_i - c]/r^3 = 0
+  const G=x=>{const c=[x[0],x[1],x[2]],r=x[3];
+    const v=Ls.map(Ln=>sub(foot(Ln,c),c));
+    return [norm(v[0])-r,norm(v[1])-r,norm(v[2])-r, dot(v[0],cross(v[1],v[2]))/(r*r*r)]};
+  let x=[c0[0],c0[1],c0[2],f(Ls,c0)];
+  for(let it=0;it<25;it++){
+    const g=G(x); if(Math.max(...g.map(Math.abs))<1e-13)break;
+    const h=1e-7, J=[[],[],[],[]];
+    for(let j=0;j<4;j++){const y=x.slice();y[j]+=h;const gy=G(y);for(let i=0;i<4;i++)J[i][j]=(gy[i]-g[i])/h}
+    const dx=solve4(J,g.map(v=>-v)); if(!dx)break;
+    x=x.map((v,i)=>v+dx[i]);
+  }
+  const c=[x[0],x[1],x[2]];
+  return (isFinite(x[0]) && f(Ls,c)<=f(Ls,c0)+1e-9)?c:c0;
+}
+
+function solve(Ls){
+  const P=[[0,1,2],[0,2,1],[1,2,0]].map(([i,j,k])=>{
+    const ll=lineLine(Ls[i],Ls[j]); let C;
+    if(ll.rel==='parallel') C={kind:'line',Ln:L(mid(ll.p,ll.q),Ls[i].d)};
+    else if(ll.rel==='coincident') C={kind:'line',Ln:Ls[i]};
+    else C={kind:'point',c:mid(ll.p,ll.q)};
+    return {i,j,k,ll,C,rho:ll.dist/2};
+  });
+  const rmax=Math.max(...P.map(p=>p.rho));
+  for(const p of P){
+    if(p.rho<rmax-1e-9*(1+rmax))continue;
+    let dk,c;
+    if(p.C.kind==='point'){c=p.C.c;dk=dist(Ls[p.k],c)}
+    else{const ll=lineLine(p.C.Ln,Ls[p.k]);dk=ll.dist;c=ll.p}
+    if(dk<=p.rho+1e-9*(1+p.rho)) return {c,r:p.rho,active:p.rho<1e-9?[]:[p.i,p.j],k:p.k,pairs:P};
+  }
+  // three active
+  const starts=P.map(p=>p.C.kind==='point'?p.C.c:foot(p.C.Ln,[0,0,0]));
+  let c=sc(add(add(starts[0],starts[1]),starts[2]),1/3);
+  const fun=x=>f(Ls,x);
+  let step=Math.max(1,rmax);
+  for(let rep=0;rep<5;rep++){c=nelderMead(fun,c,step,500);step*=.25}
+  c=polish3(Ls,c);
+  return {c,r:f(Ls,c),active:[0,1,2],pairs:P};
+}
+
+function buildCircle(Ls,sol){
+  const {c,r}=sol;
+  if(r<1e-9) return {c,r:0,n:[0,0,1],touch:[c,c,c]};
+  const q=Ls.map(Ln=>foot(Ln,c)); let n, touch=q.slice();
+  if(sol.active.length===3){
+    const cands=[cross(sub(q[0],c),sub(q[1],c)),cross(sub(q[0],c),sub(q[2],c)),cross(sub(q[1],c),sub(q[2],c))];
+    cands.sort((a,b)=>norm(b)-norm(a)); n=unit(cands[0]);
+  }else{
+    const [i]=sol.active, k=sol.k, Lk=Ls[k];
+    const u=sub(q[i],c), w=sub(Lk.a,c), wd=dot(w,Lk.d);
+    const disc=Math.max(0,wd*wd-dot(w,w)+r*r);
+    const s=add(Lk.a,sc(Lk.d,-wd+Math.sqrt(disc)));
+    touch[k]=s;
+    let nn=cross(u,sub(s,c)); if(norm(nn)<1e-9*r*r) nn=cross(u,anyPerp(u));
+    n=unit(nn);
+  }
+  return {c,r,n,touch};
+}
+
+function touchError(Ln,C){
+  const dn=dot(Ln.d,C.n);
+  if(C.r===0) return dist(Ln,C.c);
+  if(Math.abs(dn)>1e-9){
+    const t=dot(C.n,sub(C.c,Ln.a))/dn, x=add(Ln.a,sc(Ln.d,t));
+    return Math.abs(norm(sub(x,C.c))-C.r);
+  }
+  const off=Math.abs(dot(C.n,sub(Ln.a,C.c)));
+  if(off>1e-9) return off;
+  return Math.max(0,dist(Ln,C.c)-C.r);
+}
+
+// ---------- Figure 1 classifier ----------
+function classify(Ls){
+  const pr=[[0,1,2],[0,2,1],[1,2,0]].map(([i,j,k])=>({i,j,k,ll:lineLine(Ls[i],Ls[j])}));
+  const nm=x=>'L'+(x+1);
+  if(pr.some(p=>p.ll.rel==='coincident')) return 'Two lines coincide (degenerate, not in Figure 1)';
+  const par=pr.filter(p=>p.ll.rel==='parallel'), meet=pr.filter(p=>p.ll.rel==='meet');
+  if(par.length===3){
+    const d=Ls[0].d, pts=Ls.map(Ln=>sub(Ln.a,sc(d,dot(Ln.a,d))));
+    if(norm(cross(sub(pts[1],pts[0]),sub(pts[2],pts[0])))<1e-7) return '0 crosses · 3 parallel, coplanar';
+    const e=[norm(sub(pts[1],pts[2])),norm(sub(pts[0],pts[2])),norm(sub(pts[0],pts[1]))].sort((a,b)=>a-b);
+    const k=e[0]*e[0]+e[1]*e[1]-e[2]*e[2];
+    return '0 crosses · 3 parallel, prism (cross-section '+(Math.abs(k)<1e-9?'right':k>0?'acute':'obtuse')+')';
+  }
+  if(par.length===1){
+    const {i,j,k}=par[0], mk=meet.length;
+    const perp=(n)=>Math.abs(dot(Ls[k].d,n))>0.999?' · perpendicular line (special case)':'';
+    const n=unit(cross(Ls[i].d,sub(foot(Ls[j],Ls[i].a),Ls[i].a)));
+    if(mk===2) return '2 crosses · 2 parallel, '+nm(k)+' meets both';
+    if(mk===1) return '2 crosses · 2 parallel, 1 meet 1 cross';
+    const dn=dot(Ls[k].d,n);
+    if(Math.abs(dn)<1e-9) return '2 crosses · 2 parallel, 0 meet, '+nm(k)+' passes over (cross over)';
+    const t=dot(n,sub(Ls[i].a,Ls[k].a))/dn, S=add(Ls[k].a,sc(Ls[k].d,t));
+    const m=cross(n,Ls[i].d), si=dot(sub(S,Ls[i].a),m), sj=dot(sub(S,Ls[j].a),m);
+    if(si*sj<0) return '2 crosses · 2 parallel, 0 meet, over/under'+(perp(n)?' · perpendicular line between':'');
+    return '2 crosses · 2 parallel, 0 meet, cross over'+(perp(n)?' · perpendicular line outside':'');
+  }
+  if(par.length===2) return 'Two parallel pairs are possible only when all three are parallel';
+  if(meet.length===3){
+    const a=pr[0].ll.p,b=pr[1].ll.p;
+    return norm(sub(a,b))<1e-6?'Three lines pass through one point (concurrent lines, not in Figure 1)':'3 crosses · 3 meet (triangle)';
+  }
+  if(meet.length===2) return '3 crosses · 2 meet, 1 cross';
+  if(meet.length===1){
+    const {i,j,k}=meet[0], Pm=meet[0].ll.p, n=unit(cross(Ls[i].d,Ls[j].d));
+    if(Math.abs(dot(Ls[k].d,n))>0.999) return '3 crosses · 1 meet + perpendicular line (special case)';
+    const hs=[i,j].map(l=>{const m=cross(n,Ls[l].d), dm=dot(Ls[k].d,m); if(Math.abs(dm)<1e-9)return null;
+      const t=dot(sub(Pm,Ls[k].a),m)/dm; return dot(sub(add(Ls[k].a,sc(Ls[k].d,t)),Pm),n)});
+    if(hs[0]===null||hs[1]===null) return '3 crosses · 1 meet, 2 cross';
+    return '3 crosses · 1 meet, 2 cross '+(hs[0]*hs[1]>0?'over':'over/under');
+  }
+  const pk=Ls.findIndex((Ln,idx)=>{const o=Ls.filter((_,t)=>t!==idx);
+    const n=unit(cross(o[0].d,o[1].d));return Math.abs(dot(Ln.d,n))>0.999 && lineLine(o[0],o[1]).rel==='skew'});
+  return '3 crosses · 0 meet (all skew)'+(pk>=0?' · '+nm(pk)+' perpendicular (special case)':'');
+}
+
+// ---------- presets ----------
+const c60=Math.cos(Math.PI/3), s60=Math.sin(Math.PI/3);
+const hyper=(R)=>[0,1,2].map(k=>{const t=k*2*Math.PI/3;return L([R*Math.cos(t),R*Math.sin(t),0],[-Math.sin(t),Math.cos(t),1])});
+const PAR=h=>[L([-h,0,0],[0,1,0]),L([h,0,0],[0,1,0])];
+const PRESETS=[
+ {g:'3 crosses (no parallel pair)',items:[
+  ['3 meet (triangle)',[L([-2,-1.2,0],[4.2,0,0]),L([2.2,-1.2,0],[-1.8,3.2,0]),L([0.4,2,0],[-2.4,-3.2,0])]],
+  ['Three lines meet at one point',[L([0,0,0],[1,0,.2]),L([0,0,0],[.3,1,-.1]),L([0,0,0],[-.5,.4,1])]],
+  ['2 meet, 1 cross (near)',[L([1,0,1],[-1,1,-2]),L([0,0,1],[1,0,0]),L([0,0,-1],[0,1,0])]],
+  ['2 meet, 1 cross (far)',[L([4,0,1],[-4,4,-2]),L([0,0,1],[1,0,0]),L([0,0,-1],[0,1,0])]],
+  ['1 meet, 2 cross over',[L([0,0,0],[1,0,0]),L([0,0,0],[c60,s60,0]),L([0,-1.5,1],[.3,1,0])]],
+  ['1 meet, 2 cross over/under',[L([0,0,0],[1,0,0]),L([0,0,0],[c60,s60,0]),L([1,.3,0],[-.5,1,.6])]],
+  ['0 meet, one over the other two (cross over)',[L([0,0,1],[1,0,0]),L([0,0,-1],[c60,s60,0]),L([.5,-1,2],[-.6,1,0])]],
+  ['0 meet, cyclic over/under',hyper(1.5)]]},
+ {g:'2 crosses (one parallel pair)',items:[
+  ['2 parallel, 1 meets both',[...PAR(1.2),L([-1.2,-1,0],[2.4,2,0])]],
+  ['2 parallel, 1 meet 1 cross',[...PAR(1.2),L([-1.2,0,0],[1,.4,.9])]],
+  ['2 parallel, 0 meet, cross over',[...PAR(1.2),L([0,0,1],[1,.5,0])]],
+  ['2 parallel, 0 meet, over/under',[...PAR(1.2),L([.3,0,0],[1,.4,.7])]],
+  ['2 parallel, far skew line',[...PAR(1),L([0,0,2.6],[1,.8,.35])]]]},
+ {g:'0 crosses (all parallel)',items:[
+  ['3 parallel, coplanar',[L([-1.6,0,0],[0,1,0]),L([.4,0,0],[0,1,0]),L([1.6,0,0],[0,1,0])]],
+  ['3 parallel, prism (acute)',[L([-1.4,0,-.9],[0,1,0]),L([1.5,0,-.7],[0,1,0]),L([.1,0,1.4],[0,1,0])]],
+  ['3 parallel, prism (obtuse)',[L([-1.8,0,0],[0,1,0]),L([1.8,0,0],[0,1,0]),L([.2,0,.6],[0,1,0])]]]},
+ {g:'Special cases',items:[
+  ['1 meet + perpendicular line',[L([0,0,0],[1,.55,0]),L([0,0,0],[-1,.55,0]),L([0,1.4,0],[0,0,1])]],
+  ['1 cross + perpendicular line',[L([0,0,.35],[1,.55,0]),L([0,0,-.35],[-1,.55,0]),L([0,1.4,0],[0,0,1])]],
+  ['2 parallel + perpendicular line (between)',[...PAR(1.2),L([.4,0,0],[0,0,1])]],
+  ['2 parallel + perpendicular line (outside)',[...PAR(1.2),L([2.4,0,0],[0,0,1])]]]}
+];
+
+// ---------- UI ----------
+const presetsEl=document.getElementById('presets'), readout=document.getElementById('readout');
+let current=null, sol=null, circ=null, buttons=[];
+PRESETS.forEach(grp=>{
+  const g=document.createElement('div');g.className='pgroup';
+  const h=document.createElement('span');h.className='eyebrow';h.textContent=grp.g;g.appendChild(h);
+  grp.items.forEach(([name,Ls])=>{const b=document.createElement('button');b.type='button';b.textContent=name;
+    b.addEventListener('click',()=>{select(Ls,b)});g.appendChild(b);buttons.push(b)});
+  presetsEl.appendChild(g);
+});
+const fmt=(x,d=4)=>(Math.abs(x)<5e-13?0:x).toFixed(d);
+const fv=v=>'('+v.map(x=>fmt(x,3)).join(', ')+')';
+function select(Ls,btn){
+  buttons.forEach(b=>b.setAttribute('aria-pressed',b===btn?'true':'false'));
+  current=Ls; sol=solve(Ls); circ=buildCircle(Ls,sol); main.set(Ls,circ); render();
+}
+function render(){
+  const cls=classify(current), act=sol.active;
+  const chip=act.length===3?'<span class="chip a3">Three active lines</span>'
+    :act.length===2?`<span class="chip a2">Two active lines: L${act[0]+1}, L${act[1]+1}</span>`
+    :'<span class="chip a0">Degenerate, r = 0</span>';
+  const errs=current.map(Ln=>touchError(Ln,circ));
+  const pairs=sol.pairs.map(p=>`<tr><td>L${p.i+1}·L${p.j+1}</td><td>${({meet:'meet',skew:'skew',parallel:'parallel',coincident:'coincident'})[p.ll.rel]}</td><td class="num">${fmt(p.rho)}</td></tr>`).join('');
+  readout.innerHTML=`
+    <span class="eyebrow">Classification · Illustrative values</span>
+    <div class="case">${cls}</div>
+    ${chip}
+    <dl class="kv">
+      <dt>Radius r</dt><dd>${fmt(circ.r,6)}</dd>
+      <dt>Center c</dt><dd>${fv(circ.c)}</dd>
+      <dt>Plane normal n</dt><dd>${fv(circ.n)}</dd>
+    </dl>
+    <table><thead><tr><th>Pair</th><th>Relation</th><th>ρ = dist/2</th></tr></thead><tbody>${pairs}</tbody></table>
+    <table><thead><tr><th>Line</th><th>dist(c, L)</th><th>Gap to circle</th></tr></thead><tbody>
+      ${current.map((Ln,i)=>`<tr><td style="color:var(--series-l${i+1});font-weight:600">L${i+1}</td><td class="num">${fmt(dist(Ln,circ.c))}</td><td class="num">${errs[i]<1e-6?'✓ ':'✗ '}${errs[i].toExponential(1)}</td></tr>`).join('')}
+    </tbody></table>
+    <p class="note">Lower bound check: r ≥ max ρ = ${fmt(Math.max(...sol.pairs.map(p=>p.rho)))}. This is a rough numerical solution inside this page. Use it only to check derivations.</p>`;
+}
+
+// ---------- 3D renderer with matplotlib-style axes box ----------
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const DPR=()=>window.devicePixelRatio||1;
+const views=[];
+function niceStep(R){const raw=R/2.2,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return (m<1.5?1:m<3.5?2:5)*p}
+function fmtTick(t,step){const k=step<1?(step<0.1?2:1):0;const v=Math.abs(t)<1e-9?0:t;return v.toFixed(k)}
+function clipBox(Ln,lo,hi){
+  let t0=-Infinity,t1=Infinity;
+  for(let i=0;i<3;i++){
+    if(Math.abs(Ln.d[i])<1e-12){if(Ln.a[i]<lo[i]||Ln.a[i]>hi[i])return null;continue}
+    let a=(lo[i]-Ln.a[i])/Ln.d[i],b=(hi[i]-Ln.a[i])/Ln.d[i];if(a>b)[a,b]=[b,a];
+    t0=Math.max(t0,a);t1=Math.min(t1,b);
+  }
+  return t0<t1?[add(Ln.a,sc(Ln.d,t0)),add(Ln.a,sc(Ln.d,t1))]:null;
+}
+function circlePts(c,n,r,N){const e1=anyPerp(n),e2=cross(n,e1),out=[];
+  for(let i=0;i<=N;i++){const t=i/N*2*Math.PI;out.push(add(c,add(sc(e1,r*Math.cos(t)),sc(e2,r*Math.sin(t)))))}return out}
+
+function makeView(canvas,opt){
+  const v={cv:canvas,ctx:canvas.getContext('2d'),yaw:-0.6,pitch:0.38,zoom:1,c:[0,0,0],R:3,Ls:null,circ:null,
+    o:Object.assign({sphere:true,feet:true,wire:false,radii:false,disk:true,compact:false},opt||{})};
+  v.set=(Ls,circ)=>{v.Ls=Ls;v.circ=circ;let R=Math.max(2,circ.r*1.25);
+    [circ.c,...circ.touch].forEach(p=>R=Math.max(R,norm(sub(p,circ.c))*1.15));
+    v.R=R;v.c=circ.c.slice();v.zoom=1;v.draw()};
+  v.proj=p=>{
+    const q=sub(p,v.c),cy=Math.cos(v.yaw),sy=Math.sin(v.yaw),cp=Math.cos(v.pitch),sp=Math.sin(v.pitch);
+    const x1=q[0]*cy-q[1]*sy,y1=q[0]*sy+q[1]*cy,z1=q[2];
+    const W=v.cv.width,H=v.cv.height,s=Math.min(W,H)/(3.5*v.R)*v.zoom;
+    return {x:W/2+x1*s,y:H/2-(z1*cp+y1*sp)*s,depth:y1*cp-z1*sp,s};
+  };
+  v.resize=()=>{const r=canvas.parentElement.getBoundingClientRect(),d=DPR();
+    canvas.width=Math.max(1,Math.round(r.width*d));canvas.height=Math.max(1,Math.round(r.height*d));v.draw()};
+  v.draw=()=>drawView(v);
+  attachDrag(v);
+  new ResizeObserver(v.resize).observe(canvas.parentElement);
+  views.push(v);return v;
+}
+
+function drawView(v){
+  const {ctx,cv,Ls,circ,o}=v; if(!Ls)return;
+  const d=DPR(),W=cv.width,H=cv.height,P=v.proj;
+  ctx.clearRect(0,0,W,H);
+  const rule=css('--rule'),muted=css('--muted-foreground'),ink=css('--foreground'),cols=[css('--series-l1'),css('--series-l2'),css('--series-l3')],cc=css('--series-circle'),sph=css('--series-sphere');
+  const S=(a,b,col,w,dash,alpha)=>{const A=P(a),B=P(b);ctx.save();ctx.globalAlpha=alpha??1;ctx.strokeStyle=col;ctx.lineWidth=w*d;
+    ctx.setLineDash((dash||[]).map(x=>x*d));ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.stroke();ctx.restore()};
+  const T=(p,txt,col,size,weight,align)=>{const A=P(p);ctx.fillStyle=col;ctx.font=`${weight||400} ${size*d}px "IBM Plex Mono", monospace`;
+    ctx.textAlign=align||'center';ctx.textBaseline='middle';ctx.fillText(txt,A.x,A.y)};
+  const dot3=(p,col,rad)=>{const A=P(p);ctx.fillStyle=col;ctx.beginPath();ctx.arc(A.x,A.y,rad*d,0,7);ctx.fill()};
+  const R=v.R,lo=sub(v.c,[R,R,R]),hi=add(v.c,[R,R,R]),mid3=v.c;
+
+  // ---- axes box ----
+  const step=niceStep(R),ticks=i=>{const t=[];for(let x=Math.ceil(lo[i]/step-1e-9)*step;x<=hi[i]+1e-9;x+=step)t.push(x);return t};
+  const tk=[ticks(0),ticks(1),ticks(2)];
+  const pick=(i)=>{const a=mid3.slice(),b=mid3.slice();a[i]=lo[i];b[i]=hi[i];return P(a).depth>P(b).depth?[lo[i],hi[i]]:[hi[i],lo[i]]}; // [far, near]
+  const [xFar,xNear]=pick(0),[yFar,yNear]=pick(1),zFloor=lo[2];
+  const wallA=o.compact?.35:.55;
+  // floor grid
+  tk[0].forEach(x=>S([x,lo[1],zFloor],[x,hi[1],zFloor],rule,1,null,wallA));
+  tk[1].forEach(y=>S([lo[0],y,zFloor],[hi[0],y,zFloor],rule,1,null,wallA));
+  // back walls
+  tk[1].forEach(y=>S([xFar,y,lo[2]],[xFar,y,hi[2]],rule,1,null,wallA*.7));
+  tk[2].forEach(z=>S([xFar,lo[1],z],[xFar,hi[1],z],rule,1,null,wallA*.7));
+  tk[0].forEach(x=>S([x,yFar,lo[2]],[x,yFar,hi[2]],rule,1,null,wallA*.7));
+  tk[2].forEach(z=>S([lo[0],yFar,z],[hi[0],yFar,z],rule,1,null,wallA*.7));
+  // box edges of the walls
+  [[[xFar,yFar,lo[2]],[xFar,yFar,hi[2]]],[[xFar,lo[1],hi[2]],[xFar,hi[1],hi[2]]],[[lo[0],yFar,hi[2]],[hi[0],yFar,hi[2]]],
+   [[lo[0],lo[1],zFloor],[hi[0],lo[1],zFloor]],[[lo[0],hi[1],zFloor],[hi[0],hi[1],zFloor]],
+   [[lo[0],lo[1],zFloor],[lo[0],hi[1],zFloor]],[[hi[0],lo[1],zFloor],[hi[0],hi[1],zFloor]]]
+   .forEach(([a,b])=>S(a,b,muted,1,null,.45));
+  // axis edges with ticks and labels
+  const off=R*(o.compact?.16:.13), fs=o.compact?8.5:10, ls=o.compact?10:12;
+  // z axis on the vertical edge that is leftmost on screen
+  const corners=[[lo[0],lo[1]],[lo[0],hi[1]],[hi[0],lo[1]],[hi[0],hi[1]]].map(([x,y])=>({x,y,sx:P([x,y,zFloor]).x}));
+  corners.sort((a,b)=>a.sx-b.sx); const zc=corners[0], zx=zc.x>mid3[0]?1:-1, zy=zc.y>mid3[1]?1:-1;
+  const yOut=yNear>mid3[1]?1:-1, xOut=xNear>mid3[0]?1:-1;
+  // Keep tick labels from overlapping (figures.md §1). Thin the ticks when the screen gap is narrow, and skip a label that overlaps a placed one.
+  const placed=[];
+  const lab=(p,txt,col,size,weight)=>{const A=P(p),w=txt.length*size*d*.62,h=size*d*1.2;
+    if(placed.some(B=>Math.abs(A.x-B.x)<(w+B.w)/2&&Math.abs(A.y-B.y)<(h+B.h)/2))return;
+    placed.push({x:A.x,y:A.y,w,h});T(p,txt,col,size,weight)};
+  const strideOf=(i,at)=>{const t=tk[i];if(t.length<2)return 1;const A=P(at(t[0])),B=P(at(t[1])),dx=Math.abs(A.x-B.x),dy=Math.abs(A.y-B.y);
+    return [1,2,5,10,20,50].find(k=>dx*k>=fs*d*2.8||dy*k>=fs*d*1.4)||50};
+  const kx=strideOf(0,x=>[x,yNear,zFloor]),ky=strideOf(1,y=>[xNear,y,zFloor]),kz=strideOf(2,z=>[zc.x,zc.y,z]);
+  const onK=(t,k)=>Math.round(t/step)%k===0;
+  // Place the axis names first so they win priority.
+  lab([mid3[0],yNear+yOut*off*2.1,zFloor],'x',ink,ls,700);
+  lab([xNear+xOut*off*2.1,mid3[1],zFloor],'y',ink,ls,700);
+  S([lo[0],yNear,zFloor],[hi[0],yNear,zFloor],ink,1.3,null,.8);
+  tk[0].forEach(x=>{S([x,yNear,zFloor],[x,yNear+yOut*off*.35,zFloor],ink,1,null,.8);if(onK(x,kx))lab([x,yNear+yOut*off,zFloor],fmtTick(x,step*kx),muted,fs)});
+  S([xNear,lo[1],zFloor],[xNear,hi[1],zFloor],ink,1.3,null,.8);
+  tk[1].forEach(y=>{S([xNear,y,zFloor],[xNear+xOut*off*.35,y,zFloor],ink,1,null,.8);if(onK(y,ky))lab([xNear+xOut*off,y,zFloor],fmtTick(y,step*ky),muted,fs)});
+  // z axis on the vertical edge that is leftmost on screen
+  S([zc.x,zc.y,lo[2]],[zc.x,zc.y,hi[2]],ink,1.3,null,.8);
+  lab([zc.x+zx*off*1.7,zc.y+zy*off*1.7,mid3[2]],'z',ink,ls,700);
+  tk[2].forEach(z=>{S([zc.x,zc.y,z],[zc.x+zx*off*.25,zc.y+zy*off*.25,z],ink,1,null,.8);if(onK(z,kz))lab([zc.x+zx*off*.8,zc.y+zy*off*.8,z],fmtTick(z,step*kz),muted,fs)});
+
+  // ---- sphere ----
+  const cD=P(circ.c).depth;
+  if(o.sphere&&circ.r>0){
+    const C=P(circ.c);ctx.save();ctx.strokeStyle=sph;ctx.lineWidth=1.2*d;ctx.setLineDash([5*d,5*d]);
+    ctx.beginPath();ctx.arc(C.x,C.y,circ.r*C.s,0,7);ctx.stroke();ctx.restore();
+    if(o.wire){[[0,0,1],[1,0,0],[0,1,0]].forEach(nn=>{const pts=circlePts(circ.c,nn,circ.r,96);
+      for(let i=0;i<96;i++){const fr=(P(pts[i]).depth+P(pts[i+1]).depth)/2<=cD;S(pts[i],pts[i+1],sph,fr?1:.8,fr?null:[2,3],fr?.55:.3)}})}
+  }
+  // ---- circle (disk fill, back half) ----
+  const N=160,pts=circ.r>0?circlePts(circ.c,circ.n,circ.r,N):[];
+  if(pts.length&&o.disk){ctx.save();ctx.globalAlpha=.10;ctx.fillStyle=cc;ctx.beginPath();
+    pts.forEach((p,i)=>{const A=P(p);i?ctx.lineTo(A.x,A.y):ctx.moveTo(A.x,A.y)});ctx.fill();ctx.restore()}
+  const half=front=>{for(let i=0;i<N;i++){const fr=(P(pts[i]).depth+P(pts[i+1]).depth)/2<=cD;if(fr!==front)continue;
+    S(pts[i],pts[i+1],cc,front?3:1.8,front?null:[4,4],front?1:.55)}};
+  if(pts.length)half(false);
+  // ---- lines clipped to the box ----
+  Ls.forEach((Ln,i)=>{const sg=clipBox(Ln,lo,hi);if(!sg)return;S(sg[0],sg[1],cols[i],2.2);
+    const e=P(sg[1]);ctx.fillStyle=cols[i];ctx.font=`700 ${(o.compact?10:12)*d}px "IBM Plex Mono", monospace`;
+    ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText('L'+(i+1),e.x+4*d,e.y-2*d)});
+  if(pts.length)half(true);
+  // ---- feet, radii, points ----
+  if(o.feet)Ls.forEach((Ln,i)=>S(circ.c,foot(Ln,circ.c),cols[i],1,[2,3],.8));
+  if(o.radii&&circ.r>0)circ.touch.forEach((p,i)=>{
+    const A=P(circ.c),B=P(p),ang=Math.atan2(B.y-A.y,B.x-A.x),h=8*d;
+    ctx.save();ctx.strokeStyle=cols[i];ctx.lineWidth=2*d;ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);
+    ctx.moveTo(B.x,B.y);ctx.lineTo(B.x-h*Math.cos(ang-.4),B.y-h*Math.sin(ang-.4));
+    ctx.moveTo(B.x,B.y);ctx.lineTo(B.x-h*Math.cos(ang+.4),B.y-h*Math.sin(ang+.4));ctx.stroke();ctx.restore()});
+  circ.touch.forEach((p,i)=>dot3(p,cols[i],o.compact?3.5:4.5));
+  dot3(circ.c,ink,o.compact?2.5:3.5);
+  if(!o.compact){T(add(circ.c,[0,0,-R*.08]),'c',ink,11,700)}
+}
+
+function attachDrag(v){
+  const box=v.cv.parentElement,pointers=new Map();let drag=null,pinch0=null;
+  box.addEventListener('pointerdown',e=>{box.setPointerCapture(e.pointerId);pointers.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pointers.size===1)drag=[e.clientX,e.clientY,v.yaw,v.pitch];else if(pointers.size===2){const p=[...pointers.values()];pinch0=[Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]),v.zoom];drag=null}});
+  box.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pinch0&&pointers.size===2){const p=[...pointers.values()];v.zoom=Math.min(6,Math.max(.25,pinch0[1]*Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1])/pinch0[0]));v.draw();return}
+    if(!drag)return;v.yaw=drag[2]+(e.clientX-drag[0])*0.008;v.pitch=Math.max(-1.55,Math.min(1.55,drag[3]+(e.clientY-drag[1])*0.008));v.draw()});
+  const up=e=>{pointers.delete(e.pointerId);if(pointers.size<2)pinch0=null;if(pointers.size===0)drag=null};
+  box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up);
+  box.addEventListener('wheel',e=>{e.preventDefault();v.zoom=Math.min(6,Math.max(.25,v.zoom*Math.exp(-e.deltaY*0.0015)));v.draw()},{passive:false});
+}
+const redrawAll=()=>views.forEach(v=>v.draw());
+
+// ---------- explorer wiring ----------
+const main=makeView(document.getElementById('cv'),{});
+let spinning=false;
+document.getElementById('resetv').addEventListener('click',()=>{main.yaw=-0.6;main.pitch=0.38;main.zoom=1;main.draw()});
+document.getElementById('showSphere').addEventListener('change',e=>{main.o.sphere=e.target.checked;main.draw()});
+document.getElementById('showFeet').addEventListener('change',e=>{main.o.feet=e.target.checked;main.draw()});
+const spinBtn=document.getElementById('spin');
+spinBtn.addEventListener('click',()=>{spinning=!spinning;spinBtn.textContent=spinning?'Stop':'Spin';if(spinning)requestAnimationFrame(tick)});
+function tick(){if(!spinning)return;main.yaw+=0.006;main.draw();requestAnimationFrame(tick)}
+const R=()=>Math.random()*4-2, RD=()=>[Math.random()*2-1,Math.random()*2-1,Math.random()*2-1];
+document.getElementById('rnd').addEventListener('click',()=>select([L([R(),R(),R()],RD()),L([R(),R(),R()],RD()),L([R(),R(),R()],RD())],null));
+document.getElementById('rndp').addEventListener('click',()=>{const d=RD();select([L([R(),R(),R()],d),L([R(),R(),R()],d),L([R(),R(),R()],RD())],null)});
+
+// ---------- theorem figures ----------
+function figure(id,Ls,opt){const s=solve(Ls),c=buildCircle(Ls,s),v=makeView(document.getElementById(id),opt);v.set(Ls,c);return v}
+const f1=figure('fig1',hyper(1.5),{wire:true,radii:true,feet:false});
+const f2=figure('fig2',PRESETS[2].items[2][1],{wire:true,radii:true,feet:false});
+f2.yaw=-0.25;f2.pitch=0.3;f2.draw();
+
+// ---------- gallery ----------
+const gal=document.getElementById('gallery');let gi=0;
+PRESETS.forEach(grp=>grp.items.forEach(([name,Ls])=>{
+  const idx=gi++,s=solve(Ls),c=buildCircle(Ls,s);
+  const card=document.createElement('div');card.className='gcard';
+  const act=s.active.length===3?'<span class="chip a3">3 active</span>':s.active.length===2?`<span class="chip a2">2 active: L${s.active[0]+1}, L${s.active[1]+1}</span>`:'<span class="chip a0">r = 0</span>';
+  card.innerHTML=`<div class="gtitle"><span class="eyebrow">${grp.g}</span><b>${name}</b></div>
+    <div class="canvasbox gbox"><canvas aria-label="${name} three-dimensional figure"></canvas></div>
+    <div class="ginfo">${act}<span class="mono">r = ${fmt(c.r,3)}</span><button type="button">Open in explorer</button><span class="ill">r: Illustrative values</span></div>`;
+  gal.appendChild(card);
+  const v=makeView(card.querySelector('canvas'),{compact:true,feet:false});v.set(Ls,c);
+  card.querySelector('button').addEventListener('click',()=>{select(Ls,buttons[idx]);window.openStep('s1-2')});
+}));
+
+
+// ---------- timeline ----------
+const T0=16.5, T1=33, phases=[
+ ['Ask Wylie, fix the interpretation',16.5,17.5,''],
+ ['Lemma 1–2, decision flowchart',17.5,19.5,''],
+ ['Closed-form solutions for cases A–E',19.5,22.5,''],
+ ['Code + second-order cone programming (SOCP) check (cluster)',22.5,24.5,''],
+ ['Degree of the skew case (bonus)',24.5,27,'bonus'],
+ ['Figures + paper draft',27,30,'write'],
+ ['Proofreading, submission',30,32.5,'write'],
+ ['Buffer',32.5,33,'']];
+const tl=document.getElementById('tl');
+const hh=t=>{const h=Math.floor(t)%24,m=Math.round((t%1)*60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};
+phases.forEach(([n,a,b,k])=>{const row=document.createElement('div');row.className='tlrow';
+  row.innerHTML=`<span>${n} <span class="mono" style="color:var(--muted-foreground)">${hh(a)}–${hh(b)}</span></span><div class="tltrack"><div class="tlbar ${k}" style="left:${(a-T0)/(T1-T0)*100}%;width:${(b-a)/(T1-T0)*100}%"></div></div>`;tl.appendChild(row)});
+const axis=document.createElement('div');axis.className='tlaxis';
+axis.innerHTML='<span></span><div class="ticks">'+[17,20,23,26,29,32].map(t=>`<span style="left:${(t-T0)/(T1-T0)*100}%">${hh(t)}</span>`).join('')+'</div>';
+tl.appendChild(axis);
+
+select(PRESETS[2].items[2][1],buttons[15]);
+})();
+</script>
+<script>
+(function(){
+  // Three top tabs, and a step tab inside each. Each tab remembers its chosen step.
+  const tabs=[...document.querySelectorAll('.tabs [role=tab]')], names=tabs.map(t=>t.dataset.tab);
+  const subs={}, cur={};
+  names.forEach(n=>{subs[n]=[...document.getElementById('tab-'+n).querySelectorAll('.subtabs [role=tab]')];cur[n]=0});
+  let active='now';
+  const hashOf=()=>'#'+(subs[active].length?active+'-'+(cur[active]+1):active);
+  function render(){
+    tabs.forEach(t=>{const on=t.dataset.tab===active;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;
+      document.getElementById('tab-'+t.dataset.tab).hidden=!on});
+    names.forEach(n=>subs[n].forEach((b,i)=>{const on=i===cur[n];b.setAttribute('aria-selected',on?'true':'false');b.tabIndex=on?0:-1;
+      document.getElementById(b.getAttribute('aria-controls')).hidden=!on}));
+  }
+  function go(name,step){active=name;if(step!=null&&step>=0&&subs[name].length)cur[name]=step;render()}
+  // Allowed hashes: now, background, papers, and the form now-2. Any other hash gives null.
+  function parse(h){
+    const m=h.match(/^([a-z]+)(?:-(\d+))?$/);if(!m||!names.includes(m[1]))return null;
+    if(m[2]===undefined)return {name:m[1],step:null};
+    const s=+m[2]-1;return s>=0&&s<subs[m[1]].length?{name:m[1],step:s}:null}
+  function openStep(id){const el=document.getElementById(id),p=el&&el.closest('.tabpanel');if(!p)return;
+    const name=p.id.slice(4);go(name,subs[name].findIndex(b=>b.getAttribute('aria-controls')===id));
+    history.replaceState(null,'',hashOf());el.scrollIntoView({behavior:'smooth',block:'start'})}
+  window.openStep=openStep;
+  function manual(name,step,focusEl){go(name,step);history.replaceState(null,'',hashOf());if(focusEl)focusEl.focus()}
+  function arrows(list,i,e,pick){if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;e.preventDefault();
+    pick((i+(e.key==='ArrowRight'?1:list.length-1))%list.length)}
+  tabs.forEach((t,i)=>{
+    t.addEventListener('click',()=>manual(t.dataset.tab));
+    t.addEventListener('keydown',e=>arrows(tabs,i,e,j=>manual(tabs[j].dataset.tab,null,tabs[j])));
+  });
+  names.forEach(n=>subs[n].forEach((b,i)=>{
+    b.addEventListener('click',()=>manual(n,i));
+    b.addEventListener('keydown',e=>arrows(subs[n],i,e,j=>manual(n,j,subs[n][j])));
+  }));
+  const apply=h=>{const r=parse(h);if(r)go(r.name,r.step)};
+  render();apply(location.hash.slice(1));
+  window.addEventListener('hashchange',()=>{const r=parse(location.hash.slice(1));if(r)go(r.name,r.step)});
+  // In-page links: a link to a step box id goes to that step.
+  document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;
+    const id=a.getAttribute('href').slice(1),t=document.getElementById(id);if(!t)return;
+    if(t.classList.contains('stepbox')){e.preventDefault();openStep(id)}});
+})();
+
+</script>
+<script>
+(function(){
+  // Box summary data: box id -> [title, what, results, why, why it matters, next]. A sentence split at ". " becomes one list item.
+  const D={
+b1:[`Apollonius tangent circle (around 200 before the common era)`,`Constructs a circle tangent to three objects: points, lines, or circles`,`The original text is lost. Viète rebuilt it in 1600`,`He wanted to draw a circle that touches three objects at once`,`The special case with a perpendicular line becomes the planar Apollonius point-line-line problem (PLL)`,`The idea of a circle touching three objects leads to the smallest-radius problem (Sylvester)`],
+b2:[`Sylvester 1857`,`Asks for the smallest circle that holds all points of a plane`,`The minimum enclosing circle (MEC) problem was born. Chrystal gave an algorithm in 1885`,`He wanted to find the smallest circle that covers a set of points`,`In the three-parallel-lines case, the answer is the minimum enclosing circle (MEC) of the cross-section triangle`,`Megiddo solves it in linear time`],
+b3:[`Megiddo 1983`,`Solves the minimum enclosing circle (MEC) in deterministic O(n) time, with big-O notation`,`He created the prune-and-search technique`,`A faster exact algorithm was needed`,`It is the starting point of the smallest-radius problem as an algorithm problem`,`It leads to Welzl's randomized algorithm and the linear programming-type problem (LP-type problem) framework`],
+b4:[`Welzl 1991 · Sharir-Welzl 1992`,`Gives a randomized incremental algorithm with expected O(n) time, in big-O notation. Defines the linear programming-type problem (LP-type problem)`,`It was implemented in the Computational Geometry Algorithms Library (CGAL) and others. It became the standard theory framework`,`A simple algorithm and a general framework were needed`,`If the minimum intersecting ball is a linear programming-type problem (LP-type problem), the basis computation is our closed-form solution`,`The objects widen from points to lines and hyperplanes (Bhattacharya et al.)`],
+b5:[`Bhattacharya et al. 1994`,`Finds the smallest ball and circle that meet all given hyperplanes and segments`,`They gave optimal-time algorithms. The hyperplane case became a (d+1)-dimensional linear program`,`They wanted to solve the case where the objects are shapes, not points`,`It is the most direct earlier work for this problem`,`It widens to higher-dimensional flats (Gao et al.)`],
+b6:[`Gao et al. 2008`,`Treats the intersection radius of a set of lines and flats`,`A subset of Δ+2 objects guarantees at least half of the full radius. For lines, they give an approximation in O(nd·poly(1/ε)) time, in big-O notation`,`A data point with missing coordinates becomes a flat`,`It is an approximation algorithm for the smallest ball that meets the lines`,`It widens to moving trajectories (Phillips-Schou)`],
+b7:[`Phillips-Schou 2025`,`Finds the minimum touching ball that meets all segment trajectories`,`A one-segment trajectory is a linear programming-type problem (LP-type problem) with combinatorial dimension d+1. So it runs in linear time. With four or more segments, some setups have unbounded combinatorial dimension. They also gave a two-dimensional exact algorithm and an approximation algorithm`,`They wanted to locate an event in space with an unknown cause. Examples: phones that passed an infected WiFi router, animals that passed the same puddle`,`It is the newest work in the same line as this problem. It gives no closed-form solution for a small basis. This problem can fill that gap`,`This problem`],
+b8:[`Plücker 1868`,`Writes a line with six homogeneous coordinates`,`The algebraic language of three-dimensional line geometry was born`,`He wanted to compute with three-dimensional lines through coordinates`,`It is a candidate input format. It is used to decide how lines relate`,`It leads to the counting geometry of Schubert`],
+b9:[`Schubert 1879`,`Counts the geometric objects that meet given conditions`,`Four lines in general position have 2 lines that meet all of them`,`He wanted to know the number of solutions in advance`,`The number of solutions is a tool to judge whether a closed-form solution exists`,`It leads to the count of common tangents of lines and spheres`],
+b10:[`Macdonald-Pach-Theobald 2001`,`Counts the common tangent lines of four unit spheres`,`The maximum is 12. This value is reached`,`They wanted to answer a question of Larman`,`It shows that line-sphere contact is algebraically complex. It is a model for the analysis of skew lines cases`,`It generalizes to n dimensions`],
+b11:[`Sottile-Theobald 2002`,`Treats lines tangent to 2n−2 spheres in Rⁿ`,`It generalized the earlier result to n dimensions`,`They wanted to see whether the three-dimensional result holds in general dimensions`,`It gives a method to compute the degree`,`Degree computation for the skew lines case of this problem`],
+b12:[`Lobo et al. 1998`,`Collects applications of second-order cone programming (SOCP)`,`Problems such as the smallest enclosing ball are solved by second-order cone programming (SOCP)`,`They wanted to solve convex problems with efficient solvers`,`It is a way to check our r* numerically`,`It leads to the L-infinity norm reconstruction in computer vision`],
+b13:[`Hartley-Schaffalitzky 2004`,`Does geometric reconstruction with the L-infinity norm error`,`They got a globally optimal reconstruction`,`A global solution that lowers the maximum error was needed`,`Lowering the maximum distance to rays has the same structure as our r*`,`It leads to the second-order cone programming (SOCP) framework of Kahl`],
+b14:[`Kahl 2005 · Kahl-Hartley 2008`,`Turns problems such as triangulation into quasi-convex problems and solves them by second-order cone programming (SOCP)`,`The 2008 version released a public Matlab toolbox`,`They wanted to solve multiple-view geometry with a global optimum`,`It is a direct precedent for seeing this problem as second-order cone programming (SOCP)`,`The check view of this problem`],
+b15:[`This problem (2026 hackathon)`,`Finds the closed-form solution of the smallest circle that meets three lines, case by case`,`(Plan) There is no result yet. There is a great circle hypothesis and a draft of the case table`,`It is a hackathon problem set by Tim Wylie`,`The literature treats spheres. The circle and the case-by-case closed-form solution are the gap`,`The great circle theorem, the case table, the degree of the skew lines case, then the two-page paper`],
+b16:[`Great circle theorem (plan)`,`Proves that the smallest circle is a great circle of the smallest sphere`,`(Plan)`,`It aims to reduce the case analysis to one decision on the active constraints`,`It links the circle problem and the sphere problem`,`Two-page paper`],
+b17:[`Case-by-case closed-form table (plan)`,`Gives a formula for (c, r, n) in every case of Figure 1`,`(Plan)`,`The setter asked for this result`,`It is the center of the judging`,`Two-page paper`],
+b18:[`Degree of the skew lines case (plan)`,`Finds the polynomial degree of the general skew lines case`,`(Plan)`,`It aims to judge whether a closed-form solution is possible`,`It shows the limit of the closed-form solution`,`Two-page paper`],
+b19:[`Two-page paper (plan)`,`Sums up the results in two pages and submits them`,`(Plan)`,`It is the only submission that gets judged in the hackathon`,`It is the form in which the results get judged`,`Submit on Nov 8 at 09:00. Then the future work`],
+b20:[`Future work (plan)`,`Picks the research that follows from the 6 gaps of the 2025 paper`,`(Plan)`,`It links the hackathon result to a larger research line`,`A closed-form basis can be a part of an n-object algorithm`,`The future work step table of this tab`]};
+  const ROWS=['What','Results','Why','Why it matters','What\'s next'];
+  const boxes=[...document.querySelectorAll('.lineage [data-box]')], out=document.getElementById('nodeinfo');
+  function items(s){const p=s.split('. ');return p.map((x,i)=>'<li>'+x+(i<p.length-1?'.':'')+'</li>').join('')}
+  function select(id){
+    boxes.forEach(b=>b.setAttribute('aria-pressed',b.dataset.box===id?'true':'false'));
+    const d=D[id];
+    out.innerHTML='<h3>'+d[0]+'</h3><table><tbody>'+ROWS.map((r,i)=>'<tr><th scope="row">'+r+'</th><td><ul>'+items(d[i+1])+'</ul></td></tr>').join('')+'</tbody></table>';
+  }
+  boxes.forEach(b=>{
+    b.addEventListener('click',()=>select(b.dataset.box));
+    b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(b.dataset.box)}});
+  });
+  // The lineage figure is wide, so the "this problem" box starts off screen. A button scrolls to that box.
+  const lw=document.getElementById('lineagewrap');
+  document.getElementById('lineJumpTarget').addEventListener('click',()=>{const t=document.getElementById('b15').getBoundingClientRect(),w=lw.getBoundingClientRect();lw.scrollBy({left:t.left-w.left-24,behavior:'smooth'})});
+  document.getElementById('lineJumpStart').addEventListener('click',()=>lw.scrollTo({left:0,behavior:'smooth'}));
+  select('b15');
+})();
+
+</script>
+</body>
+</html>

@@ -270,9 +270,17 @@ td ul,td ol{padding-left:16px;gap:3px}
 .vzbar .cnt{font-weight:700}
 .vzmsg{min-height:44px}
 .sw2{display:inline-block;width:12px;height:12px;vertical-align:middle;margin-right:5px;border:1px solid var(--foreground)}
+/* Language switch, top right. Hidden inside tips/index.html, which has its own. */
+.langsw{position:absolute;top:12px;right:16px;display:flex;z-index:10}
+.langsw a,.langsw b{padding:4px 10px;border:1px solid var(--border);font-weight:500;text-decoration:none;color:var(--foreground);background:var(--background)}
+.langsw a+b,.langsw b+a{border-left:0}
+.langsw b{background:var(--primary);color:var(--primary-foreground)}
+.framed .langsw{display:none}
 </style>
+<script>if (window.self !== window.top) { document.documentElement.classList.add("framed"); }</script>
 </head>
 <body>
+<nav class="langsw" aria-label="Language"><b aria-current="page">한국어</b><a href="study_tips_en.html" hreflang="en">English</a></nav>
 <div class="wrap">
 
 <header class="lede">
